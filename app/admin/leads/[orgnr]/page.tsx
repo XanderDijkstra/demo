@@ -4,9 +4,12 @@ import { format, formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import {
   ArrowLeft,
+  Ban,
   Building2,
+  Eye,
   ExternalLink,
   MapPin,
+  MousePointerClick,
   Phone,
   Send,
   Smartphone,
@@ -25,7 +28,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { fetchLeadByOrgNr } from "@/lib/leads";
+import { checkOutreachReadiness, fetchLeadByOrgNr } from "@/lib/leads";
 import { getOutreachFromAddress } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -110,7 +113,7 @@ export default async function LeadDetailPage({
   if (!lead) notFound();
 
   const supabase = getSupabaseAdmin();
-  const [historyRes, fromAddress] = await Promise.all([
+  const [historyRes, fromAddress, readiness] = await Promise.all([
     supabase
       .from("outreach_emails")
       .select("*")
@@ -118,6 +121,7 @@ export default async function LeadDetailPage({
       .order("created_at", { ascending: false })
       .limit(20),
     getOutreachFromAddress(),
+    checkOutreachReadiness(lead.org_nr, lead.email),
   ]);
   const outreachHistory = (historyRes.data ?? []) as OutreachEmail[];
 
@@ -190,6 +194,8 @@ export default async function LeadDetailPage({
                 fromAddress={fromAddress}
                 companyName={lead.name}
                 kommune={lead.kommune}
+                suppressedReason={readiness.suppressed?.reason ?? null}
+                previousSendCount={readiness.previousSendCount}
               />
             </div>
           </CardContent>
@@ -354,21 +360,7 @@ export default async function LeadDetailPage({
                           {entry.subject}
                         </span>
                       </div>
-                      <Badge
-                        variant={
-                          entry.status === "sent"
-                            ? "success"
-                            : entry.status === "failed"
-                              ? "destructive"
-                              : "warning"
-                        }
-                      >
-                        {entry.status === "sent"
-                          ? "sendt"
-                          : entry.status === "failed"
-                            ? "feilet"
-                            : "i kø"}
-                      </Badge>
+                      <OutreachStatusBadge status={entry.status} />
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="truncate">→ {entry.to_email}</span>
@@ -382,6 +374,47 @@ export default async function LeadDetailPage({
                         })}
                       </span>
                     </div>
+                    {(entry.delivered_at ||
+                      entry.opened_at ||
+                      entry.clicked_at ||
+                      entry.bounced_at) && (
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground pt-1">
+                        {entry.delivered_at ? (
+                          <span className="inline-flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            levert{" "}
+                            {formatDistanceToNow(new Date(entry.delivered_at), {
+                              addSuffix: true,
+                              locale: nb,
+                            })}
+                          </span>
+                        ) : null}
+                        {entry.opened_at ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            åpnet
+                            {entry.open_count > 1
+                              ? ` ×${entry.open_count}`
+                              : ""}
+                          </span>
+                        ) : null}
+                        {entry.clicked_at ? (
+                          <span className="inline-flex items-center gap-1">
+                            <MousePointerClick className="h-3 w-3" />
+                            klikket
+                            {entry.click_count > 1
+                              ? ` ×${entry.click_count}`
+                              : ""}
+                          </span>
+                        ) : null}
+                        {entry.bounced_at ? (
+                          <span className="inline-flex items-center gap-1 text-destructive">
+                            <Ban className="h-3 w-3" />
+                            bounce
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
                     {entry.error_message ? (
                       <p className="text-xs text-destructive">
                         {entry.error_message}
@@ -416,6 +449,26 @@ export default async function LeadDetailPage({
       </div>
     </>
   );
+}
+
+function OutreachStatusBadge({
+  status,
+}: {
+  status: OutreachEmail["status"];
+}) {
+  const map: Record<
+    OutreachEmail["status"],
+    { variant: "success" | "destructive" | "warning" | "secondary" | "outline"; label: string }
+  > = {
+    queued: { variant: "warning", label: "i kø" },
+    sent: { variant: "secondary", label: "sendt" },
+    delivered: { variant: "success", label: "levert" },
+    bounced: { variant: "destructive", label: "bounce" },
+    complained: { variant: "destructive", label: "klage" },
+    failed: { variant: "destructive", label: "feilet" },
+  };
+  const { variant, label } = map[status];
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
 function ContactRow({

@@ -165,3 +165,38 @@ export async function fetchLeadByOrgNr(orgNr: string): Promise<Company | null> {
   if (error) throw new Error(`Failed to fetch lead: ${error.message}`);
   return (data as Company | null) ?? null;
 }
+
+export interface OutreachReadiness {
+  suppressed: { reason: string } | null;
+  previousSendCount: number;
+}
+
+/**
+ * Pre-flight check before opening the send modal: is the recipient
+ * suppressed, and have we already emailed them?
+ */
+export async function checkOutreachReadiness(
+  orgNr: string,
+  email: string | null
+): Promise<OutreachReadiness> {
+  if (!email) return { suppressed: null, previousSendCount: 0 };
+  const supabase = getSupabaseAdmin();
+
+  const [supRes, prevRes] = await Promise.all([
+    supabase
+      .from("outreach_suppressions")
+      .select("email, reason")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle(),
+    supabase
+      .from("outreach_emails")
+      .select("*", { count: "exact", head: true })
+      .eq("org_nr", orgNr)
+      .in("status", ["sent", "delivered", "queued"]),
+  ]);
+
+  return {
+    suppressed: supRes.data ? { reason: supRes.data.reason } : null,
+    previousSendCount: prevRes.count ?? 0,
+  };
+}

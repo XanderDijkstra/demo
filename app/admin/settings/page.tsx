@@ -18,7 +18,10 @@ import {
   getScoringWeights,
   getTargetNaceCodes,
 } from "@/lib/supabase/queries";
-import type { AuditLogEntry } from "@/lib/supabase/types";
+import type {
+  AuditLogEntry,
+  OutreachSuppression,
+} from "@/lib/supabase/types";
 
 import {
   saveExcludedOrgForms,
@@ -27,6 +30,7 @@ import {
 import { OutreachFromForm } from "./_from-form";
 import { ListForm } from "./_list-form";
 import { RescoreButton } from "./_rescore-button";
+import { SuppressionManager } from "./_suppression-form";
 import { WeightsForm } from "./_weights-form";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +46,7 @@ export default async function SettingsPage() {
     fromAddress,
     leadsCount,
     auditRes,
+    suppressionsRes,
   ] = await Promise.all([
     getScoringWeights(),
     getTargetNaceCodes(),
@@ -54,10 +59,16 @@ export default async function SettingsPage() {
       .like("action", `${SETTINGS_AUDIT_PREFIX}%`)
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase
+      .from("outreach_suppressions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100),
   ]);
 
   const totalLeads = leadsCount.count ?? 0;
   const recentChanges = (auditRes.data ?? []) as AuditLogEntry[];
+  const suppressions = (suppressionsRes.data ?? []) as OutreachSuppression[];
 
   return (
     <>
@@ -144,6 +155,21 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent>
             <OutreachFromForm initial={fromAddress} />
+          </CardContent>
+        </Card>
+
+        {/* Suppression list */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Suppression list</CardTitle>
+            <CardDescription>
+              Adresser som aldri skal kontaktes. Resend sender bounces og
+              spam-klager hit automatisk via webhook. Du kan også legge til
+              manuelt.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SuppressionManager suppressions={suppressions} />
           </CardContent>
         </Card>
 

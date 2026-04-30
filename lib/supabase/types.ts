@@ -9,7 +9,18 @@
 export type CompanyStatus = "new" | "reviewed" | "qualified" | "rejected";
 export type ScrapeRunStatus = "running" | "success" | "failed";
 export type ScrapeTriggeredBy = "cron" | "manual";
-export type OutreachEmailStatus = "queued" | "sent" | "failed";
+export type OutreachEmailStatus =
+  | "queued"
+  | "sent"
+  | "delivered"
+  | "bounced"
+  | "complained"
+  | "failed";
+export type SuppressionReason =
+  | "bounced"
+  | "complained"
+  | "manual"
+  | "unsubscribed";
 
 export type ScoreBreakdown = {
   has_phone?: number;
@@ -242,6 +253,15 @@ export type Database = {
           status: OutreachEmailStatus;
           error_message: string | null;
           sent_at: string | null;
+          delivered_at: string | null;
+          bounced_at: string | null;
+          complained_at: string | null;
+          opened_at: string | null;
+          clicked_at: string | null;
+          last_event: string | null;
+          last_event_at: string | null;
+          open_count: number;
+          click_count: number;
           created_at: string;
         };
         Insert: {
@@ -255,6 +275,15 @@ export type Database = {
           status?: OutreachEmailStatus;
           error_message?: string | null;
           sent_at?: string | null;
+          delivered_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          opened_at?: string | null;
+          clicked_at?: string | null;
+          last_event?: string | null;
+          last_event_at?: string | null;
+          open_count?: number;
+          click_count?: number;
           created_at?: string;
         };
         Update: {
@@ -268,6 +297,39 @@ export type Database = {
           status?: OutreachEmailStatus;
           error_message?: string | null;
           sent_at?: string | null;
+          delivered_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          opened_at?: string | null;
+          clicked_at?: string | null;
+          last_event?: string | null;
+          last_event_at?: string | null;
+          open_count?: number;
+          click_count?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      outreach_suppressions: {
+        Row: {
+          email: string;
+          reason: SuppressionReason;
+          source_org_nr: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          email: string;
+          reason: SuppressionReason;
+          source_org_nr?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          email?: string;
+          reason?: SuppressionReason;
+          source_org_nr?: string | null;
+          notes?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -298,3 +360,7 @@ export type OutreachEmail =
   Database["public"]["Tables"]["outreach_emails"]["Row"];
 export type OutreachEmailInsert =
   Database["public"]["Tables"]["outreach_emails"]["Insert"];
+export type OutreachSuppression =
+  Database["public"]["Tables"]["outreach_suppressions"]["Row"];
+export type OutreachSuppressionInsert =
+  Database["public"]["Tables"]["outreach_suppressions"]["Insert"];

@@ -2,6 +2,7 @@ import "server-only";
 
 import { Resend } from "resend";
 
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getSetting } from "@/lib/supabase/queries";
 
 let cached: Resend | null = null;
@@ -46,6 +47,23 @@ export interface SendOutreachResult {
   ok: boolean;
   resendId?: string;
   error?: string;
+}
+
+/**
+ * Check whether a given email is on the suppression list (bounced,
+ * complained, or manually unsubscribed). Lowercases the input.
+ */
+export async function isSuppressed(
+  email: string
+): Promise<{ suppressed: true; reason: string } | { suppressed: false }> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from("outreach_suppressions")
+    .select("email, reason")
+    .eq("email", email.trim().toLowerCase())
+    .maybeSingle();
+  if (data) return { suppressed: true, reason: data.reason };
+  return { suppressed: false };
 }
 
 export async function sendOutreachEmail(

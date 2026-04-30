@@ -187,6 +187,74 @@ export async function saveOutreachFromAddress(
   return { ok: true, message: "Avsenderadresse lagret" };
 }
 
+// ─── Suppressions ────────────────────────────────────────────────────────────
+
+const ManualSuppressionSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+
+export async function addManualSuppression(
+  formData: FormData
+): Promise<ActionResult> {
+  const parsed = ManualSuppressionSchema.safeParse({
+    email: formData.get("email"),
+    notes: formData.get("notes") || null,
+  });
+  if (!parsed.success) {
+    return { ok: false, error: "Ugyldig e-postadresse" };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("outreach_suppressions").upsert(
+    {
+      email: parsed.data.email,
+      reason: "manual",
+      notes: parsed.data.notes ?? null,
+    },
+    { onConflict: "email" }
+  );
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "settings.suppression.added",
+    entity_type: "outreach_suppression",
+    entity_id: parsed.data.email,
+    metadata: { reason: "manual", notes: parsed.data.notes ?? null },
+  });
+
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Adresse lagt til i suppression list" };
+}
+
+export async function removeSuppression(
+  email: string
+): Promise<ActionResult> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return { ok: false, error: "Tom adresse" };
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("outreach_suppressions")
+    .delete()
+    .eq("email", normalized);
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "settings.suppression.removed",
+    entity_type: "outreach_suppression",
+    entity_id: normalized,
+    metadata: { email: normalized },
+  });
+
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Fjernet fra suppression list" };
+}
+
 // ─── Re-score all leads ──────────────────────────────────────────────────────
 
 export async function rescoreAllLeads(): Promise<

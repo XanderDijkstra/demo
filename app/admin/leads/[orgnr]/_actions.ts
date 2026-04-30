@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
+  isSuppressed,
   sendOutreachEmail,
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -138,6 +139,15 @@ export async function sendLeadEmail(
   if (!lead) return { ok: false, error: "Lead ikke funnet" };
   if (!lead.email) {
     return { ok: false, error: "Ingen e-postadresse på leadet" };
+  }
+
+  // Hard block: email is on the suppression list.
+  const suppression = await isSuppressed(lead.email);
+  if (suppression.suppressed) {
+    return {
+      ok: false,
+      error: `Adressen er suppressed (${suppression.reason}) og kan ikke kontaktes`,
+    };
   }
 
   const fromAddress = await getOutreachFromAddress();

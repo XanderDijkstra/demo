@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Send } from "lucide-react";
+import { AlertTriangle, Ban, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ interface Props {
   fromAddress: string;
   companyName: string;
   kommune: string | null;
+  suppressedReason: string | null;
+  previousSendCount: number;
 }
 
 const DEFAULT_SUBJECT = "Hei {{company_name}} — gratulerer med oppstart";
@@ -47,6 +49,8 @@ export function SendEmailButton({
   fromAddress,
   companyName,
   kommune,
+  suppressedReason,
+  previousSendCount,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState(DEFAULT_SUBJECT);
@@ -74,11 +78,23 @@ export function SendEmailButton({
     });
   }
 
+  const isBlocked = !to || !!suppressedReason;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled={!to}>
-          <Send />
+        <Button
+          disabled={isBlocked}
+          variant={suppressedReason ? "outline" : "default"}
+          title={
+            suppressedReason
+              ? `Suppressed (${suppressedReason}) — kan ikke sende`
+              : !to
+                ? "Legg til e-post først"
+                : undefined
+          }
+        >
+          {suppressedReason ? <Ban /> : <Send />}
           Send e-post
         </Button>
       </DialogTrigger>
@@ -95,6 +111,18 @@ export function SendEmailButton({
           </DialogHeader>
 
           <div className="space-y-3 py-4">
+            {previousSendCount > 0 ? (
+              <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                <div>
+                  Du har allerede sendt {previousSendCount}{" "}
+                  {previousSendCount === 1 ? "e-post" : "e-poster"} til dette
+                  leadet. Forsikre deg om at en oppfølging er ønsket før du
+                  sender på nytt.
+                </div>
+              </div>
+            ) : null}
+
             <div className="grid grid-cols-[60px_1fr] items-center gap-2 text-sm">
               <span className="text-muted-foreground">Fra</span>
               <span className="truncate">{fromAddress}</span>
