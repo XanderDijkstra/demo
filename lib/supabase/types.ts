@@ -1,16 +1,16 @@
 /**
  * Hand-written types matching supabase/migrations/0001_initial_schema.sql.
  *
- * These mirror the Supabase generated types but are kept in-repo so that
- * compilation doesn't depend on having a Supabase project provisioned.
- * Regenerate from `supabase gen types typescript` once the CLI is wired up.
+ * Mirror the shape produced by `supabase gen types typescript`. Type aliases
+ * (not interfaces) are required for Supabase's strict GenericTable constraint
+ * to match — the official generator outputs the same form.
  */
 
 export type CompanyStatus = "new" | "reviewed" | "qualified" | "rejected";
 export type ScrapeRunStatus = "running" | "success" | "failed";
 export type ScrapeTriggeredBy = "cron" | "manual";
 
-export interface ScoreBreakdown {
+export type ScoreBreakdown = {
   has_phone?: number;
   org_form_as?: number;
   target_nace?: number;
@@ -18,166 +18,236 @@ export interface ScoreBreakdown {
   has_real_address?: number;
   freshly_founded?: number;
   [key: string]: number | undefined;
-}
+};
 
-export interface ScoringWeights {
+export type ScoringWeights = {
   has_phone: number;
   org_form_as: number;
   target_nace: number;
   has_website: number;
   has_real_address: number;
   freshly_founded: number;
-}
+};
 
-export interface AgencyInfo {
+export type AgencyInfo = {
   name: string;
   domain: string;
-}
+};
 
-export interface Company {
-  org_nr: string;
-  name: string;
-
-  org_form: string | null;
-  org_form_description: string | null;
-
-  nace_code: string | null;
-  nace_description: string | null;
-
-  address_line: string | null;
-  postal_code: string | null;
-  postal_place: string | null;
-  kommune: string | null;
-  kommune_nr: string | null;
-  country_code: string | null;
-
-  phone: string | null;
-  mobile: string | null;
-  email: string | null;
-  website: string | null;
-
-  employee_count: number | null;
-  vat_registered: boolean;
-  bankrupt: boolean;
-  under_dissolution: boolean;
-  forced_dissolution: boolean;
-
-  founded_at: string | null;
-  registered_at: string | null;
-
-  score: number;
-  score_breakdown: ScoreBreakdown;
-
-  status: CompanyStatus;
-  notes: string | null;
-
-  raw_data: Record<string, unknown> | null;
-
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CompanyInsert {
-  org_nr: string;
-  name: string;
-  org_form?: string | null;
-  org_form_description?: string | null;
-  nace_code?: string | null;
-  nace_description?: string | null;
-  address_line?: string | null;
-  postal_code?: string | null;
-  postal_place?: string | null;
-  kommune?: string | null;
-  kommune_nr?: string | null;
-  country_code?: string | null;
-  phone?: string | null;
-  mobile?: string | null;
-  email?: string | null;
-  website?: string | null;
-  employee_count?: number | null;
-  vat_registered?: boolean;
-  bankrupt?: boolean;
-  under_dissolution?: boolean;
-  forced_dissolution?: boolean;
-  founded_at?: string | null;
-  registered_at?: string | null;
-  score?: number;
-  score_breakdown?: ScoreBreakdown;
-  status?: CompanyStatus;
-  notes?: string | null;
-  raw_data?: Record<string, unknown> | null;
-}
-
-export interface ScrapeRun {
-  id: string;
-  target_date: string;
-  status: ScrapeRunStatus;
-  fetched_count: number;
-  inserted_count: number;
-  skipped_count: number;
-  error_message: string | null;
-  duration_ms: number | null;
-  triggered_by: ScrapeTriggeredBy;
-  started_at: string;
-  finished_at: string | null;
-}
-
-export interface AuditLogEntry {
-  id: string;
-  actor: string | null;
-  action: string;
-  entity_type: string | null;
-  entity_id: string | null;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-}
-
-export interface SettingRow<V = unknown> {
-  key: string;
-  value: V;
-  updated_at: string;
-}
-
-/**
- * Supabase generated `Database` shape. Only the columns we use are typed.
- */
-export interface Database {
+export type Database = {
+  __InternalSupabase: {
+    PostgrestVersion: "12";
+  };
   public: {
     Tables: {
       companies: {
-        Row: Company;
-        Insert: CompanyInsert;
-        Update: Partial<CompanyInsert>;
+        Row: {
+          org_nr: string;
+          name: string;
+          org_form: string | null;
+          org_form_description: string | null;
+          nace_code: string | null;
+          nace_description: string | null;
+          address_line: string | null;
+          postal_code: string | null;
+          postal_place: string | null;
+          kommune: string | null;
+          kommune_nr: string | null;
+          country_code: string | null;
+          phone: string | null;
+          mobile: string | null;
+          email: string | null;
+          website: string | null;
+          employee_count: number | null;
+          vat_registered: boolean;
+          bankrupt: boolean;
+          under_dissolution: boolean;
+          forced_dissolution: boolean;
+          founded_at: string | null;
+          registered_at: string | null;
+          score: number;
+          score_breakdown: ScoreBreakdown;
+          status: CompanyStatus;
+          notes: string | null;
+          raw_data: Record<string, unknown> | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          org_nr: string;
+          name: string;
+          org_form?: string | null;
+          org_form_description?: string | null;
+          nace_code?: string | null;
+          nace_description?: string | null;
+          address_line?: string | null;
+          postal_code?: string | null;
+          postal_place?: string | null;
+          kommune?: string | null;
+          kommune_nr?: string | null;
+          country_code?: string | null;
+          phone?: string | null;
+          mobile?: string | null;
+          email?: string | null;
+          website?: string | null;
+          employee_count?: number | null;
+          vat_registered?: boolean;
+          bankrupt?: boolean;
+          under_dissolution?: boolean;
+          forced_dissolution?: boolean;
+          founded_at?: string | null;
+          registered_at?: string | null;
+          score?: number;
+          score_breakdown?: ScoreBreakdown;
+          status?: CompanyStatus;
+          notes?: string | null;
+          raw_data?: Record<string, unknown> | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          org_nr?: string;
+          name?: string;
+          org_form?: string | null;
+          org_form_description?: string | null;
+          nace_code?: string | null;
+          nace_description?: string | null;
+          address_line?: string | null;
+          postal_code?: string | null;
+          postal_place?: string | null;
+          kommune?: string | null;
+          kommune_nr?: string | null;
+          country_code?: string | null;
+          phone?: string | null;
+          mobile?: string | null;
+          email?: string | null;
+          website?: string | null;
+          employee_count?: number | null;
+          vat_registered?: boolean;
+          bankrupt?: boolean;
+          under_dissolution?: boolean;
+          forced_dissolution?: boolean;
+          founded_at?: string | null;
+          registered_at?: string | null;
+          score?: number;
+          score_breakdown?: ScoreBreakdown;
+          status?: CompanyStatus;
+          notes?: string | null;
+          raw_data?: Record<string, unknown> | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       scrape_runs: {
-        Row: ScrapeRun;
-        Insert: Omit<
-          ScrapeRun,
-          "id" | "started_at" | "finished_at" | "duration_ms"
-        > & {
+        Row: {
+          id: string;
+          target_date: string;
+          status: ScrapeRunStatus;
+          fetched_count: number;
+          inserted_count: number;
+          skipped_count: number;
+          error_message: string | null;
+          duration_ms: number | null;
+          triggered_by: ScrapeTriggeredBy;
+          started_at: string;
+          finished_at: string | null;
+        };
+        Insert: {
           id?: string;
+          target_date: string;
+          status?: ScrapeRunStatus;
+          fetched_count?: number;
+          inserted_count?: number;
+          skipped_count?: number;
+          error_message?: string | null;
+          duration_ms?: number | null;
+          triggered_by?: ScrapeTriggeredBy;
           started_at?: string;
           finished_at?: string | null;
-          duration_ms?: number | null;
         };
-        Update: Partial<ScrapeRun>;
+        Update: {
+          id?: string;
+          target_date?: string;
+          status?: ScrapeRunStatus;
+          fetched_count?: number;
+          inserted_count?: number;
+          skipped_count?: number;
+          error_message?: string | null;
+          duration_ms?: number | null;
+          triggered_by?: ScrapeTriggeredBy;
+          started_at?: string;
+          finished_at?: string | null;
+        };
+        Relationships: [];
       };
       audit_log: {
-        Row: AuditLogEntry;
-        Insert: Omit<AuditLogEntry, "id" | "created_at"> & {
+        Row: {
+          id: string;
+          actor: string | null;
+          action: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          metadata: Record<string, unknown> | null;
+          created_at: string;
+        };
+        Insert: {
           id?: string;
+          actor?: string | null;
+          action: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          metadata?: Record<string, unknown> | null;
           created_at?: string;
         };
-        Update: Partial<AuditLogEntry>;
+        Update: {
+          id?: string;
+          actor?: string | null;
+          action?: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          metadata?: Record<string, unknown> | null;
+          created_at?: string;
+        };
+        Relationships: [];
       };
       settings: {
-        Row: SettingRow;
-        Insert: { key: string; value: unknown; updated_at?: string };
-        Update: Partial<{ key: string; value: unknown; updated_at: string }>;
+        Row: {
+          key: string;
+          value: unknown;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: unknown;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: unknown;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
   };
-}
+};
+
+// Convenience aliases used throughout the app.
+export type Company = Database["public"]["Tables"]["companies"]["Row"];
+export type CompanyInsert = Database["public"]["Tables"]["companies"]["Insert"];
+export type ScrapeRun = Database["public"]["Tables"]["scrape_runs"]["Row"];
+export type ScrapeRunInsert =
+  Database["public"]["Tables"]["scrape_runs"]["Insert"];
+export type AuditLogEntry = Database["public"]["Tables"]["audit_log"]["Row"];
+export type AuditLogInsert =
+  Database["public"]["Tables"]["audit_log"]["Insert"];
+export type SettingRow<V = unknown> = {
+  key: string;
+  value: V;
+  updated_at: string;
+};
