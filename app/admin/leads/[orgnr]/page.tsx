@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { checkOutreachReadiness, fetchLeadByOrgNr } from "@/lib/leads";
-import { getOutreachFromAddress } from "@/lib/resend";
+import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type {
@@ -113,7 +113,7 @@ export default async function LeadDetailPage({
   if (!lead) notFound();
 
   const supabase = getSupabaseAdmin();
-  const [historyRes, fromAddress, readiness] = await Promise.all([
+  const [historyRes, fromAddress, replyTo, readiness] = await Promise.all([
     supabase
       .from("outreach_emails")
       .select("*")
@@ -121,6 +121,7 @@ export default async function LeadDetailPage({
       .order("created_at", { ascending: false })
       .limit(20),
     getOutreachFromAddress(),
+    getOutreachReplyTo(),
     checkOutreachReadiness(lead.org_nr, lead.email),
   ]);
   const outreachHistory = (historyRes.data ?? []) as OutreachEmail[];
@@ -192,6 +193,7 @@ export default async function LeadDetailPage({
                 orgNr={lead.org_nr}
                 to={lead.email}
                 fromAddress={fromAddress}
+                replyTo={replyTo}
                 companyName={lead.name}
                 kommune={lead.kommune}
                 suppressedReason={readiness.suppressed?.reason ?? null}

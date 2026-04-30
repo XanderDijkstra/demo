@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getOutreachFromAddress } from "@/lib/resend";
+import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
@@ -44,6 +44,7 @@ export default async function SettingsPage() {
     naceCodes,
     excludedForms,
     fromAddress,
+    replyTo,
     leadsCount,
     auditRes,
     suppressionsRes,
@@ -52,6 +53,7 @@ export default async function SettingsPage() {
     getTargetNaceCodes(),
     getExcludedOrgForms(),
     getOutreachFromAddress(),
+    getOutreachReplyTo(),
     supabase.from("companies").select("*", { count: "exact", head: true }),
     supabase
       .from("audit_log")
@@ -154,7 +156,10 @@ export default async function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <OutreachFromForm initial={fromAddress} />
+            <OutreachFromForm
+              initialFrom={fromAddress}
+              initialReplyTo={replyTo}
+            />
           </CardContent>
         </Card>
 

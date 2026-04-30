@@ -187,6 +187,49 @@ export async function saveOutreachFromAddress(
   return { ok: true, message: "Avsenderadresse lagret" };
 }
 
+// ─── Reply-To address ────────────────────────────────────────────────────────
+
+const ReplyToSchema = z
+  .string()
+  .trim()
+  .email("Ugyldig e-postadresse")
+  .max(254);
+
+export async function saveOutreachReplyTo(
+  formData: FormData
+): Promise<ActionResult> {
+  const parsed = ReplyToSchema.safeParse(formData.get("reply_to"));
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Ugyldig adresse",
+    };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("settings").upsert(
+    {
+      key: "outreach_email_reply_to",
+      value: parsed.data,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "key" }
+  );
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "settings.outreach_email_reply_to.updated",
+    entity_type: "settings",
+    entity_id: "outreach_email_reply_to",
+    metadata: { reply_to: parsed.data },
+  });
+
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Reply-To lagret" };
+}
+
 // ─── Suppressions ────────────────────────────────────────────────────────────
 
 const ManualSuppressionSchema = z.object({

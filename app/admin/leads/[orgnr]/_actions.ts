@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
+  getOutreachReplyTo,
   isSuppressed,
   sendOutreachEmail,
 } from "@/lib/resend";
@@ -150,7 +151,10 @@ export async function sendLeadEmail(
     };
   }
 
-  const fromAddress = await getOutreachFromAddress();
+  const [fromAddress, replyTo] = await Promise.all([
+    getOutreachFromAddress(),
+    getOutreachReplyTo(),
+  ]);
   const placeholders = {
     company_name: lead.name,
     kommune: lead.kommune,
@@ -185,6 +189,7 @@ export async function sendLeadEmail(
     from: fromAddress,
     subject,
     body,
+    replyTo,
   });
 
   if (result.ok) {

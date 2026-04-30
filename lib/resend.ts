@@ -19,7 +19,12 @@ function getResend(): Resend {
 
 export async function getOutreachFromAddress(): Promise<string> {
   const value = await getSetting<string>("outreach_email_from");
-  return value ?? "FX Media <noreply@vekst-systemet.no>";
+  return value ?? "FX Media <info@kontakt.fx-media.no>";
+}
+
+export async function getOutreachReplyTo(): Promise<string> {
+  const value = await getSetting<string>("outreach_email_reply_to");
+  return value ?? "info@fx-media.no";
 }
 
 /**
@@ -41,6 +46,7 @@ export interface SendOutreachInput {
   from: string;
   subject: string;
   body: string;
+  replyTo?: string;
 }
 
 export interface SendOutreachResult {
@@ -76,6 +82,7 @@ export async function sendOutreachEmail(
       to: [input.to],
       subject: input.subject,
       text: input.body,
+      ...(input.replyTo ? { replyTo: input.replyTo } : {}),
     });
 
     if (error) {

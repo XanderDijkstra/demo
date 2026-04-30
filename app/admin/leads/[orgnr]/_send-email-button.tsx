@@ -23,6 +23,7 @@ interface Props {
   orgNr: string;
   to: string | null;
   fromAddress: string;
+  replyTo: string;
   companyName: string;
   kommune: string | null;
   suppressedReason: string | null;
@@ -47,6 +48,7 @@ export function SendEmailButton({
   orgNr,
   to,
   fromAddress,
+  replyTo,
   companyName,
   kommune,
   suppressedReason,
@@ -123,11 +125,15 @@ export function SendEmailButton({
               </div>
             ) : null}
 
-            <div className="grid grid-cols-[60px_1fr] items-center gap-2 text-sm">
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
               <span className="text-muted-foreground">Fra</span>
               <span className="truncate">{fromAddress}</span>
             </div>
-            <div className="grid grid-cols-[60px_1fr] items-center gap-2 text-sm">
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Reply-To</span>
+              <span className="truncate">{replyTo}</span>
+            </div>
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
               <span className="text-muted-foreground">Til</span>
               <span>{to ?? <em className="text-muted-foreground">ingen</em>}</span>
             </div>
