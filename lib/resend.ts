@@ -1,0 +1,73 @@
+import "server-only";
+
+import { Resend } from "resend";
+
+import { getSetting } from "@/lib/supabase/queries";
+
+let cached: Resend | null = null;
+
+function getResend(): Resend {
+  if (cached) return cached;
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  cached = new Resend(key);
+  return cached;
+}
+
+export async function getOutreachFromAddress(): Promise<string> {
+  const value = await getSetting<string>("outreach_email_from");
+  return value ?? "FX Media <noreply@vekst-systemet.no>";
+}
+
+/**
+ * Replace {{placeholders}} in a string. Unknown keys are left as-is so
+ * the operator notices and fixes the template.
+ */
+export function applyPlaceholders(
+  template: string,
+  vars: Record<string, string | null>
+): string {
+  return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key: string) => {
+    const v = vars[key];
+    return v ?? `{{${key}}}`;
+  });
+}
+
+export interface SendOutreachInput {
+  to: string;
+  from: string;
+  subject: string;
+  body: string;
+}
+
+export interface SendOutreachResult {
+  ok: boolean;
+  resendId?: string;
+  error?: string;
+}
+
+export async function sendOutreachEmail(
+  input: SendOutreachInput
+): Promise<SendOutreachResult> {
+  try {
+    const resend = getResend();
+    const { data, error } = await resend.emails.send({
+      from: input.from,
+      to: [input.to],
+      subject: input.subject,
+      text: input.body,
+    });
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+    return { ok: true, resendId: data?.id };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}

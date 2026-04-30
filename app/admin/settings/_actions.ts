@@ -143,6 +143,50 @@ export async function saveExcludedOrgForms(
   return { ok: true, message: `Lagret ${forms.length} ekskluderte former` };
 }
 
+// ─── Outreach FROM address ───────────────────────────────────────────────────
+
+const FromAddressSchema = z
+  .string()
+  .trim()
+  .min(5)
+  .max(254)
+  // Accept either "name@domain.tld" or "Display Name <name@domain.tld>".
+  .regex(
+    /^(?:[^<>]+<\s*)?[^\s<>@]+@[^\s<>@]+\.[a-z]{2,}\s*>?$/i,
+    "Bruk format «Display Name <addr@domene.no>» eller «addr@domene.no»"
+  );
+
+export async function saveOutreachFromAddress(
+  formData: FormData
+): Promise<ActionResult> {
+  const parsed = FromAddressSchema.safeParse(formData.get("from"));
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Ugyldig adresse",
+    };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("settings").upsert(
+    { key: "outreach_email_from", value: parsed.data, updated_at: new Date().toISOString() },
+    { onConflict: "key" }
+  );
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "settings.outreach_email_from.updated",
+    entity_type: "settings",
+    entity_id: "outreach_email_from",
+    metadata: { from: parsed.data },
+  });
+
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Avsenderadresse lagret" };
+}
+
 // ─── Re-score all leads ──────────────────────────────────────────────────────
 
 export async function rescoreAllLeads(): Promise<

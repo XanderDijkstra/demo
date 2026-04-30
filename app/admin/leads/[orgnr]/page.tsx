@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import {
   ArrowLeft,
   Building2,
   ExternalLink,
-  Mail,
   MapPin,
   Phone,
+  Send,
   Smartphone,
   Users,
 } from "lucide-react";
@@ -26,9 +26,17 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { fetchLeadByOrgNr } from "@/lib/leads";
+import { getOutreachFromAddress } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
-import type { ScoreBreakdown, ScoringWeights } from "@/lib/supabase/types";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import type {
+  OutreachEmail,
+  ScoreBreakdown,
+  ScoringWeights,
+} from "@/lib/supabase/types";
 
+import { EmailEditor } from "./_email-editor";
+import { SendEmailButton } from "./_send-email-button";
 import { StatusActions } from "./_status-actions";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +109,18 @@ export default async function LeadDetailPage({
   const lead = await fetchLeadByOrgNr(orgnr);
   if (!lead) notFound();
 
+  const supabase = getSupabaseAdmin();
+  const [historyRes, fromAddress] = await Promise.all([
+    supabase
+      .from("outreach_emails")
+      .select("*")
+      .eq("org_nr", lead.org_nr)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    getOutreachFromAddress(),
+  ]);
+  const outreachHistory = (historyRes.data ?? []) as OutreachEmail[];
+
   const brregUrl = `https://virksomhet.brreg.no/nb/oppslag/enheter/${lead.org_nr}`;
 
   return (
@@ -161,7 +181,17 @@ export default async function LeadDetailPage({
 
             <Separator className="my-5" />
 
-            <StatusActions orgNr={lead.org_nr} current={lead.status} />
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusActions orgNr={lead.org_nr} current={lead.status} />
+              <div className="flex-1" />
+              <SendEmailButton
+                orgNr={lead.org_nr}
+                to={lead.email}
+                fromAddress={fromAddress}
+                companyName={lead.name}
+                kommune={lead.kommune}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -197,12 +227,7 @@ export default async function LeadDetailPage({
                 value={lead.mobile}
                 href={lead.mobile ? `tel:${lead.mobile}` : undefined}
               />
-              <ContactRow
-                icon={Mail}
-                label="E-post"
-                value={lead.email}
-                href={lead.email ? `mailto:${lead.email}` : undefined}
-              />
+              <EmailEditor orgNr={lead.org_nr} initialEmail={lead.email} />
               <ContactRow
                 icon={ExternalLink}
                 label="Nettside"
@@ -304,6 +329,68 @@ export default async function LeadDetailPage({
                 <Badge variant="destructive">Tvangsavvikling</Badge>
               ) : null}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Outreach history */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">E-post sendt</CardTitle>
+            <CardDescription>
+              {outreachHistory.length === 0
+                ? "Ingen e-post sendt enda"
+                : `${outreachHistory.length} utsendelser`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            {outreachHistory.length === 0 ? null : (
+              <ul className="divide-y">
+                {outreachHistory.map((entry) => (
+                  <li key={entry.id} className="px-6 py-3 space-y-1.5 text-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Send className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">
+                          {entry.subject}
+                        </span>
+                      </div>
+                      <Badge
+                        variant={
+                          entry.status === "sent"
+                            ? "success"
+                            : entry.status === "failed"
+                              ? "destructive"
+                              : "warning"
+                        }
+                      >
+                        {entry.status === "sent"
+                          ? "sendt"
+                          : entry.status === "failed"
+                            ? "feilet"
+                            : "i kø"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="truncate">→ {entry.to_email}</span>
+                      <span
+                        className="whitespace-nowrap"
+                        title={entry.created_at}
+                      >
+                        {formatDistanceToNow(new Date(entry.created_at), {
+                          addSuffix: true,
+                          locale: nb,
+                        })}
+                      </span>
+                    </div>
+                    {entry.error_message ? (
+                      <p className="text-xs text-destructive">
+                        {entry.error_message}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
 

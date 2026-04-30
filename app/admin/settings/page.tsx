@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getOutreachFromAddress } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
@@ -23,6 +24,7 @@ import {
   saveExcludedOrgForms,
   saveTargetNaceCodes,
 } from "./_actions";
+import { OutreachFromForm } from "./_from-form";
 import { ListForm } from "./_list-form";
 import { RescoreButton } from "./_rescore-button";
 import { WeightsForm } from "./_weights-form";
@@ -37,12 +39,14 @@ export default async function SettingsPage() {
     weights,
     naceCodes,
     excludedForms,
+    fromAddress,
     leadsCount,
     auditRes,
   ] = await Promise.all([
     getScoringWeights(),
     getTargetNaceCodes(),
     getExcludedOrgForms(),
+    getOutreachFromAddress(),
     supabase.from("companies").select("*", { count: "exact", head: true }),
     supabase
       .from("audit_log")
@@ -128,6 +132,20 @@ export default async function SettingsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Outreach */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">E-post-utsendelse</CardTitle>
+            <CardDescription>
+              Avsenderadressen som brukes når du sender e-post fra
+              lead-detaljsiden via Resend.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <OutreachFromForm initial={fromAddress} />
+          </CardContent>
+        </Card>
 
         {/* Re-score */}
         <Card>

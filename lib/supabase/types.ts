@@ -9,6 +9,7 @@
 export type CompanyStatus = "new" | "reviewed" | "qualified" | "rejected";
 export type ScrapeRunStatus = "running" | "success" | "failed";
 export type ScrapeTriggeredBy = "cron" | "manual";
+export type OutreachEmailStatus = "queued" | "sent" | "failed";
 
 export type ScoreBreakdown = {
   has_phone?: number;
@@ -229,6 +230,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      outreach_emails: {
+        Row: {
+          id: string;
+          org_nr: string;
+          to_email: string;
+          from_email: string;
+          subject: string;
+          body: string;
+          resend_id: string | null;
+          status: OutreachEmailStatus;
+          error_message: string | null;
+          sent_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_nr: string;
+          to_email: string;
+          from_email: string;
+          subject: string;
+          body: string;
+          resend_id?: string | null;
+          status?: OutreachEmailStatus;
+          error_message?: string | null;
+          sent_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          org_nr?: string;
+          to_email?: string;
+          from_email?: string;
+          subject?: string;
+          body?: string;
+          resend_id?: string | null;
+          status?: OutreachEmailStatus;
+          error_message?: string | null;
+          sent_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
@@ -251,3 +294,7 @@ export type SettingRow<V = unknown> = {
   value: V;
   updated_at: string;
 };
+export type OutreachEmail =
+  Database["public"]["Tables"]["outreach_emails"]["Row"];
+export type OutreachEmailInsert =
+  Database["public"]["Tables"]["outreach_emails"]["Insert"];
