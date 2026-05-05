@@ -16,6 +16,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   getExcludedOrgForms,
   getScoringWeights,
+  getSetting,
   getTargetNaceCodes,
 } from "@/lib/supabase/queries";
 import type {
@@ -45,7 +46,10 @@ export default async function SettingsPage() {
     excludedForms,
     fromAddress,
     replyTo,
+    claudeModel,
     leadsCount,
+    sitesRes,
+    sitesUsageRes,
     auditRes,
     suppressionsRes,
   ] = await Promise.all([
@@ -54,7 +58,14 @@ export default async function SettingsPage() {
     getExcludedOrgForms(),
     getOutreachFromAddress(),
     getOutreachReplyTo(),
+    getSetting<string>("claude_model"),
     supabase.from("companies").select("*", { count: "exact", head: true }),
+    supabase
+      .from("generated_sites")
+      .select("*", { count: "exact", head: true }),
+    supabase
+      .from("generated_sites")
+      .select("generation_input_tokens, generation_output_tokens"),
     supabase
       .from("audit_log")
       .select("*")
@@ -69,6 +80,19 @@ export default async function SettingsPage() {
   ]);
 
   const totalLeads = leadsCount.count ?? 0;
+  const totalSites = sitesRes.count ?? 0;
+  const sitesUsage = (sitesUsageRes.data ?? []) as Array<{
+    generation_input_tokens: number | null;
+    generation_output_tokens: number | null;
+  }>;
+  const totalInputTokens = sitesUsage.reduce(
+    (sum, r) => sum + (r.generation_input_tokens ?? 0),
+    0
+  );
+  const totalOutputTokens = sitesUsage.reduce(
+    (sum, r) => sum + (r.generation_output_tokens ?? 0),
+    0
+  );
   const recentChanges = (auditRes.data ?? []) as AuditLogEntry[];
   const suppressions = (suppressionsRes.data ?? []) as OutreachSuppression[];
 
@@ -160,6 +184,52 @@ export default async function SettingsPage() {
               initialFrom={fromAddress}
               initialReplyTo={replyTo}
             />
+          </CardContent>
+        </Card>
+
+        {/* Demosider — Claude usage summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Demosider</CardTitle>
+            <CardDescription>
+              AI-genererte landingssider per lead. Modellen settes i
+              <code className="font-mono mx-1">claude_model</code>-settingen
+              (ikke redigerbar fra UI enda).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <div className="text-xs text-muted-foreground">Aktiv modell</div>
+                <div className="font-mono text-sm">
+                  {claudeModel ?? "claude-haiku-4-5"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">
+                  Publiserte sider
+                </div>
+                <div className="text-sm tabular-nums">
+                  <span className="font-medium">{totalSites}</span>
+                  <span className="text-muted-foreground"> / {totalLeads}</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">
+                  Tokens brukt totalt
+                </div>
+                <div className="text-sm tabular-nums">
+                  <span className="font-medium">
+                    {(totalInputTokens + totalOutputTokens).toLocaleString("nb-NO")}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ({totalInputTokens.toLocaleString("nb-NO")} inn /{" "}
+                    {totalOutputTokens.toLocaleString("nb-NO")} ut)
+                  </span>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

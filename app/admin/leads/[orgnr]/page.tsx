@@ -28,18 +28,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { publicSiteUrl } from "@/lib/jobs/generate-site";
 import { checkOutreachReadiness, fetchLeadByOrgNr } from "@/lib/leads";
 import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type {
+  GeneratedSite,
   OutreachEmail,
   ScoreBreakdown,
   ScoringWeights,
 } from "@/lib/supabase/types";
+import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
 
 import { EmailEditor } from "./_email-editor";
 import { SendEmailButton } from "./_send-email-button";
+import { SiteCard } from "./_site-card";
 import { StatusActions } from "./_status-actions";
 
 export const dynamic = "force-dynamic";
@@ -113,18 +117,38 @@ export default async function LeadDetailPage({
   if (!lead) notFound();
 
   const supabase = getSupabaseAdmin();
-  const [historyRes, fromAddress, replyTo, readiness] = await Promise.all([
-    supabase
-      .from("outreach_emails")
-      .select("*")
-      .eq("org_nr", lead.org_nr)
-      .order("created_at", { ascending: false })
-      .limit(20),
-    getOutreachFromAddress(),
-    getOutreachReplyTo(),
-    checkOutreachReadiness(lead.org_nr, lead.email),
-  ]);
+  const [historyRes, fromAddress, replyTo, readiness, siteRes] =
+    await Promise.all([
+      supabase
+        .from("outreach_emails")
+        .select("*")
+        .eq("org_nr", lead.org_nr)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      getOutreachFromAddress(),
+      getOutreachReplyTo(),
+      checkOutreachReadiness(lead.org_nr, lead.email),
+      supabase
+        .from("generated_sites")
+        .select("*")
+        .eq("org_nr", lead.org_nr)
+        .maybeSingle(),
+    ]);
   const outreachHistory = (historyRes.data ?? []) as OutreachEmail[];
+  const generatedSite = (siteRes.data as GeneratedSite | null) ?? null;
+  const detectedNiche: NicheSlug = pickNicheFromNace(lead.nace_code);
+  const publishedSite = generatedSite
+    ? {
+        nicheSlug: isNicheSlug(generatedSite.niche_slug)
+          ? generatedSite.niche_slug
+          : ("generic" as NicheSlug),
+        nicheOverridden: generatedSite.niche_overridden,
+        generatedAt: generatedSite.generated_at,
+        model: generatedSite.generated_by_model,
+        inputTokens: generatedSite.generation_input_tokens,
+        outputTokens: generatedSite.generation_output_tokens,
+      }
+    : null;
 
   const brregUrl = `https://virksomhet.brreg.no/nb/oppslag/enheter/${lead.org_nr}`;
 
@@ -198,8 +222,29 @@ export default async function LeadDetailPage({
                 kommune={lead.kommune}
                 suppressedReason={readiness.suppressed?.reason ?? null}
                 previousSendCount={readiness.previousSendCount}
+                siteUrl={publishedSite ? publicSiteUrl(lead.org_nr) : null}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Demoside */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Demoside</CardTitle>
+            <CardDescription>
+              Auto-generert landingsside basert på Brreg-info og Claude-skreven
+              kopi. Publiseres på{" "}
+              <code className="font-mono">/p/{lead.org_nr}</code>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SiteCard
+              orgNr={lead.org_nr}
+              detectedNiche={detectedNiche}
+              publishedSite={publishedSite}
+              publicUrl={publicSiteUrl(lead.org_nr)}
+            />
           </CardContent>
         </Card>
 

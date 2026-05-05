@@ -28,6 +28,7 @@ interface Props {
   kommune: string | null;
   suppressedReason: string | null;
   previousSendCount: number;
+  siteUrl: string | null;
 }
 
 const DEFAULT_SUBJECT = "Hei {{company_name}} — gratulerer med oppstart";
@@ -53,6 +54,7 @@ export function SendEmailButton({
   kommune,
   suppressedReason,
   previousSendCount,
+  siteUrl,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState(DEFAULT_SUBJECT);
@@ -108,7 +110,17 @@ export function SendEmailButton({
               Variabler:{" "}
               <code className="text-[11px]">{"{{company_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{kommune}}"}</code>{" "}
-              <code className="text-[11px]">{"{{org_nr}}"}</code>
+              <code className="text-[11px]">{"{{org_nr}}"}</code>{" "}
+              <code className="text-[11px]">{"{{site_url}}"}</code>
+              {siteUrl ? (
+                <span className="block mt-1 text-[11px] text-muted-foreground">
+                  site_url → <span className="font-mono">{siteUrl}</span>
+                </span>
+              ) : (
+                <span className="block mt-1 text-[11px] text-amber-700">
+                  site_url → tom (ingen demoside publisert)
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 

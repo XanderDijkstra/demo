@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
+  runGenerateLeadSite,
+  unpublishLeadSite,
+  publicSiteUrl,
+} from "@/lib/jobs/generate-site";
+import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
@@ -12,6 +17,7 @@ import {
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CompanyStatus } from "@/lib/supabase/types";
+import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -151,14 +157,20 @@ export async function sendLeadEmail(
     };
   }
 
-  const [fromAddress, replyTo] = await Promise.all([
+  const [fromAddress, replyTo, siteRow] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
+    supabase
+      .from("generated_sites")
+      .select("org_nr")
+      .eq("org_nr", orgNr)
+      .maybeSingle(),
   ]);
   const placeholders = {
     company_name: lead.name,
     kommune: lead.kommune,
     org_nr: lead.org_nr,
+    site_url: siteRow.data ? publicSiteUrl(orgNr) : "",
   };
   const subject = applyPlaceholders(parsed.data.subject, placeholders);
   const body = applyPlaceholders(parsed.data.body, placeholders);
@@ -232,4 +244,43 @@ export async function sendLeadEmail(
 
   revalidatePath(`/admin/leads/${orgNr}`);
   return { ok: false, error: result.error ?? "Send feilet" };
+}
+
+// ─── Demo site (Claude-generated landing page) ──────────────────────────────
+
+export async function generateLeadSiteAction(
+  orgNr: string,
+  nicheOverride: NicheSlug | null
+): Promise<ActionResult & { siteUrl?: string; niche?: NicheSlug }> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (nicheOverride && !isNicheSlug(nicheOverride)) {
+    return { ok: false, error: "Ugyldig niche" };
+  }
+
+  const result = await runGenerateLeadSite({
+    orgNr,
+    nicheOverride: nicheOverride ?? undefined,
+  });
+
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath(`/p/${orgNr}`);
+
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Generering feilet" };
+  }
+  return { ok: true, siteUrl: result.siteUrl, niche: result.niche };
+}
+
+export async function unpublishLeadSiteAction(
+  orgNr: string
+): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+
+  const result = await unpublishLeadSite(orgNr);
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath(`/p/${orgNr}`);
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Avpublisering feilet" };
+  }
+  return { ok: true };
 }

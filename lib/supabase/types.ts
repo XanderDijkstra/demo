@@ -22,6 +22,12 @@ export type SuppressionReason =
   | "manual"
   | "unsubscribed";
 
+export type GeneratedSiteContent = {
+  hero_headline?: string;
+  hero_subheadline?: string;
+  about_paragraph?: string;
+};
+
 export type ScoreBreakdown = {
   has_phone?: number;
   org_form_as?: number;
@@ -334,6 +340,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      generated_sites: {
+        Row: {
+          org_nr: string;
+          niche_slug: string;
+          niche_overridden: boolean;
+          content_json: GeneratedSiteContent;
+          generated_at: string;
+          generated_by_model: string | null;
+          generation_input_tokens: number | null;
+          generation_output_tokens: number | null;
+        };
+        Insert: {
+          org_nr: string;
+          niche_slug: string;
+          niche_overridden?: boolean;
+          content_json?: GeneratedSiteContent;
+          generated_at?: string;
+          generated_by_model?: string | null;
+          generation_input_tokens?: number | null;
+          generation_output_tokens?: number | null;
+        };
+        Update: {
+          org_nr?: string;
+          niche_slug?: string;
+          niche_overridden?: boolean;
+          content_json?: GeneratedSiteContent;
+          generated_at?: string;
+          generated_by_model?: string | null;
+          generation_input_tokens?: number | null;
+          generation_output_tokens?: number | null;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
@@ -364,3 +403,7 @@ export type OutreachSuppression =
   Database["public"]["Tables"]["outreach_suppressions"]["Row"];
 export type OutreachSuppressionInsert =
   Database["public"]["Tables"]["outreach_suppressions"]["Insert"];
+export type GeneratedSite =
+  Database["public"]["Tables"]["generated_sites"]["Row"];
+export type GeneratedSiteInsert =
+  Database["public"]["Tables"]["generated_sites"]["Insert"];
