@@ -1,10 +1,7 @@
 import Link from "next/link";
-import { format, formatDistanceToNow } from "date-fns";
-import { nb } from "date-fns/locale";
-import { ArrowRight, Palette } from "lucide-react";
+import { ArrowRight, MessageSquare, Palette } from "lucide-react";
 
 import { Topbar } from "@/components/admin/topbar";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -23,7 +20,7 @@ export default async function TemplatesPage() {
     <>
       <Topbar
         title="Maler"
-        description="Per-bransje design og kopi for de auto-genererte demosidene"
+        description="Per-bransje design for de auto-genererte demosidene"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -31,19 +28,23 @@ export default async function TemplatesPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Hvordan maler fungerer
+              Slik fungerer maler
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
-              Hver mal består av farger, hero-bildemne, tre tjenester, en CTA og
-              tre fordeler-chips. Strukturen (seksjoner og rekkefølge) ligger i
-              kode.
+              Hver bransje har én mal som auto-genererte demosider rendres
+              gjennom. Klikk inn på en mal for å se hvordan den ser ut med
+              eksempel-data.
             </p>
-            <p>
-              Endringer blir <strong className="text-foreground">live umiddelbart</strong>{" "}
-              for alle publiserte demosider — ingen regenerering trengs. Kun
-              Claude-skreven hero/about-tekst per lead beholdes som den var.
+            <p className="flex items-start gap-2">
+              <MessageSquare className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Designarbeid skjer i Claude-chatten — del skjermbilder der, så
+                oppdateres koden i{" "}
+                <code className="font-mono">lib/templates.ts</code> og
+                endringer går live etter neste deploy.
+              </span>
             </p>
           </CardContent>
         </Card>
@@ -57,24 +58,19 @@ export default async function TemplatesPage() {
             >
               <Card className="overflow-hidden transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring">
                 <div
-                  className="h-24 w-full"
+                  className="h-28 w-full"
                   style={{
                     background: `linear-gradient(135deg, ${n.primaryColor}, ${n.accentColor})`,
                   }}
                 />
                 <CardContent className="p-4 space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <div className="font-semibold tracking-tight">
-                        {n.displayName}
-                      </div>
-                      <div className="font-mono text-[11px] text-muted-foreground">
-                        {n.slug}
-                      </div>
+                  <div>
+                    <div className="font-semibold tracking-tight">
+                      {n.displayName}
                     </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      {n.source === "db" ? "endret" : "standard"}
-                    </Badge>
+                    <div className="font-mono text-[11px] text-muted-foreground">
+                      {n.slug}
+                    </div>
                   </div>
 
                   <p className="text-xs text-muted-foreground line-clamp-2">
@@ -82,22 +78,9 @@ export default async function TemplatesPage() {
                     {n.services[2]?.title}
                   </p>
 
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>
-                      {n.updatedAt ? (
-                        <>
-                          oppdatert{" "}
-                          {formatDistanceToNow(new Date(n.updatedAt), {
-                            addSuffix: true,
-                            locale: nb,
-                          })}
-                        </>
-                      ) : (
-                        <span className="italic">aldri endret</span>
-                      )}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                      Rediger
+                  <div className="flex items-center justify-end text-[11px]">
+                    <span className="inline-flex items-center gap-1 text-muted-foreground transition-colors group-hover:text-foreground">
+                      Se mal
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
