@@ -22,7 +22,11 @@ async function getActiveModel(): Promise<string> {
   return value ?? DEFAULT_MODEL;
 }
 
-const SYSTEM_PROMPT = `Du analyserer et skjermbilde av et nettsidedesign og foreslår design-tokens for en mal.
+const SYSTEM_PROMPT = `Du analyserer skjermbilder av nettsidedesign og foreslår design-tokens for en mal.
+Du kan motta ett eller flere bilder samtidig — vurder dem som ett designsystem og returner ett samlet sett tokens.
+
+Hvis brukeren legger ved en design-brief skal du la teksten overstyre signaler i bildene
+(f.eks. "vår merkefarge er #FF6B35" → bruk den som primary_color uansett hva bildet sier).
 
 Du svarer KUN med gyldig JSON i denne formen, uten kodeblokk-markering:
 
@@ -32,7 +36,7 @@ Du svarer KUN med gyldig JSON i denne formen, uten kodeblokk-markering:
   "hero_layout": "split" | "centered" | "overlay",
   "cta_text": "<kort norsk CTA, 2–4 ord, passer designet>",
   "tone": "<kort beskrivelse på norsk: f.eks. 'minimal og lys', 'kraftig og industriell', 'varm og personlig'>",
-  "notes": "<én setning: hva som er karakteristisk ved designet>"
+  "notes": "<én setning: hva som er karakteristisk ved designet (eller på tvers av bildene)>"
 }
 
 Regler:
@@ -93,36 +97,61 @@ function tryParse(raw: string): VisionSummary | null {
   }
 }
 
+export interface ExtractDesignDnaInput {
+  /** One or more public image URLs. Vision sees them all in a single call. */
+  imageUrls: string[];
+  /** Operator-written brief in any language; forwarded as text alongside the images. */
+  designBrief?: string | null;
+}
+
 /**
- * Send the uploaded reference image (by URL) to Claude vision and parse the
- * design-DNA JSON it returns. Anthropic's API supports remote image URLs
- * directly, so no need to fetch + base64-encode.
+ * Send the uploaded reference image(s) to Claude vision and parse the
+ * design-DNA JSON. Anthropic's API supports remote image URLs directly,
+ * and multiple image blocks per message.
+ *
+ * The optional design brief is appended as a text block — Claude treats
+ * it as authoritative when it contradicts a visual signal.
  */
 export async function extractDesignDna(
-  imageUrl: string
+  input: ExtractDesignDnaInput
 ): Promise<ExtractDesignDnaResult> {
+  if (!input.imageUrls.length) {
+    return { ok: false, error: "Mangler bilder" };
+  }
+
   const model = await getActiveModel();
   try {
     const client = getClient();
+
+    const content: Anthropic.MessageParam["content"] = input.imageUrls.map(
+      (url) =>
+        ({
+          type: "image",
+          source: { type: "url", url },
+        }) as const
+    );
+
+    const brief = (input.designBrief ?? "").trim();
+    const textPrompt =
+      brief.length > 0
+        ? `Design-brief fra operatøren (autoritativ):\n${brief}\n\nAnalyser ${
+            input.imageUrls.length === 1
+              ? "designet"
+              : `de ${input.imageUrls.length} designene som ett system`
+          } og returner JSON-objektet.`
+        : `Analyser ${
+            input.imageUrls.length === 1
+              ? "designet"
+              : `de ${input.imageUrls.length} designene som ett system`
+          } og returner JSON-objektet.`;
+
+    content.push({ type: "text", text: textPrompt });
+
     const response = await client.messages.create({
       model,
-      max_tokens: 400,
+      max_tokens: 500,
       system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "url", url: imageUrl },
-            },
-            {
-              type: "text",
-              text: "Analyser designet og returner JSON-objektet.",
-            },
-          ],
-        },
-      ],
+      messages: [{ role: "user", content }],
     });
 
     const block = response.content.find((b) => b.type === "text");

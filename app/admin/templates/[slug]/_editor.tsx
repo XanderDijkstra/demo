@@ -23,6 +23,12 @@ interface Props {
   isCustomised: boolean;
   previewUrl: string;
   references: TemplateReference[];
+  initialDesignBrief: string;
+  initialCombinedDna: {
+    summary: import("@/lib/supabase/types").VisionSummary | null;
+    extractedAt: string | null;
+    model: string | null;
+  };
 }
 
 const HERO_LAYOUTS: Array<{ value: HeroLayout; label: string; hint: string }> = [
@@ -37,6 +43,8 @@ export function TemplateEditor({
   isCustomised,
   previewUrl,
   references,
+  initialDesignBrief,
+  initialCombinedDna,
 }: Props) {
   const [pending, startSaveTransition] = useTransition();
   const [resetPending, startResetTransition] = useTransition();
@@ -52,6 +60,7 @@ export function TemplateEditor({
   const [ctaText, setCtaText] = useState(initial.ctaText);
   const [services, setServices] = useState(initial.services.map((s) => ({ ...s })));
   const [benefits, setBenefits] = useState<string[]>([...initial.benefitTags]);
+  const [designBrief, setDesignBrief] = useState(initialDesignBrief);
 
   function applyDnaPatch(patch: ExtractedDnaPatch) {
     if (patch.primary_color) setPrimaryColor(patch.primary_color);
@@ -109,7 +118,29 @@ export function TemplateEditor({
           slug={slug}
           references={references}
           onApply={applyDnaPatch}
+          designBrief={designBrief}
+          initialCombinedDna={initialCombinedDna}
         />
+
+        <Section
+          title="Designnotat"
+        >
+          <Field
+            label="Brief til Claude"
+            hint="Fri tekst som overstyrer signaler i bildene. Eks: «Merkefarge er #FF6B35, vi bruker serif-font, mye luft»."
+          >
+            <textarea
+              name="design_brief"
+              value={designBrief}
+              onChange={(e) => setDesignBrief(e.target.value)}
+              rows={4}
+              maxLength={2000}
+              placeholder="Skriv design-intensjoner her — sendes med til Claude vision."
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-y"
+              disabled={pending}
+            />
+          </Field>
+        </Section>
 
         <Section title="Identitet">
           <Field label="Navn">

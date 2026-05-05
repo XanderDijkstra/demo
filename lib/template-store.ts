@@ -115,6 +115,7 @@ export interface SaveNicheTemplateInput {
   cta_text: string;
   services: Array<{ title: string; description: string }>;
   benefit_tags: string[];
+  design_brief?: string | null;
 }
 
 export async function saveNicheTemplate(
@@ -135,6 +136,7 @@ export async function saveNicheTemplate(
     cta_text: input.cta_text,
     services: input.services,
     benefit_tags: input.benefit_tags,
+    design_brief: input.design_brief ?? null,
     updated_at: new Date().toISOString(),
   };
   const { error } = await supabase.from("niche_templates").upsert(

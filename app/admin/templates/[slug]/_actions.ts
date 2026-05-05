@@ -39,6 +39,12 @@ const SaveSchema = z.object({
   benefit_tags: z
     .array(z.string().trim().min(1).max(40))
     .length(3, "Trenger nøyaktig 3 fordeler"),
+  design_brief: z
+    .string()
+    .trim()
+    .max(2000, "Maks 2000 tegn")
+    .optional()
+    .nullable(),
 });
 
 export async function saveTemplateAction(
@@ -55,6 +61,7 @@ export async function saveTemplateAction(
     String(formData.get(`benefit_${i}`) ?? "")
   );
 
+  const briefRaw = formData.get("design_brief");
   const parsed = SaveSchema.safeParse({
     display_name: formData.get("display_name"),
     primary_color: formData.get("primary_color"),
@@ -64,6 +71,8 @@ export async function saveTemplateAction(
     cta_text: formData.get("cta_text"),
     services,
     benefit_tags,
+    design_brief:
+      typeof briefRaw === "string" && briefRaw.trim() ? briefRaw : null,
   });
   if (!parsed.success) {
     return {
@@ -203,7 +212,18 @@ export async function extractDnaAction(
     return { ok: false, error: "Referanse ikke funnet" };
   }
 
-  const result = await extractDesignDna(row.public_url);
+  // Pull the niche's design brief so it influences the per-image extraction
+  // too — the operator's authoritative notes always travel with the call.
+  const { data: nicheRow } = await supabase
+    .from("niche_templates")
+    .select("design_brief")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  const result = await extractDesignDna({
+    imageUrls: [row.public_url],
+    designBrief: nicheRow?.design_brief ?? null,
+  });
   if (!result.ok) return { ok: false, error: result.error };
 
   const { error: updateError } = await supabase
@@ -232,4 +252,86 @@ export async function extractDnaAction(
 
   revalidatePath(`/admin/templates/${slug}`);
   return { ok: true, summary: result.summary };
+}
+
+/**
+ * Run Claude vision across every reference for a niche in one call,
+ * augmented by the niche's design_brief. The combined summary is
+ * persisted on the niche_templates row so it survives reloads.
+ */
+export async function extractCombinedDnaAction(
+  slug: string
+): Promise<
+  ActionResult & {
+    summary?: VisionSummary;
+    referenceCount?: number;
+    model?: string;
+  }
+> {
+  if (!isNicheSlug(slug)) return { ok: false, error: "Ugyldig mal" };
+
+  const supabase = getSupabaseAdmin();
+  const [refsRes, nicheRes] = await Promise.all([
+    supabase
+      .from("template_references")
+      .select("public_url")
+      .eq("niche_slug", slug)
+      .order("uploaded_at", { ascending: false })
+      .limit(8), // Cap to keep the request and token usage bounded.
+    supabase
+      .from("niche_templates")
+      .select("design_brief")
+      .eq("slug", slug)
+      .maybeSingle(),
+  ]);
+
+  if (refsRes.error) return { ok: false, error: refsRes.error.message };
+  const urls = (refsRes.data ?? []).map((r) => r.public_url);
+  const brief = nicheRes.data?.design_brief ?? null;
+
+  if (urls.length === 0 && !brief?.trim()) {
+    return {
+      ok: false,
+      error: "Ingen referanser eller design-notat å analysere",
+    };
+  }
+
+  const result = await extractDesignDna({
+    imageUrls: urls,
+    designBrief: brief,
+  });
+  if (!result.ok) return { ok: false, error: result.error };
+
+  const { error: updateError } = await supabase
+    .from("niche_templates")
+    .update({
+      combined_dna_summary: result.summary,
+      combined_dna_extracted_at: new Date().toISOString(),
+      combined_dna_model: result.model,
+    })
+    .eq("slug", slug);
+
+  if (updateError) return { ok: false, error: updateError.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "templates.combined_dna_extracted",
+    entity_type: "niche_template",
+    entity_id: slug,
+    metadata: {
+      reference_count: urls.length,
+      brief_length: brief?.length ?? 0,
+      model: result.model,
+      usage: result.usage,
+      summary: result.summary,
+    },
+  });
+
+  revalidatePath(`/admin/templates/${slug}`);
+  return {
+    ok: true,
+    summary: result.summary,
+    referenceCount: urls.length,
+    model: result.model,
+  };
 }

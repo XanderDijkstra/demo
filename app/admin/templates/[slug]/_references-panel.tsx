@@ -26,6 +26,7 @@ import type { TemplateReference, VisionSummary } from "@/lib/supabase/types";
 
 import {
   deleteReferenceAction,
+  extractCombinedDnaAction,
   extractDnaAction,
   uploadReferenceAction,
 } from "./_actions";
@@ -41,14 +42,65 @@ interface Props {
   slug: string;
   references: TemplateReference[];
   onApply: (patch: ExtractedDnaPatch) => void;
+  designBrief: string;
+  initialCombinedDna: {
+    summary: VisionSummary | null;
+    extractedAt: string | null;
+    model: string | null;
+  };
 }
 
-export function ReferencesPanel({ slug, references, onApply }: Props) {
+export function ReferencesPanel({
+  slug,
+  references,
+  onApply,
+  designBrief,
+  initialCombinedDna,
+}: Props) {
   const [pendingUpload, startUploadTransition] = useTransition();
   const [pendingDelete, startDeleteTransition] = useTransition();
+  const [pendingCombined, startCombinedTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [openRef, setOpenRef] = useState<TemplateReference | null>(null);
+  const [combinedDna, setCombinedDna] = useState<{
+    summary: VisionSummary | null;
+    extractedAt: string | null;
+    model: string | null;
+  }>(initialCombinedDna);
+
+  function handleExtractCombined() {
+    startCombinedTransition(async () => {
+      const result = await extractCombinedDnaAction(slug);
+      if (result.ok && result.summary) {
+        setCombinedDna({
+          summary: result.summary,
+          extractedAt: new Date().toISOString(),
+          model: result.model ?? null,
+        });
+        toast.success(
+          `Samlet DNA hentet fra ${result.referenceCount ?? 0} referanser`
+        );
+      } else if (!result.ok) {
+        toast.error(`Henting feilet: ${result.error}`);
+      }
+    });
+  }
+
+  function applyCombined() {
+    if (!combinedDna.summary) return;
+    const patch: ExtractedDnaPatch = {};
+    const s = combinedDna.summary;
+    if (s.primary_color) patch.primary_color = s.primary_color;
+    if (s.accent_color) patch.accent_color = s.accent_color;
+    if (s.hero_layout) patch.hero_layout = s.hero_layout;
+    if (s.cta_text) patch.cta_text = s.cta_text;
+    onApply(patch);
+    toast.success("Verdier kopiert til skjemaet");
+  }
+
+  const canExtractCombined =
+    references.length > 0 || (designBrief?.trim().length ?? 0) > 0;
 
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -143,6 +195,70 @@ export function ReferencesPanel({ slug, references, onApply }: Props) {
           ))}
         </div>
       ) : null}
+
+      <div className="rounded-md border bg-muted/20 p-3 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="space-y-0.5 min-w-0">
+            <div className="text-xs font-medium">Samlet design-DNA</div>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Analyserer alle referansene + design-notatet i én Claude-call.
+              {references.length > 0 ? (
+                <>
+                  {" "}
+                  Bruker opptil 8 nyligste bilder ({references.length} lastet
+                  opp).
+                </>
+              ) : null}
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={!canExtractCombined || pendingCombined}
+            onClick={handleExtractCombined}
+            title={
+              canExtractCombined
+                ? "Hent samlet DNA"
+                : "Last opp en referanse eller skriv en design-brief først"
+            }
+          >
+            {pendingCombined ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Sparkles />
+            )}
+            {combinedDna.summary ? "Hent på nytt" : "Hent fra alle"}
+          </Button>
+        </div>
+
+        {combinedDna.summary ? (
+          <div className="space-y-3">
+            <SummaryView summary={combinedDna.summary} />
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>
+                {combinedDna.extractedAt ? (
+                  <>
+                    Hentet{" "}
+                    {formatDistanceToNow(new Date(combinedDna.extractedAt), {
+                      addSuffix: true,
+                      locale: nb,
+                    })}
+                  </>
+                ) : null}
+                {combinedDna.model ? ` · ${combinedDna.model}` : null}
+              </span>
+              <button
+                type="button"
+                onClick={applyCombined}
+                className="font-medium text-primary hover:underline"
+              >
+                Bruk i skjemaet
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       <ReferenceLightbox
         ref={openRef}

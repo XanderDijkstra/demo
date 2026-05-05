@@ -400,6 +400,10 @@ export type Database = {
           cta_text: string;
           services: Array<{ title: string; description: string }>;
           benefit_tags: string[];
+          design_brief: string | null;
+          combined_dna_summary: VisionSummary | null;
+          combined_dna_extracted_at: string | null;
+          combined_dna_model: string | null;
           updated_at: string;
         };
         Insert: {
@@ -412,6 +416,10 @@ export type Database = {
           cta_text: string;
           services?: Array<{ title: string; description: string }>;
           benefit_tags?: string[];
+          design_brief?: string | null;
+          combined_dna_summary?: VisionSummary | null;
+          combined_dna_extracted_at?: string | null;
+          combined_dna_model?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -424,6 +432,10 @@ export type Database = {
           cta_text?: string;
           services?: Array<{ title: string; description: string }>;
           benefit_tags?: string[];
+          design_brief?: string | null;
+          combined_dna_summary?: VisionSummary | null;
+          combined_dna_extracted_at?: string | null;
+          combined_dna_model?: string | null;
           updated_at?: string;
         };
         Relationships: [];
