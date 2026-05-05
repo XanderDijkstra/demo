@@ -8,22 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { NicheConfig } from "@/lib/templates";
+import type { TemplateReference } from "@/lib/supabase/types";
+import type { HeroLayout, NicheConfig } from "@/lib/templates";
 
 import { resetTemplateAction, saveTemplateAction } from "./_actions";
+import {
+  ReferencesPanel,
+  type ExtractedDnaPatch,
+} from "./_references-panel";
 
 interface Props {
   slug: string;
   initial: NicheConfig;
   isCustomised: boolean;
   previewUrl: string;
+  references: TemplateReference[];
 }
+
+const HERO_LAYOUTS: Array<{ value: HeroLayout; label: string; hint: string }> = [
+  { value: "split", label: "Split", hint: "Tekst og bilde side om side" },
+  { value: "centered", label: "Sentrert", hint: "Sentrert tekst, bilde under" },
+  { value: "overlay", label: "Overlay", hint: "Full-bredde bilde med overlegg" },
+];
 
 export function TemplateEditor({
   slug,
   initial,
   isCustomised,
   previewUrl,
+  references,
 }: Props) {
   const [pending, startSaveTransition] = useTransition();
   const [resetPending, startResetTransition] = useTransition();
@@ -35,9 +48,17 @@ export function TemplateEditor({
   const [primaryColor, setPrimaryColor] = useState(initial.primaryColor);
   const [accentColor, setAccentColor] = useState(initial.accentColor);
   const [heroKeyword, setHeroKeyword] = useState(initial.heroImageKeyword);
+  const [heroLayout, setHeroLayout] = useState<HeroLayout>(initial.heroLayout);
   const [ctaText, setCtaText] = useState(initial.ctaText);
   const [services, setServices] = useState(initial.services.map((s) => ({ ...s })));
   const [benefits, setBenefits] = useState<string[]>([...initial.benefitTags]);
+
+  function applyDnaPatch(patch: ExtractedDnaPatch) {
+    if (patch.primary_color) setPrimaryColor(patch.primary_color);
+    if (patch.accent_color) setAccentColor(patch.accent_color);
+    if (patch.hero_layout) setHeroLayout(patch.hero_layout);
+    if (patch.cta_text) setCtaText(patch.cta_text);
+  }
 
   function onSave(formData: FormData) {
     startSaveTransition(async () => {
@@ -84,6 +105,12 @@ export function TemplateEditor({
           pending && "opacity-70"
         )}
       >
+        <ReferencesPanel
+          slug={slug}
+          references={references}
+          onApply={applyDnaPatch}
+        />
+
         <Section title="Identitet">
           <Field label="Navn">
             <Input
@@ -126,6 +153,33 @@ export function TemplateEditor({
         </Section>
 
         <Section title="Hero">
+          <Field label="Layout" hint="Bytt mellom tre varianter av hero-seksjonen.">
+            <input type="hidden" name="hero_layout" value={heroLayout} />
+            <div className="grid grid-cols-3 gap-2">
+              {HERO_LAYOUTS.map((opt) => {
+                const active = opt.value === heroLayout;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setHeroLayout(opt.value)}
+                    disabled={pending}
+                    className={cn(
+                      "rounded-md border p-2 text-left text-xs transition-colors",
+                      active
+                        ? "border-primary bg-primary/5 text-foreground"
+                        : "border-input bg-background text-muted-foreground hover:bg-accent"
+                    )}
+                  >
+                    <div className="font-medium">{opt.label}</div>
+                    <div className="text-[10px] leading-tight opacity-70">
+                      {opt.hint}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
           <Field label="Bilde-emne (Unsplash)" hint="F.eks. plumber, restaurant.">
             <Input
               name="hero_image_keyword"

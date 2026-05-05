@@ -23,6 +23,8 @@ export interface NicheService {
   description: string;
 }
 
+export type HeroLayout = "split" | "centered" | "overlay";
+
 export interface NicheConfig {
   slug: NicheSlug;
   /** Norwegian display name shown to operators in the niche dropdown. */
@@ -33,6 +35,8 @@ export interface NicheConfig {
   accentColor: string;
   /** Unsplash query used for the hero background image. */
   heroImageKeyword: string;
+  /** Hero composition variant the renderer will pick. */
+  heroLayout: HeroLayout;
   /** Three hardcoded services rendered in the services section. */
   services: [NicheService, NicheService, NicheService];
   /** Call-to-action label on every CTA button. */
@@ -47,6 +51,7 @@ const PLUMBER: NicheConfig = {
   primaryColor: "oklch(0.55 0.16 245)",
   accentColor: "oklch(0.92 0.04 245)",
   heroImageKeyword: "plumber",
+  heroLayout: "split",
   services: [
     {
       title: "Akutt rørleggerhjelp",
@@ -74,6 +79,7 @@ const ELECTRICIAN: NicheConfig = {
   primaryColor: "oklch(0.7 0.18 90)",
   accentColor: "oklch(0.95 0.05 90)",
   heroImageKeyword: "electrician",
+  heroLayout: "split",
   services: [
     {
       title: "El-sjekk for bolig",
@@ -101,6 +107,7 @@ const RESTAURANT: NicheConfig = {
   primaryColor: "oklch(0.55 0.18 30)",
   accentColor: "oklch(0.95 0.04 30)",
   heroImageKeyword: "restaurant",
+  heroLayout: "overlay",
   services: [
     {
       title: "Lunsj og middag",
@@ -128,6 +135,7 @@ const SALON: NicheConfig = {
   primaryColor: "oklch(0.6 0.16 350)",
   accentColor: "oklch(0.96 0.04 350)",
   heroImageKeyword: "hair-salon",
+  heroLayout: "centered",
   services: [
     {
       title: "Klipp og styling",
@@ -155,6 +163,7 @@ const AUTO_REPAIR: NicheConfig = {
   primaryColor: "oklch(0.5 0.2 25)",
   accentColor: "oklch(0.95 0.04 25)",
   heroImageKeyword: "auto-repair",
+  heroLayout: "split",
   services: [
     {
       title: "EU-kontroll",
@@ -182,6 +191,7 @@ const GENERIC: NicheConfig = {
   primaryColor: "oklch(0.6 0.118 184.704)",
   accentColor: "oklch(0.95 0.03 184)",
   heroImageKeyword: "norwegian-business",
+  heroLayout: "split",
   services: [
     {
       title: "Personlig service",

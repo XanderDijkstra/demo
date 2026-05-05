@@ -40,12 +40,20 @@ function rowToConfig(slug: NicheSlug, row: NicheTemplateRow): NicheConfig {
     : [];
   while (benefits.length < 3) benefits.push(fallback.benefitTags[benefits.length]!);
 
+  const heroLayout: NicheConfig["heroLayout"] =
+    row.hero_layout === "split" ||
+    row.hero_layout === "centered" ||
+    row.hero_layout === "overlay"
+      ? row.hero_layout
+      : fallback.heroLayout;
+
   return {
     slug,
     displayName: row.display_name || fallback.displayName,
     primaryColor: row.primary_color || fallback.primaryColor,
     accentColor: row.accent_color || fallback.accentColor,
     heroImageKeyword: row.hero_image_keyword || fallback.heroImageKeyword,
+    heroLayout,
     ctaText: row.cta_text || fallback.ctaText,
     services: services as NicheConfig["services"],
     benefitTags: benefits as NicheConfig["benefitTags"],
@@ -103,6 +111,7 @@ export interface SaveNicheTemplateInput {
   primary_color: string;
   accent_color: string;
   hero_image_keyword: string;
+  hero_layout: NicheConfig["heroLayout"];
   cta_text: string;
   services: Array<{ title: string; description: string }>;
   benefit_tags: string[];
@@ -122,6 +131,7 @@ export async function saveNicheTemplate(
     primary_color: input.primary_color,
     accent_color: input.accent_color,
     hero_image_keyword: input.hero_image_keyword,
+    hero_layout: input.hero_layout,
     cta_text: input.cta_text,
     services: input.services,
     benefit_tags: input.benefit_tags,
@@ -136,6 +146,7 @@ export async function saveNicheTemplate(
       primary_color: update.primary_color!,
       accent_color: update.accent_color!,
       hero_image_keyword: update.hero_image_keyword!,
+      hero_layout: update.hero_layout!,
       cta_text: update.cta_text!,
     },
     { onConflict: "slug" }

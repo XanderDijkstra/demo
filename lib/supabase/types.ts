@@ -28,6 +28,22 @@ export type GeneratedSiteContent = {
   about_paragraph?: string;
 };
 
+export type HeroLayout = "split" | "centered" | "overlay";
+
+/**
+ * What Claude vision returns after analysing an uploaded design reference.
+ * Persisted on template_references.vision_summary so the operator can
+ * re-apply previously extracted values without re-running the model.
+ */
+export type VisionSummary = {
+  primary_color?: string;
+  accent_color?: string;
+  hero_layout?: HeroLayout;
+  cta_text?: string;
+  tone?: string;
+  notes?: string;
+};
+
 export type ScoreBreakdown = {
   has_phone?: number;
   org_form_as?: number;
@@ -380,6 +396,7 @@ export type Database = {
           primary_color: string;
           accent_color: string;
           hero_image_keyword: string;
+          hero_layout: HeroLayout;
           cta_text: string;
           services: Array<{ title: string; description: string }>;
           benefit_tags: string[];
@@ -391,6 +408,7 @@ export type Database = {
           primary_color: string;
           accent_color: string;
           hero_image_keyword: string;
+          hero_layout?: HeroLayout;
           cta_text: string;
           services?: Array<{ title: string; description: string }>;
           benefit_tags?: string[];
@@ -402,10 +420,47 @@ export type Database = {
           primary_color?: string;
           accent_color?: string;
           hero_image_keyword?: string;
+          hero_layout?: HeroLayout;
           cta_text?: string;
           services?: Array<{ title: string; description: string }>;
           benefit_tags?: string[];
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      template_references: {
+        Row: {
+          id: string;
+          niche_slug: string;
+          storage_path: string;
+          public_url: string;
+          label: string | null;
+          vision_summary: VisionSummary | null;
+          vision_model: string | null;
+          vision_extracted_at: string | null;
+          uploaded_at: string;
+        };
+        Insert: {
+          id?: string;
+          niche_slug: string;
+          storage_path: string;
+          public_url: string;
+          label?: string | null;
+          vision_summary?: VisionSummary | null;
+          vision_model?: string | null;
+          vision_extracted_at?: string | null;
+          uploaded_at?: string;
+        };
+        Update: {
+          id?: string;
+          niche_slug?: string;
+          storage_path?: string;
+          public_url?: string;
+          label?: string | null;
+          vision_summary?: VisionSummary | null;
+          vision_model?: string | null;
+          vision_extracted_at?: string | null;
+          uploaded_at?: string;
         };
         Relationships: [];
       };
@@ -447,3 +502,7 @@ export type NicheTemplateRow =
   Database["public"]["Tables"]["niche_templates"]["Row"];
 export type NicheTemplateUpdate =
   Database["public"]["Tables"]["niche_templates"]["Update"];
+export type TemplateReference =
+  Database["public"]["Tables"]["template_references"]["Row"];
+export type TemplateReferenceInsert =
+  Database["public"]["Tables"]["template_references"]["Insert"];
