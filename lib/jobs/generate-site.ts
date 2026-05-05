@@ -2,8 +2,8 @@ import "server-only";
 
 import { generateSiteCopy } from "@/lib/claude";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { loadNicheConfig } from "@/lib/template-store";
 import {
-  getNicheConfig,
   isNicheSlug,
   pickNicheFromNace,
   type NicheSlug,
@@ -58,7 +58,7 @@ export async function runGenerateLeadSite(params: {
 
   const niche: NicheSlug =
     params.nicheOverride ?? pickNicheFromNace(company.nace_code);
-  const nicheConfig = getNicheConfig(niche);
+  const nicheConfig = await loadNicheConfig(niche);
 
   const result = await generateSiteCopy({
     company: {

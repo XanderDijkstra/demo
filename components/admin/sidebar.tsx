@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   LayoutDashboard,
+  Palette,
   Settings,
   Users,
   type LucideIcon,
@@ -21,6 +22,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
+  { label: "Maler", href: "/admin/templates", icon: Palette },
   { label: "Kø", href: "/admin/queue", icon: Activity },
   { label: "Innstillinger", href: "/admin/settings", icon: Settings },
 ];

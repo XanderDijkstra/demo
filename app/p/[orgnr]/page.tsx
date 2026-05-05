@@ -3,11 +3,8 @@ import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import {
-  getNicheConfig,
-  isNicheSlug,
-  type NicheSlug,
-} from "@/lib/templates";
+import { loadNicheConfig } from "@/lib/template-store";
+import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 import type { Company, GeneratedSite } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +47,7 @@ export async function generateMetadata({
   const niche = isNicheSlug(data.site.niche_slug)
     ? data.site.niche_slug
     : ("generic" as NicheSlug);
-  const config = getNicheConfig(niche);
+  const config = await loadNicheConfig(niche);
   return {
     title: `${data.company.name} – ${config.displayName}`,
     description:
@@ -68,7 +65,7 @@ export default async function PublicSitePage({ params }: RouteProps) {
   const slug: NicheSlug = isNicheSlug(data.site.niche_slug)
     ? data.site.niche_slug
     : "generic";
-  const niche = getNicheConfig(slug);
+  const niche = await loadNicheConfig(slug);
 
   return (
     <SiteTemplate

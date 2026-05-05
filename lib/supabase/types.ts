@@ -373,6 +373,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      niche_templates: {
+        Row: {
+          slug: string;
+          display_name: string;
+          primary_color: string;
+          accent_color: string;
+          hero_image_keyword: string;
+          cta_text: string;
+          services: Array<{ title: string; description: string }>;
+          benefit_tags: string[];
+          updated_at: string;
+        };
+        Insert: {
+          slug: string;
+          display_name: string;
+          primary_color: string;
+          accent_color: string;
+          hero_image_keyword: string;
+          cta_text: string;
+          services?: Array<{ title: string; description: string }>;
+          benefit_tags?: string[];
+          updated_at?: string;
+        };
+        Update: {
+          slug?: string;
+          display_name?: string;
+          primary_color?: string;
+          accent_color?: string;
+          hero_image_keyword?: string;
+          cta_text?: string;
+          services?: Array<{ title: string; description: string }>;
+          benefit_tags?: string[];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
@@ -407,3 +443,7 @@ export type GeneratedSite =
   Database["public"]["Tables"]["generated_sites"]["Row"];
 export type GeneratedSiteInsert =
   Database["public"]["Tables"]["generated_sites"]["Insert"];
+export type NicheTemplateRow =
+  Database["public"]["Tables"]["niche_templates"]["Row"];
+export type NicheTemplateUpdate =
+  Database["public"]["Tables"]["niche_templates"]["Update"];
