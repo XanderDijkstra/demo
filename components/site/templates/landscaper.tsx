@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   ArrowRight,
   ChevronsRight,
   Eye,
@@ -7,8 +8,11 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Minus,
   Phone,
+  Plus,
   Sparkles,
+  Star,
 } from "lucide-react";
 
 import type { GeneratedSiteContent } from "@/lib/supabase/types";
@@ -110,6 +114,78 @@ const SERVICE_IMAGE_KEYWORDS = [
   "garden-maintenance",
 ];
 
+const TESTIMONIALS = [
+  {
+    body: "Det er sjelden vi anbefaler en håndverker uten å nøle, men her måtte vi. Plenen ble lagt presist, alt rundt ble kostet og ryddet, og prisen lå akkurat der vi var enige om. Nabolaget har spurt om kontaktinfo flere ganger.",
+    author: "R. Haren",
+  },
+  {
+    body: "Vi fikk hele bakhagen renovert — drenering, brostein og en ny plen. Jobben ble levert på dagen, kommunikasjonen var ærlig hele veien, og resultatet er bare bedre enn det vi hadde forestilt oss.",
+    author: "M. Solberg",
+  },
+  {
+    body: "Profesjonell, hyggelig og uten overraskelser. Han forklarte hva som skulle gjøres, hvorfor og hvor lang tid det ville ta. Anbefales på det varmeste til alle som tar hagen sin på alvor.",
+    author: "K. Aune",
+  },
+];
+
+const PROJECT_IMAGES = [
+  // Tre kolonner, midten har tall image som spenner over to rader.
+  { src: "https://source.unsplash.com/700x500/?lawn-mower,gardener", alt: "Plenklipping" },
+  {
+    src: "https://source.unsplash.com/700x900/?house-garden,curb-appeal",
+    alt: "Hageprosjekt",
+    tall: true,
+  },
+  { src: "https://source.unsplash.com/700x500/?garden-edging,grass", alt: "Plenkanting" },
+  { src: "https://source.unsplash.com/700x500/?rose-bush-pruning", alt: "Beskjæring" },
+  { src: "https://source.unsplash.com/700x500/?garden-spraying", alt: "Plantebehandling" },
+];
+
+const FAQS = [
+  {
+    q: "Hvor raskt kan jeg forvente et tilbud?",
+    a: "Vi tar kontakt innen 24 timer etter forespørselen din. Som regel avtaler vi en kort befaring først, og du får et åpent og forutsigbart tilbud rett etterpå.",
+  },
+  {
+    q: "Hvilket område dekker dere?",
+    a: "Vi jobber i kommunen og nærliggende områder. Si fra hvor du holder til, så bekrefter vi om vi har kapasitet eller anbefaler en kollega vi stoler på.",
+  },
+  {
+    q: "Tar dere med dere hageavfallet?",
+    a: "Ja — vi rydder etter oss og tar med kvist, gress og rester til godkjent mottak. Det er inkludert i tilbudet med mindre annet er avtalt.",
+  },
+  {
+    q: "Gir dere garanti på steinarbeidet?",
+    a: "Ja, vi gir flere års garanti på steinleggingen. Bruker du oss til vedlikehold etterpå forlenger vi garantien tilsvarende.",
+  },
+  {
+    q: "Når er beste tid for å legge plen?",
+    a: "Vår og tidlig høst gir best etablering, men vi kan legge plen gjennom hele sesongen. Vi tilpasser jobben etter været og hvordan tomten din er.",
+  },
+];
+
+const BLOG_POSTS = [
+  {
+    date: "1. desember 2025",
+    title: "5 tips til varig steinarbeid som ikke synker",
+    image:
+      "https://source.unsplash.com/600x400/?stone-paving,driveway",
+  },
+  {
+    date: "15. desember 2025",
+    title: "Hagerenovasjon: fra villmark til drømmehage",
+    image:
+      "https://source.unsplash.com/600x400/?garden-renovation,lawn",
+  },
+  {
+    date: "5. januar 2026",
+    title: "Grunnarbeid: det usynlige fundamentet",
+    image:
+      "https://source.unsplash.com/600x400/?garden-pruning,gloves",
+  },
+];
+
 function bestPhone(c: Props["company"]): string | null {
   return c.mobile ?? c.phone ?? null;
 }
@@ -160,6 +236,11 @@ export function LandscaperTemplate({ company, niche, content }: Props) {
       <Stats />
       <BigCta company={company} />
       <Process />
+      <Testimonials />
+      <ProjectsGallery />
+      <Faq company={company} />
+      <Blog />
+      <BottomCta company={company} />
       <Footer company={company} />
     </div>
   );
@@ -701,18 +782,25 @@ function BigCta({ company }: { company: Props["company"] }) {
   );
 }
 
-// ─── Process steps ───────────────────────────────────────────────────────────
+// ─── Process steps (staircase layout) ───────────────────────────────────────
 
 function Process() {
+  // Each step starts lower than the last on desktop — like steps descending.
+  // On mobile they collapse to a single column without offsets.
+  const offsets = ["lg:pt-0", "lg:pt-24", "lg:pt-48", "lg:pt-72"];
+
   return (
     <section
       className="px-6 py-24 md:px-10"
       style={{ background: CREAM_DEEP }}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {PROCESS_STEPS.map((step) => (
-            <article key={step.num} className="space-y-3">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {PROCESS_STEPS.map((step, i) => (
+            <article
+              key={step.num}
+              className={`space-y-4 ${offsets[i] ?? ""}`}
+            >
               <div className="font-mono text-sm text-stone-500">{step.num}</div>
               <h3 className="font-serif text-2xl font-semibold tracking-tight">
                 {step.title}
@@ -720,7 +808,7 @@ function Process() {
               <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-stone-300 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://source.unsplash.com/600x450/?garden-process,${encodeURIComponent(step.title)}`}
+                  src={`https://source.unsplash.com/600x450/?garden,${encodeURIComponent(step.title)}`}
                   alt={step.title}
                   className="h-full w-full object-cover"
                 />
@@ -731,6 +819,280 @@ function Process() {
             </article>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Testimonials ───────────────────────────────────────────────────────────
+
+function Testimonials() {
+  // Static for v1 — show the first testimonial. The arrow buttons are rendered
+  // for visual fidelity but don't cycle yet (would require a client component).
+  const t = TESTIMONIALS[0]!;
+  return (
+    <section
+      className="px-6 py-24 md:px-10"
+      style={{ background: CREAM_DEEP }}
+    >
+      <div className="mx-auto max-w-4xl">
+        <h2 className="text-center font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+          Fornøyde <em className="font-serif italic">kunder</em>
+        </h2>
+
+        <div className="mt-10 rounded-3xl bg-white px-8 py-10 shadow-sm ring-1 ring-stone-900/5 md:px-14 md:py-14">
+          <div className="flex gap-1 text-amber-500">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} className="h-5 w-5 fill-current" />
+            ))}
+          </div>
+          <p className="mt-6 text-lg leading-relaxed text-stone-800 md:text-xl">
+            &ldquo;{t.body}&rdquo;
+          </p>
+          <p className="mt-8 text-sm text-stone-500">— {t.author}</p>
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            disabled
+            aria-label="Forrige anbefaling"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-700 shadow-sm ring-1 ring-stone-900/5 disabled:opacity-60"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="rounded-full bg-white px-6 py-2 text-sm font-mono text-stone-700 shadow-sm ring-1 ring-stone-900/5">
+            (01 / {String(TESTIMONIALS.length).padStart(2, "0")})
+          </div>
+          <button
+            type="button"
+            disabled
+            aria-label="Neste anbefaling"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-stone-900 shadow-sm disabled:opacity-90"
+            style={{ background: LIME }}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Projects gallery (3-col grid, middle column is taller) ─────────────────
+
+function ProjectsGallery() {
+  return (
+    <section
+      className="px-6 py-24 md:px-10"
+      style={{ background: CREAM_DEEP }}
+    >
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+            Våre <em className="font-serif italic">prosjekter</em>
+          </h2>
+          <a
+            href="#kontakt"
+            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-stone-900 transition-opacity hover:opacity-90"
+            style={{ background: LIME }}
+          >
+            Se mer
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:auto-rows-[16rem]">
+          {PROJECT_IMAGES.map((img, i) => (
+            <div
+              key={i}
+              className={`overflow-hidden rounded-2xl bg-stone-300 shadow-sm ${
+                img.tall ? "md:row-span-2" : ""
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── FAQ + side CTA card ────────────────────────────────────────────────────
+
+function Faq({ company }: { company: Props["company"] }) {
+  return (
+    <section
+      className="px-6 py-24 md:px-10"
+      style={{ background: CREAM_DEEP }}
+    >
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center">
+          <h2 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+            Ofte stilte <em className="font-serif italic">spørsmål</em>
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base text-stone-600">
+            Lurer du på noe om hvordan vi jobber eller hva vi tilbyr? Her er
+            svarene på det vi får oftest.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+          {/* Side CTA card */}
+          <div
+            className="flex flex-col items-center justify-center gap-5 rounded-3xl px-8 py-12 text-center"
+            style={{ background: "rgba(196, 233, 50, 0.18)" }}
+          >
+            <h3 className="text-2xl font-semibold tracking-tight">
+              Forvandle hagen din i dag
+            </h3>
+            <p className="max-w-xs text-sm leading-relaxed text-stone-700">
+              Få hagen til å leve med fagkyndig stell og stramt anlegg. Teamet
+              vårt er klart til å ta på seg prosjekter — store som små.
+            </p>
+            <a
+              href={
+                company.email ? `mailto:${company.email}` : "#kontakt"
+              }
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-stone-900 transition-opacity hover:opacity-90"
+              style={{ background: LIME }}
+            >
+              Ta kontakt
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          {/* Accordion */}
+          <div className="space-y-3">
+            {FAQS.map((item, i) => (
+              <details
+                key={item.q}
+                className="group rounded-2xl border border-stone-900/10 bg-white/40 p-5 open:bg-[rgba(196,233,50,0.18)] open:border-stone-900/20"
+                {...(i === 0 ? { open: true } : {})}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-semibold tracking-tight">
+                  <span>{item.q}</span>
+                  <span
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-900 group-open:hidden"
+                    style={{ background: LIME }}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </span>
+                  <span
+                    className="hidden h-7 w-7 items-center justify-center rounded-md text-stone-900 group-open:inline-flex"
+                    style={{ background: LIME }}
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-stone-700">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Blog ───────────────────────────────────────────────────────────────────
+
+function Blog() {
+  return (
+    <section
+      className="px-6 py-24 md:px-10"
+      style={{ background: CREAM_DEEP }}
+    >
+      <div className="mx-auto max-w-6xl">
+        <h2 className="text-center font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+          Grønt liv <em className="font-serif italic">— bloggen vår</em>
+        </h2>
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {BLOG_POSTS.map((post) => (
+            <article
+              key={post.title}
+              className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-stone-900/5"
+            >
+              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-stone-300">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="px-2 pt-5 pb-3">
+                <p className="text-xs text-stone-500">— {post.date}</p>
+                <h3 className="mt-3 text-xl font-semibold leading-snug tracking-tight">
+                  {post.title}
+                </h3>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Bottom dark CTA — image right, dark panel left ─────────────────────────
+
+function BottomCta({ company }: { company: Props["company"] }) {
+  return (
+    <section className="grid lg:grid-cols-2">
+      <div
+        className="flex items-center px-8 py-16 text-white md:px-12 lg:py-24"
+        style={{ background: STONE }}
+      >
+        <div className="max-w-lg">
+          <h2 className="font-serif text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
+            Forvandle hagen din{" "}
+            <em className="font-serif italic" style={{ color: LIME }}>
+              med fagmannen
+            </em>
+          </h2>
+          <p className="mt-6 text-base leading-relaxed text-white/80">
+            Slapp av og nyt et grønnere, vakrere uteområde — fagmessig
+            gjennomført etter dine ønsker. Vi tar den tunge jobben, så du kan
+            bruke hagen.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href="#kontakt"
+              className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-stone-900 transition-opacity hover:opacity-90"
+              style={{ background: LIME }}
+            >
+              Be om tilbud
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            {company.phone || company.mobile ? (
+              <a
+                href={`tel:${company.mobile ?? company.phone}`}
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-6 py-3 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur transition-colors hover:bg-white/20"
+              >
+                <Phone className="h-4 w-4" />
+                Ring oss
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      <div className="relative aspect-[4/3] lg:aspect-auto">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://source.unsplash.com/1200x900/?landscape-garden,backyard"
+          alt="Hagen i full vekst"
+          className="h-full w-full object-cover"
+        />
       </div>
     </section>
   );
