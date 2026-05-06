@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
+import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { loadNicheConfig } from "@/lib/template-store";
 import { isNicheSlug } from "@/lib/templates";
@@ -25,6 +26,8 @@ const SAMPLE_COMPANY = {
   phone: "55 12 34 56",
   mobile: "920 12 345",
   email: "post@eksempelbedrift.no",
+  website: "eksempelbedrift.no",
+  founded_at: "2003-04-15",
 };
 
 const SAMPLE_CONTENT = {
@@ -45,6 +48,13 @@ const SAMPLE_CONTENT_BY_SLUG: Record<string, typeof SAMPLE_CONTENT> = {
     about_paragraph:
       "Hos Eksempelbedrift AS handler alt om håndverk. Vi skaper og vedlikeholder hager som ikke bare er pene, men der du faktisk slapper av. Med 10+ års erfaring sørger vi for et resultat som står seg.",
   },
+  contractor: {
+    hero_headline: "Førsteklasses entreprise i Bergen",
+    hero_subheadline:
+      "Vi tar hele renoveringen — fra første tegning til siste finish — med en prosjektleder som er din kontakt fra start til slutt.",
+    about_paragraph:
+      "Eksempelbedrift AS er totalentreprenør for hjem som skal vare. Med over 20 års erfaring leverer vi prosjekter med åpne priser, dokumentert kvalitet og en stødig prosess. Visjonen din er rammen vi bygger innenfor.",
+  },
 };
 
 export default async function TemplatePreviewPage({ params }: RouteProps) {
@@ -57,6 +67,16 @@ export default async function TemplatePreviewPage({ params }: RouteProps) {
   if (slug === "landscaper") {
     return (
       <LandscaperTemplate
+        company={SAMPLE_COMPANY}
+        niche={niche}
+        content={content}
+      />
+    );
+  }
+
+  if (slug === "contractor") {
+    return (
+      <ContractorTemplate
         company={SAMPLE_COMPANY}
         niche={niche}
         content={content}

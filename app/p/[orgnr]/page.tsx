@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
+import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { loadNicheConfig } from "@/lib/template-store";
@@ -71,6 +72,16 @@ export default async function PublicSitePage({ params }: RouteProps) {
   if (slug === "landscaper") {
     return (
       <LandscaperTemplate
+        company={data.company}
+        niche={niche}
+        content={data.site.content_json}
+      />
+    );
+  }
+
+  if (slug === "contractor") {
+    return (
+      <ContractorTemplate
         company={data.company}
         niche={niche}
         content={data.site.content_json}

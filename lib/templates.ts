@@ -19,6 +19,7 @@ export type NicheSlug =
   | "salon"
   | "auto_repair"
   | "landscaper"
+  | "contractor"
   | "generic";
 
 export interface NicheService {
@@ -235,6 +236,51 @@ const LANDSCAPER: NicheConfig = {
   benefitTags: ["10+ års erfaring", "Fast pris", "Personlig service"],
 };
 
+const CONTRACTOR: NicheConfig = {
+  slug: "contractor",
+  displayName: "Generalentreprenør",
+  // Warm charcoal as primary, sand cream as accent. Bronze CTA accent
+  // is hardcoded inside components/site/templates/contractor.tsx.
+  primaryColor: "oklch(0.18 0.012 70)",
+  accentColor: "oklch(0.91 0.04 80)",
+  heroImageKeyword: "luxury-kitchen,interior",
+  heroLayout: "split",
+  services: [
+    {
+      title: "Total boligrenovasjon",
+      description:
+        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles nytt fra grunnen.",
+    },
+    {
+      title: "Kjøkken og stueoppussing",
+      description:
+        "Sentrum i hjemmet, fortjent. Skreddersydde kjøkkenløsninger med åpne planløsninger som varer.",
+    },
+    {
+      title: "Bygg og tilbygg",
+      description:
+        "Påbygg, ekstraetasjer og uthus — utført med byggeledelse og fagkyndighet i hvert trinn.",
+    },
+    {
+      title: "Bad og våtrom",
+      description:
+        "Sertifisert våtromsarbeid med fokus på drenering, fliser og funksjonalitet for hverdagen.",
+    },
+    {
+      title: "Terrasse og uterom",
+      description:
+        "Terrasser, balkonger og uteplasser bygget for norsk klima og ditt hus' karakter.",
+    },
+    {
+      title: "Skreddersydd snekkerarbeid",
+      description:
+        "Garderober, hyller og innebygd møblering tegnet og bygget for nøyaktig din plass.",
+    },
+  ],
+  ctaText: "Få et gratis tilbud",
+  benefitTags: ["Sentral godkjenning", "Fastpris", "Egen prosjektleder"],
+};
+
 const GENERIC: NicheConfig = {
   slug: "generic",
   displayName: "Generell",
@@ -270,6 +316,7 @@ const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
   salon: SALON,
   auto_repair: AUTO_REPAIR,
   landscaper: LANDSCAPER,
+  contractor: CONTRACTOR,
   generic: GENERIC,
 };
 
@@ -285,6 +332,10 @@ const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   ["45.20", "auto_repair"],
   ["81.30", "landscaper"], // Beplantning av hager og parkanlegg
   ["01.30", "landscaper"], // Planteformering — small overlap, treat as landscaper
+  ["41.20", "contractor"], // Bygging av boliger og andre bygninger
+  ["41.10", "contractor"], // Utvikling av byggeprosjekter
+  ["43.99", "contractor"], // Annen spesialisert bygge- og anleggsvirksomhet
+  ["43.39", "contractor"], // Annen ferdiggjøring av bygninger
 ];
 
 export function pickNicheFromNace(naceCode: string | null | undefined): NicheSlug {
@@ -312,6 +363,7 @@ export const ALL_NICHES: NicheConfig[] = (
     "salon",
     "auto_repair",
     "landscaper",
+    "contractor",
     "generic",
   ] as const
 ).map((slug) => NICHE_REGISTRY[slug]);
