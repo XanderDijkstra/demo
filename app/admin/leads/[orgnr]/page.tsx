@@ -147,8 +147,15 @@ export default async function LeadDetailPage({
         model: generatedSite.generated_by_model,
         inputTokens: generatedSite.generation_input_tokens,
         outputTokens: generatedSite.generation_output_tokens,
+        diagnosis: generatedSite.content_json.diagnosis ?? null,
       }
     : null;
+  const aiColdMessage = generatedSite
+    ? {
+        subject: generatedSite.content_json.cold_message_subject ?? null,
+        body: generatedSite.content_json.cold_message_body ?? null,
+      }
+    : { subject: null, body: null };
 
   const brregUrl = `https://virksomhet.brreg.no/nb/oppslag/enheter/${lead.org_nr}`;
 
@@ -223,6 +230,8 @@ export default async function LeadDetailPage({
                 suppressedReason={readiness.suppressed?.reason ?? null}
                 previousSendCount={readiness.previousSendCount}
                 siteUrl={publishedSite ? publicSiteUrl(lead.org_nr) : null}
+                aiSubject={aiColdMessage.subject}
+                aiBody={aiColdMessage.body}
               />
             </div>
           </CardContent>

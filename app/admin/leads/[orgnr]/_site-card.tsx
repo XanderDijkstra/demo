@@ -38,6 +38,7 @@ interface Props {
     model: string | null;
     inputTokens: number | null;
     outputTokens: number | null;
+    diagnosis: string | null;
   } | null;
   publicUrl: string;
 }
@@ -137,6 +138,17 @@ export function SiteCard({
           </a>
         ) : null}
       </div>
+
+      {publishedSite?.diagnosis ? (
+        <div className="rounded-md border border-l-4 border-l-primary bg-muted/40 p-3 space-y-1">
+          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Diagnose
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90">
+            {publishedSite.diagnosis}
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="space-y-1.5">

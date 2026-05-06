@@ -26,6 +26,13 @@ export type GeneratedSiteContent = {
   hero_headline?: string;
   hero_subheadline?: string;
   about_paragraph?: string;
+  /** 50-word concrete diagnosis of the lead's online gap. Surfaced on the
+   *  lead detail page; never rendered on the public site. */
+  diagnosis?: string;
+  /** Subject + body for the per-lead cold email pitch. Pre-filled into the
+   *  Send modal so the operator can review/tweak before sending. */
+  cold_message_subject?: string;
+  cold_message_body?: string;
 };
 
 export type HeroLayout = "split" | "centered" | "overlay";

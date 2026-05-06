@@ -29,6 +29,10 @@ interface Props {
   suppressedReason: string | null;
   previousSendCount: number;
   siteUrl: string | null;
+  /** AI-generated subject from generated_sites.content_json (if present). */
+  aiSubject: string | null;
+  /** AI-generated body from generated_sites.content_json (if present). */
+  aiBody: string | null;
 }
 
 const DEFAULT_SUBJECT = "Hei {{company_name}} — gratulerer med oppstart";
@@ -55,15 +59,16 @@ export function SendEmailButton({
   suppressedReason,
   previousSendCount,
   siteUrl,
+  aiSubject,
+  aiBody,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [subject, setSubject] = useState(DEFAULT_SUBJECT);
+  const [subject, setSubject] = useState(aiSubject ?? DEFAULT_SUBJECT);
   const [body, setBody] = useState(
-    DEFAULT_BODY.replace(
-      "{{kommune}}",
-      kommune ? ` i ${kommune}` : ""
-    )
+    aiBody ??
+      DEFAULT_BODY.replace("{{kommune}}", kommune ? ` i ${kommune}` : "")
   );
+  const usingAi = !!(aiSubject || aiBody);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -105,7 +110,14 @@ export function SendEmailButton({
       <DialogContent className="max-w-2xl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>Send e-post til {companyName}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Send e-post til {companyName}
+              {usingAi ? (
+                <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">
+                  AI-utkast
+                </span>
+              ) : null}
+            </DialogTitle>
             <DialogDescription>
               Variabler:{" "}
               <code className="text-[11px]">{"{{company_name}}"}</code>{" "}
