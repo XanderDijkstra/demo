@@ -28,25 +28,21 @@ interface Props {
   kommune: string | null;
   suppressedReason: string | null;
   previousSendCount: number;
+  /** Public URL of the published demo site, or null if none is live. */
   siteUrl: string | null;
-  /** AI-generated subject from generated_sites.content_json (if present). */
-  aiSubject: string | null;
-  /** AI-generated body from generated_sites.content_json (if present). */
-  aiBody: string | null;
 }
 
-const DEFAULT_SUBJECT = "Hei {{company_name}} — gratulerer med oppstart";
+const DEFAULT_SUBJECT = "Lagde en demo til {{company_name}}";
 
 const DEFAULT_BODY = `Hei!
 
-Jeg så at {{company_name}} nettopp ble registrert{{kommune}} — gratulerer med oppstart.
+Lagde en kjapp demoside til {{company_name}} basert på det jeg så.
 
-Vi i FX Media hjelper små selskaper med å komme raskt i gang med nettside og synlighet, og jeg tenkte å ta en kort prat om dere har planer for det.
+Se den her: {{site_url}}
 
-Har du 10 minutter denne uken?
+Hvis det treffer, ta en lyd. Hvis ikke, ingen stress.
 
-Vennlig hilsen,
-Xander
+— Xander
 FX Media`;
 
 export function SendEmailButton({
@@ -55,20 +51,14 @@ export function SendEmailButton({
   fromAddress,
   replyTo,
   companyName,
-  kommune,
+  kommune: _kommune,
   suppressedReason,
   previousSendCount,
   siteUrl,
-  aiSubject,
-  aiBody,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [subject, setSubject] = useState(aiSubject ?? DEFAULT_SUBJECT);
-  const [body, setBody] = useState(
-    aiBody ??
-      DEFAULT_BODY.replace("{{kommune}}", kommune ? ` i ${kommune}` : "")
-  );
-  const usingAi = !!(aiSubject || aiBody);
+  const [subject, setSubject] = useState(DEFAULT_SUBJECT);
+  const [body, setBody] = useState(DEFAULT_BODY);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -110,14 +100,7 @@ export function SendEmailButton({
       <DialogContent className="max-w-2xl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              Send e-post til {companyName}
-              {usingAi ? (
-                <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">
-                  AI-utkast
-                </span>
-              ) : null}
-            </DialogTitle>
+            <DialogTitle>Send e-post til {companyName}</DialogTitle>
             <DialogDescription>
               Variabler:{" "}
               <code className="text-[11px]">{"{{company_name}}"}</code>{" "}

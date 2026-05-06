@@ -49,9 +49,7 @@ export async function runGenerateLeadSite(params: {
 
   const { data: company, error: companyError } = await supabase
     .from("companies")
-    .select(
-      "org_nr, name, kommune, nace_code, nace_description, website, phone, mobile, founded_at"
-    )
+    .select("org_nr, name, kommune, nace_code, nace_description")
     .eq("org_nr", params.orgNr)
     .maybeSingle();
 
@@ -62,18 +60,11 @@ export async function runGenerateLeadSite(params: {
     params.nicheOverride ?? pickNicheFromNace(company.nace_code);
   const nicheConfig = await loadNicheConfig(niche);
 
-  const foundedYear = company.founded_at
-    ? Number(company.founded_at.slice(0, 4))
-    : null;
-
   const result = await generateSiteCopy({
     company: {
       name: company.name,
       kommune: company.kommune,
       nace_description: company.nace_description,
-      has_website: !!company.website,
-      has_phone: !!(company.phone || company.mobile),
-      founded_year: Number.isFinite(foundedYear) ? foundedYear : null,
     },
     niche: nicheConfig,
   });
