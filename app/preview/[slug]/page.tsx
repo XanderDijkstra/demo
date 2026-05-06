@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
+import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { loadNicheConfig } from "@/lib/template-store";
 import { isNicheSlug } from "@/lib/templates";
 
@@ -34,17 +35,36 @@ const SAMPLE_CONTENT = {
     "Eksempelbedrift AS ble etablert for å gjøre fagarbeid enkelt for vanlige folk. Teamet vårt er sertifisert, lokalkjent, og opptatt av å levere arbeid vi selv ville vært stolte av i eget hjem.",
 };
 
+// Per-niche sample content used when there's a more natural choice than the
+// generic "Eksempelbedrift" copy. Falls back to SAMPLE_CONTENT otherwise.
+const SAMPLE_CONTENT_BY_SLUG: Record<string, typeof SAMPLE_CONTENT> = {
+  landscaper: {
+    hero_headline: "Drømmehagen din — uten bekymringer",
+    hero_subheadline:
+      "Vi forvandler uteområdet ditt med stramt steinarbeid, frodig plen og førsteklasses renovasjoner i Bergen og omegn.",
+    about_paragraph:
+      "Hos Eksempelbedrift AS handler alt om håndverk. Vi skaper og vedlikeholder hager som ikke bare er pene, men der du faktisk slapper av. Med 10+ års erfaring sørger vi for et resultat som står seg.",
+  },
+};
+
 export default async function TemplatePreviewPage({ params }: RouteProps) {
   const { slug } = await params;
   if (!isNicheSlug(slug)) notFound();
 
   const niche = await loadNicheConfig(slug);
+  const content = SAMPLE_CONTENT_BY_SLUG[slug] ?? SAMPLE_CONTENT;
+
+  if (slug === "landscaper") {
+    return (
+      <LandscaperTemplate
+        company={SAMPLE_COMPANY}
+        niche={niche}
+        content={content}
+      />
+    );
+  }
 
   return (
-    <SiteTemplate
-      company={SAMPLE_COMPANY}
-      niche={niche}
-      content={SAMPLE_CONTENT}
-    />
+    <SiteTemplate company={SAMPLE_COMPANY} niche={niche} content={content} />
   );
 }

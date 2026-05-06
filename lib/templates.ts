@@ -2,12 +2,14 @@
  * Niche taxonomy for the auto-generated demo sites.
  *
  * One source of truth for:
- *   - The 5 niche templates + a generic fallback
+ *   - Each niche template + a generic fallback
  *   - NACE prefix → niche slug mapping
  *   - Per-niche brand colour, hero image keyword, services, CTA
  *
- * No separate component files per niche — `components/site/template.tsx`
- * reads from `getNicheConfig(slug)` and styles itself accordingly.
+ * Most niches render through the generic `components/site/template.tsx`.
+ * Niches that need bespoke layouts (e.g. landscaper) have a dedicated
+ * component under `components/site/templates/{slug}.tsx` and are
+ * dispatched on slug in the public + preview routes.
  */
 
 export type NicheSlug =
@@ -16,6 +18,7 @@ export type NicheSlug =
   | "restaurant"
   | "salon"
   | "auto_repair"
+  | "landscaper"
   | "generic";
 
 export interface NicheService {
@@ -37,12 +40,13 @@ export interface NicheConfig {
   heroImageKeyword: string;
   /** Hero composition variant the renderer will pick. */
   heroLayout: HeroLayout;
-  /** Three hardcoded services rendered in the services section. */
-  services: [NicheService, NicheService, NicheService];
+  /** Services rendered in the services section. Most niches list 3; some
+   *  (landscaper) have a 6-card grid. Always at least 3. */
+  services: NicheService[];
   /** Call-to-action label on every CTA button. */
   ctaText: string;
-  /** Three short benefit chips in the hero. */
-  benefitTags: [string, string, string];
+  /** Short benefit chips in the hero. Most niches list 3. */
+  benefitTags: string[];
 }
 
 const PLUMBER: NicheConfig = {
@@ -185,6 +189,52 @@ const AUTO_REPAIR: NicheConfig = {
   benefitTags: ["Lånebil", "Alle merker", "Fast pris"],
 };
 
+const LANDSCAPER: NicheConfig = {
+  slug: "landscaper",
+  displayName: "Anleggsgartner",
+  // Dark forest green as primary; cream as accent. Lime CTA is hardcoded
+  // inside components/site/templates/landscaper.tsx since it's an identity
+  // signal of this template.
+  primaryColor: "oklch(0.32 0.05 145)",
+  accentColor: "oklch(0.94 0.03 85)",
+  heroImageKeyword: "japanese-garden",
+  heroLayout: "overlay",
+  services: [
+    {
+      title: "Plenanlegg",
+      description:
+        "Gressplen og innsådd med øye for jordkvalitet og et stramt sluttresultat.",
+    },
+    {
+      title: "Steinarbeid",
+      description:
+        "Solid steinlegging, oppkjørsler og terrasser som varer i mange år.",
+    },
+    {
+      title: "Gjerder",
+      description:
+        "Skreddersydde gjerder og levegger for personvern og en pen utstråling.",
+    },
+    {
+      title: "Hagerenovasjon",
+      description:
+        "Komplett forvandling av hagen, fra prosjektering til siste plante.",
+    },
+    {
+      title: "Grunnarbeid",
+      description:
+        "Utgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
+    },
+    {
+      title: "Vedlikehold",
+      description:
+        "Profesjonell beskjæring og periodisk stell som holder hagen i toppform.",
+    },
+  ],
+  ctaText: "Be om tilbud",
+  benefitTags: ["10+ års erfaring", "Fast pris", "Personlig service"],
+};
+
 const GENERIC: NicheConfig = {
   slug: "generic",
   displayName: "Generell",
@@ -219,6 +269,7 @@ const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
   restaurant: RESTAURANT,
   salon: SALON,
   auto_repair: AUTO_REPAIR,
+  landscaper: LANDSCAPER,
   generic: GENERIC,
 };
 
@@ -232,6 +283,8 @@ const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   ["56.10", "restaurant"],
   ["96.02", "salon"],
   ["45.20", "auto_repair"],
+  ["81.30", "landscaper"], // Beplantning av hager og parkanlegg
+  ["01.30", "landscaper"], // Planteformering — small overlap, treat as landscaper
 ];
 
 export function pickNicheFromNace(naceCode: string | null | undefined): NicheSlug {
@@ -252,5 +305,13 @@ export function isNicheSlug(value: string): value is NicheSlug {
 }
 
 export const ALL_NICHES: NicheConfig[] = (
-  ["plumber", "electrician", "restaurant", "salon", "auto_repair", "generic"] as const
+  [
+    "plumber",
+    "electrician",
+    "restaurant",
+    "salon",
+    "auto_repair",
+    "landscaper",
+    "generic",
+  ] as const
 ).map((slug) => NICHE_REGISTRY[slug]);
