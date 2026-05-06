@@ -224,13 +224,13 @@ function Header({
             className="inline-flex h-7 w-7 items-center justify-center rounded-sm text-[color:var(--cream-light)]"
             style={{ background: DARK }}
           >
-            <span className="font-display text-[13px] italic">{company.name.charAt(0)}</span>
+            <span className="font-medium text-[13px] italic">{company.name.charAt(0)}</span>
           </div>
           <div className="leading-tight min-w-0">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[color:var(--ink)]/60">
               {company.name}
             </div>
-            <div className="font-display text-[11px] italic text-[color:var(--ink)]/50">
+            <div className="font-medium text-[11px] italic text-[color:var(--ink)]/50">
               & Associates
             </div>
           </div>
@@ -301,12 +301,12 @@ function Hero({
             Tjener boligeiere siden {foundedYear(company.founded_at)} ·{" "}
             {yearsExperience(company.founded_at)} års tillit
           </div>
-          <h1 className="font-display text-5xl font-medium leading-[0.98] tracking-tight md:text-7xl lg:text-[5.5rem]">
+          <h1 className="font-medium text-5xl font-medium leading-[0.98] tracking-tight md:text-7xl lg:text-[5.5rem]">
             {headline.split(" ").map((word, i, arr) => {
               // Italicize the last word as the editorial accent.
               const isLast = i === arr.length - 1;
               return isLast ? (
-                <em key={i} className="font-display italic">
+                <em key={i} className="font-medium italic">
                   {word}
                 </em>
               ) : (
@@ -365,7 +365,7 @@ function Hero({
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="border-l border-white/15 pl-3 first:border-l-0 first:pl-0">
-      <div className="font-display text-3xl tracking-tight">{value}</div>
+      <div className="font-medium text-3xl tracking-tight">{value}</div>
       <div className="mt-0.5 text-[11px] uppercase tracking-[0.16em] text-[color:var(--cream-light)]/65">
         {label}
       </div>
@@ -531,9 +531,9 @@ function About({
             <span aria-hidden className="h-px w-8 bg-[color:var(--ink)]/30" />
             Om {company.name}
           </div>
-          <h2 className="mt-5 font-display text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
+          <h2 className="mt-5 font-medium text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
             Dedikert til å bygge din{" "}
-            <em className="font-display italic">visjon</em>.
+            <em className="font-medium italic">visjon</em>.
           </h2>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-[color:var(--ink)]/75">
             {body}
@@ -588,9 +588,9 @@ function ServicesBanner({ niche: _niche }: { niche: NicheConfig }) {
           Tjenester
           <span aria-hidden className="h-px w-8 bg-[color:var(--cream-light)]/30" />
         </div>
-        <h2 className="mt-5 font-display text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
+        <h2 className="mt-5 font-medium text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
           Våre fagtjenester{" "}
-          <em className="font-display italic">i dag</em>.
+          <em className="font-medium italic">i dag</em>.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-sm text-[color:var(--cream-light)]/65 md:text-base">
           Tar du på deg et stort prosjekt? Disse er kjernen i det vi leverer —
@@ -619,27 +619,38 @@ function Services({ niche }: { niche: NicheConfig }) {
   return (
     <section className="px-6 py-24 md:px-10 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <ul className="divide-y divide-[color:var(--ink)]/10">
-          {list.map((s, i) => (
-            <li
-              key={s.title}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-6 py-8"
-            >
-              <div className="font-display text-base italic text-[color:var(--ink)]/40 tabular-nums">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div className="grid gap-4 md:grid-cols-[minmax(0,260px)_1fr] md:items-baseline md:gap-12">
-                <h3 className="font-display text-2xl font-medium tracking-tight md:text-3xl">
-                  {s.title}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-[color:var(--ink)]/70">
-                  {s.description}
-                </p>
-              </div>
-              <ArrowUpRight className="h-5 w-5 text-[color:var(--ink)]/40" />
-            </li>
-          ))}
-        </ul>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+          {list.map((s, i) => {
+            const image =
+              CONTRACTOR_IMAGES.services[i] ?? CONTRACTOR_IMAGES.services[0]!;
+            return (
+              <article
+                key={s.title}
+                className="group rounded-[10px] bg-[color:var(--cream-light)] p-3 ring-1 ring-[color:var(--ink)]/8 hover:shadow-[0_20px_40px_-25px_rgba(20,15,10,0.35)]"
+              >
+                <div className="aspect-[3/2] overflow-hidden rounded-[6px] bg-[color:var(--ink)]/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image}
+                    alt={s.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="flex items-start justify-between gap-3 px-2 py-4">
+                  <div>
+                    <h3 className="text-xl font-medium tracking-tight">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink)]/65">
+                      {s.description}
+                    </p>
+                  </div>
+                  <ArrowUpRight className="mt-1 h-5 w-5 shrink-0 text-[color:var(--ink)]/45 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -660,9 +671,9 @@ function Process() {
               <span aria-hidden className="h-px w-8 bg-[color:var(--ink)]/30" />
               Prosess
             </div>
-            <h2 className="mt-5 font-display text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl">
+            <h2 className="mt-5 font-medium text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl">
               Slik bygger vi{" "}
-              <em className="font-display italic">sammen</em>.
+              <em className="font-medium italic">sammen</em>.
             </h2>
           </div>
           <p className="hidden max-w-sm text-sm text-[color:var(--ink)]/65 md:block">
@@ -674,10 +685,10 @@ function Process() {
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PROCESS_STEPS.map((step, i) => (
             <article key={step.num} className="group relative flex flex-col">
-              <div className="font-display text-xs italic text-[color:var(--ink)]/40 tabular-nums">
+              <div className="font-medium text-xs italic text-[color:var(--ink)]/40 tabular-nums">
                 {step.num}
               </div>
-              <h3 className="mt-2 font-display text-2xl font-medium tracking-tight">
+              <h3 className="mt-2 font-medium text-2xl font-medium tracking-tight">
                 {step.title}
               </h3>
               <div className="mt-5 aspect-[5/4] overflow-hidden rounded-[6px] bg-[color:var(--ink)]/10">
@@ -717,9 +728,9 @@ function Testimonials() {
           Anbefalinger
           <span aria-hidden className="h-px w-8 bg-[color:var(--cream-light)]/30" />
         </div>
-        <h2 className="mt-5 font-display text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
+        <h2 className="mt-5 font-medium text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
           Anbefalt av{" "}
-          <em className="font-display italic">våre verdsatte kunder</em>.
+          <em className="font-medium italic">våre verdsatte kunder</em>.
         </h2>
       </div>
 
@@ -748,7 +759,7 @@ function Testimonials() {
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <div className="font-display rounded-md bg-[color:var(--cream-light)] px-7 py-2.5 text-sm italic text-[color:var(--ink)]">
+        <div className="font-medium rounded-md bg-[color:var(--cream-light)] px-7 py-2.5 text-sm italic text-[color:var(--ink)]">
           (01 / 03)
         </div>
         <button
@@ -787,9 +798,9 @@ function Projects() {
               <span aria-hidden className="h-px w-8 bg-[color:var(--ink)]/30" />
               Prosjekter
             </div>
-            <h2 className="mt-5 font-display text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
+            <h2 className="mt-5 font-medium text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
               Våre bygg{" "}
-              <em className="font-display italic">prosjekter</em>.
+              <em className="font-medium italic">prosjekter</em>.
             </h2>
           </div>
           <a
@@ -817,7 +828,7 @@ function Projects() {
               </div>
               <div className="flex items-center justify-between gap-3 px-2 py-4">
                 <div>
-                  <h3 className="font-display text-xl font-medium tracking-tight">
+                  <h3 className="font-medium text-xl font-medium tracking-tight">
                     {p.title}
                   </h3>
                   <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink)]/55">
@@ -852,9 +863,9 @@ function FaqAndCta({ company }: { company: Props["company"] }) {
             <div className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--cream-light)]/55">
               La oss snakkes
             </div>
-            <h3 className="mt-4 font-display text-3xl font-medium leading-[1.05] tracking-tight md:text-4xl">
+            <h3 className="mt-4 font-medium text-3xl font-medium leading-[1.05] tracking-tight md:text-4xl">
               Forvandle{" "}
-              <em className="font-display italic">boligen din</em> i dag
+              <em className="font-medium italic">boligen din</em> i dag
             </h3>
             <p className="mt-5 text-sm leading-relaxed text-[color:var(--cream-light)]/70">
               Bring hjemmet ditt til live med fagkyndig oppussing og en stram,
@@ -924,9 +935,9 @@ function FinalCta({
           {company.kommune ?? "Ditt nabolag"}
           <span aria-hidden className="h-px w-8 bg-[color:var(--ink)]/30" />
         </div>
-        <h2 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-tight md:text-7xl">
+        <h2 className="mt-6 font-medium text-5xl font-medium leading-[1.02] tracking-tight md:text-7xl">
           Bygg din visjon{" "}
-          <em className="font-display italic">med fagfolk</em>.
+          <em className="font-medium italic">med fagfolk</em>.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[color:var(--ink)]/70">
           Slapp av og nyt en stødig, ærlig prosess — gjennomført av et team som
@@ -977,7 +988,7 @@ function Footer({
               className="inline-flex h-8 w-8 items-center justify-center rounded-sm"
               style={{ background: BRONZE }}
             >
-              <span className="font-display text-base italic text-[color:var(--ink)]">
+              <span className="font-medium text-base italic text-[color:var(--ink)]">
                 {company.name.charAt(0)}
               </span>
             </div>
@@ -985,7 +996,7 @@ function Footer({
               <div className="text-[11px] uppercase tracking-[0.22em]">
                 {company.name}
               </div>
-              <div className="font-display text-xs italic text-[color:var(--cream-light)]/60">
+              <div className="font-medium text-xs italic text-[color:var(--cream-light)]/60">
                 & Associates
               </div>
             </div>

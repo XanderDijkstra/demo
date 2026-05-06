@@ -22,6 +22,16 @@ export const CONTRACTOR_IMAGES = {
   /** About — tall portrait of construction / interior work in progress. */
   about: `${PICSUM}/v-contractor-about/900/1100`,
 
+  /** Service cards (6 cards in a 3x2 grid below the services banner). */
+  services: [
+    `${PICSUM}/v-contractor-svc-renovation/900/600`,
+    `${PICSUM}/v-contractor-svc-kitchen/900/600`,
+    `${PICSUM}/v-contractor-svc-extension/900/600`,
+    `${PICSUM}/v-contractor-svc-bath/900/600`,
+    `${PICSUM}/v-contractor-svc-terrace/900/600`,
+    `${PICSUM}/v-contractor-svc-carpentry/900/600`,
+  ] as const,
+
   /** Process steps (4 cards: consultation, design, construction, completion). */
   process: [
     `${PICSUM}/v-contractor-step-1/640/480`,
