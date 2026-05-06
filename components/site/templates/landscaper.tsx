@@ -18,6 +18,8 @@ import {
 import type { GeneratedSiteContent } from "@/lib/supabase/types";
 import type { NicheConfig } from "@/lib/templates";
 
+import { LANDSCAPER_IMAGES } from "./landscaper-images";
+
 /**
  * Bespoke landscaper / anleggsgartner template.
  *
@@ -33,6 +35,14 @@ import type { NicheConfig } from "@/lib/templates";
 const LIME = "oklch(0.88 0.18 122)"; // CTA / accent highlight
 const CREAM_DEEP = "oklch(0.93 0.025 80)"; // page background
 const STONE = "oklch(0.32 0.05 145)"; // dark forest green
+
+/**
+ * A very subtle paper-grain SVG pattern, encoded inline so there's no
+ * extra HTTP request. Layered on top of the cream background to break up
+ * the flat-color feel that makes generated sites read as "AI placeholder".
+ */
+const PAPER_GRAIN =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.18 0 0 0 0 0.13 0 0 0 0 0.07 0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
 interface Props {
   company: {
@@ -105,15 +115,6 @@ const FEATURES = [
   },
 ];
 
-const SERVICE_IMAGE_KEYWORDS = [
-  "lawn",
-  "paving-stones",
-  "garden-fence",
-  "garden-renovation",
-  "groundwork",
-  "garden-maintenance",
-];
-
 const TESTIMONIALS = [
   {
     body: "Det er sjelden vi anbefaler en håndverker uten å nøle, men her måtte vi. Plenen ble lagt presist, alt rundt ble kostet og ryddet, og prisen lå akkurat der vi var enige om. Nabolaget har spurt om kontaktinfo flere ganger.",
@@ -127,19 +128,6 @@ const TESTIMONIALS = [
     body: "Profesjonell, hyggelig og uten overraskelser. Han forklarte hva som skulle gjøres, hvorfor og hvor lang tid det ville ta. Anbefales på det varmeste til alle som tar hagen sin på alvor.",
     author: "K. Aune",
   },
-];
-
-const PROJECT_IMAGES = [
-  // Tre kolonner, midten har tall image som spenner over to rader.
-  { src: "https://source.unsplash.com/700x500/?lawn-mower,gardener", alt: "Plenklipping" },
-  {
-    src: "https://source.unsplash.com/700x900/?house-garden,curb-appeal",
-    alt: "Hageprosjekt",
-    tall: true,
-  },
-  { src: "https://source.unsplash.com/700x500/?garden-edging,grass", alt: "Plenkanting" },
-  { src: "https://source.unsplash.com/700x500/?rose-bush-pruning", alt: "Beskjæring" },
-  { src: "https://source.unsplash.com/700x500/?garden-spraying", alt: "Plantebehandling" },
 ];
 
 const FAQS = [
@@ -169,20 +157,17 @@ const BLOG_POSTS = [
   {
     date: "1. desember 2025",
     title: "5 tips til varig steinarbeid som ikke synker",
-    image:
-      "https://source.unsplash.com/600x400/?stone-paving,driveway",
+    image: LANDSCAPER_IMAGES.blog[0],
   },
   {
     date: "15. desember 2025",
     title: "Hagerenovasjon: fra villmark til drømmehage",
-    image:
-      "https://source.unsplash.com/600x400/?garden-renovation,lawn",
+    image: LANDSCAPER_IMAGES.blog[1],
   },
   {
     date: "5. januar 2026",
     title: "Grunnarbeid: det usynlige fundamentet",
-    image:
-      "https://source.unsplash.com/600x400/?garden-pruning,gloves",
+    image: LANDSCAPER_IMAGES.blog[2],
   },
 ];
 
@@ -217,7 +202,10 @@ export function LandscaperTemplate({ company, niche, content }: Props) {
     <div
       className="min-h-screen bg-stone-50 text-stone-900"
       style={{
-        background: CREAM_DEEP,
+        backgroundColor: CREAM_DEEP,
+        backgroundImage: PAPER_GRAIN,
+        backgroundRepeat: "repeat",
+        backgroundSize: "240px 240px",
         ["--lime" as string]: LIME,
         ["--forest" as string]: STONE,
       }}
@@ -269,7 +257,7 @@ function Header({
             <div className="font-semibold tracking-tight truncate text-sm uppercase">
               {company.name}
             </div>
-            <div className="font-serif italic text-[11px] text-stone-500">
+            <div className="font-display italic text-[11px] text-stone-500">
               Anleggsgartner
             </div>
           </div>
@@ -327,8 +315,7 @@ function Hero({
   headline: string;
   subheadline: string;
 }) {
-  const heroImage =
-    "https://source.unsplash.com/1800x1200/?japanese-garden,landscape";
+  const heroImage = LANDSCAPER_IMAGES.hero;
 
   return (
     <section
@@ -348,10 +335,11 @@ function Hero({
       <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 pt-36 pb-24 md:px-10 md:pt-44 md:pb-32 lg:grid-cols-[1.1fr_minmax(380px,1fr)] lg:items-center">
         {/* Left: headline + ctas */}
         <div className="space-y-7">
-          <p className="font-serif text-base italic tracking-tight text-white/80">
-            Håndverk i hver meter —
-          </p>
-          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+          <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.22em] text-white/65">
+            <span aria-hidden className="h-px w-8 bg-white/40" />
+            Håndverk i hver meter
+          </div>
+          <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight md:text-6xl lg:text-[5.5rem]">
             {headline}
           </h1>
           <p className="max-w-xl text-lg text-white/80">{subheadline}</p>
@@ -416,7 +404,7 @@ function Hero({
                   : "md:pl-2"
               }
             >
-              <div className="font-serif text-3xl font-semibold tracking-tight md:text-4xl">
+              <div className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
                 {s.value}
               </div>
               <div className="mt-1 text-xs text-stone-600">{s.label}</div>
@@ -431,6 +419,10 @@ function Hero({
 function ContactFormCard() {
   return (
     <div className="rounded-3xl bg-white p-6 text-stone-900 shadow-xl ring-1 ring-stone-900/5 md:p-8">
+      <div className="mb-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-stone-500">
+        <span aria-hidden className="h-px w-6 bg-stone-300" />
+        Gratis tilbud
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Navn">
           <FakeInput placeholder="Fullt navn" />
@@ -560,15 +552,15 @@ function About({
         <div className="relative aspect-square overflow-hidden rounded-3xl bg-stone-300 shadow-md">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://source.unsplash.com/900x900/?gardener,topiary"
+            src={LANDSCAPER_IMAGES.about}
             alt={`${company.name} på jobb`}
             className="h-full w-full object-cover"
           />
         </div>
         <div>
-          <h2 className="font-serif text-4xl font-semibold leading-[1.1] tracking-tight md:text-5xl">
+          <h2 className="font-display text-4xl font-semibold leading-[1.1] tracking-tight md:text-5xl">
             Lidenskap for et{" "}
-            <em className="font-serif italic">strakt uteområde</em>
+            <em className="font-display italic">strakt uteområde</em>
           </h2>
           <p className="mt-6 text-base leading-relaxed text-stone-700">
             {about}
@@ -626,20 +618,20 @@ function Services({
       style={{ background: CREAM_DEEP }}
     >
       <div className="mx-auto max-w-6xl">
-        <h2 className="text-center font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-          Våre faglige <em className="font-serif italic">tjenester</em>
+        <h2 className="text-center font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          Våre faglige <em className="font-display italic">tjenester</em>
         </h2>
 
         <div className="mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((s, i) => {
-            const keyword =
-              SERVICE_IMAGE_KEYWORDS[i] ?? SERVICE_IMAGE_KEYWORDS[0]!;
+            const image =
+              LANDSCAPER_IMAGES.services[i] ?? LANDSCAPER_IMAGES.services[0]!;
             return (
               <article key={s.title}>
                 <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-stone-300 shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`https://source.unsplash.com/600x450/?${encodeURIComponent(keyword)}`}
+                    src={image}
                     alt={s.title}
                     className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
                   />
@@ -679,8 +671,8 @@ function Stats() {
       style={{ background: CREAM_DEEP }}
     >
       <div className="mx-auto max-w-4xl text-center">
-        <h2 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-          Vurdert <em className="font-serif italic">10/10</em> av kundene
+        <h2 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          Vurdert <em className="font-display italic">10/10</em> av kundene
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-600">
           Kundene våre stoler på oss for hagestell og anlegg utført med
@@ -699,7 +691,7 @@ function Stats() {
               key={s.label}
               className={i === 0 ? "text-center" : "text-center md:px-6"}
             >
-              <div className="font-serif text-4xl font-semibold tracking-tight">
+              <div className="font-display text-4xl font-semibold tracking-tight">
                 {s.value}
               </div>
               <div className="mt-2 text-xs text-stone-600">{s.label}</div>
@@ -719,7 +711,7 @@ function BigCta({ company }: { company: Props["company"] }) {
       <div className="relative aspect-[4/3] lg:aspect-auto">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://source.unsplash.com/1200x900/?gardener-tools,grass-trimmer"
+          src={LANDSCAPER_IMAGES.bigCta}
           alt="Anleggsgartner i arbeid"
           className="h-full w-full object-cover"
         />
@@ -729,10 +721,10 @@ function BigCta({ company }: { company: Props["company"] }) {
         style={{ background: STONE }}
       >
         <div className="max-w-lg">
-          <h2 className="font-serif text-4xl font-semibold leading-[1.1] tracking-tight md:text-5xl">
+          <h2 className="font-display text-4xl font-semibold leading-[1.1] tracking-tight md:text-5xl">
             Et uteområde som{" "}
             <em
-              className="font-serif italic"
+              className="font-display italic"
               style={{ color: LIME }}
             >
               naturlig stråler
@@ -802,13 +794,13 @@ function Process() {
               className={`space-y-4 ${offsets[i] ?? ""}`}
             >
               <div className="font-mono text-sm text-stone-500">{step.num}</div>
-              <h3 className="font-serif text-2xl font-semibold tracking-tight">
+              <h3 className="font-display text-2xl font-semibold tracking-tight">
                 {step.title}
               </h3>
               <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-stone-300 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://source.unsplash.com/600x450/?garden,${encodeURIComponent(step.title)}`}
+                  src={LANDSCAPER_IMAGES.process[i] ?? LANDSCAPER_IMAGES.process[0]!}
                   alt={step.title}
                   className="h-full w-full object-cover"
                 />
@@ -836,8 +828,8 @@ function Testimonials() {
       style={{ background: CREAM_DEEP }}
     >
       <div className="mx-auto max-w-4xl">
-        <h2 className="text-center font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-          Fornøyde <em className="font-serif italic">kunder</em>
+        <h2 className="text-center font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          Fornøyde <em className="font-display italic">kunder</em>
         </h2>
 
         <div className="mt-10 rounded-3xl bg-white px-8 py-10 shadow-sm ring-1 ring-stone-900/5 md:px-14 md:py-14">
@@ -889,8 +881,8 @@ function ProjectsGallery() {
     >
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-            Våre <em className="font-serif italic">prosjekter</em>
+          <h2 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+            Våre <em className="font-display italic">prosjekter</em>
           </h2>
           <a
             href="#kontakt"
@@ -903,7 +895,7 @@ function ProjectsGallery() {
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 md:auto-rows-[16rem]">
-          {PROJECT_IMAGES.map((img, i) => (
+          {LANDSCAPER_IMAGES.projects.map((img, i) => (
             <div
               key={i}
               className={`overflow-hidden rounded-2xl bg-stone-300 shadow-sm ${
@@ -934,8 +926,8 @@ function Faq({ company }: { company: Props["company"] }) {
     >
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
-          <h2 className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-            Ofte stilte <em className="font-serif italic">spørsmål</em>
+          <h2 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+            Ofte stilte <em className="font-display italic">spørsmål</em>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-stone-600">
             Lurer du på noe om hvordan vi jobber eller hva vi tilbyr? Her er
@@ -1012,8 +1004,8 @@ function Blog() {
       style={{ background: CREAM_DEEP }}
     >
       <div className="mx-auto max-w-6xl">
-        <h2 className="text-center font-serif text-4xl font-semibold tracking-tight md:text-5xl">
-          Grønt liv <em className="font-serif italic">— bloggen vår</em>
+        <h2 className="text-center font-display text-4xl font-semibold tracking-tight md:text-5xl">
+          Grønt liv <em className="font-display italic">— bloggen vår</em>
         </h2>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -1054,9 +1046,9 @@ function BottomCta({ company }: { company: Props["company"] }) {
         style={{ background: STONE }}
       >
         <div className="max-w-lg">
-          <h2 className="font-serif text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
+          <h2 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
             Forvandle hagen din{" "}
-            <em className="font-serif italic" style={{ color: LIME }}>
+            <em className="font-display italic" style={{ color: LIME }}>
               med fagmannen
             </em>
           </h2>
@@ -1089,7 +1081,7 @@ function BottomCta({ company }: { company: Props["company"] }) {
       <div className="relative aspect-[4/3] lg:aspect-auto">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://source.unsplash.com/1200x900/?landscape-garden,backyard"
+          src={LANDSCAPER_IMAGES.bottomCta}
           alt="Hagen i full vekst"
           className="h-full w-full object-cover"
         />
@@ -1122,7 +1114,7 @@ function Footer({ company }: { company: Props["company"] }) {
               <div className="font-semibold uppercase tracking-tight">
                 {company.name}
               </div>
-              <div className="font-serif text-xs italic text-white/70">
+              <div className="font-display text-xs italic text-white/70">
                 Anleggsgartner
               </div>
             </div>
