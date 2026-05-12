@@ -176,19 +176,24 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
 
-  // Deliverables grid
-  grid2x2: {
+  // Deliverables grid — explicit two-row × two-column layout. Using
+  // flex:1 on each card with `gap` on the parent rows is more reliable
+  // in react-pdf than flexWrap with percent widths (which silently
+  // stacks cards vertically in some layouts).
+  grid: {
+    flexDirection: "column",
+    gap: 14,
+  },
+  gridRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 14,
   },
   deliverableCard: {
-    width: "48.6%",
+    flex: 1,
     borderColor: C.border,
     borderWidth: 0.6,
     borderRadius: 10,
     padding: 16,
-    minHeight: 162,
   },
   deliverableNum: {
     color: C.orange,
@@ -540,29 +545,37 @@ function Star({ size = 9 }: { size?: number }) {
 }
 
 // Page background — dark fill + corner glows. Different geometry for cover vs inner.
+// Wrapped in a `fixed` View so it repeats on every page when content overflows,
+// otherwise overflow pages render on white (which destroys the look).
 function PageBackground({ variant }: { variant: "cover" | "inner" }) {
   // A4 in PDF points: 595.28 × 841.89
   const W = 595;
   const H = 842;
   return (
-    <Svg
-      width="100%"
-      height="100%"
-      viewBox={`0 0 ${W} ${H}`}
-      style={{ position: "absolute", left: 0, top: 0 }}
+    <View
+      fixed
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
     >
-      <Rect x="0" y="0" width={W} height={H} fill={C.darkBg} />
-      {variant === "cover" ? (
-        <>
-          {/* Bottom-left big glow, positioned off-page so only the soft edge bleeds in */}
-          <Glow cx={W * -0.25} cy={H * 1.2} r={680} maxAlpha={0.55} />
-          {/* Right-edge mid glow */}
-          <Glow cx={W * 1.15} cy={H * 0.9} r={420} maxAlpha={0.32} />
-        </>
-      ) : (
-        <Glow cx={W * 1.05} cy={H * 0.05} r={300} maxAlpha={0.08} />
-      )}
-    </Svg>
+      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`}>
+        <Rect x="0" y="0" width={W} height={H} fill={C.darkBg} />
+        {variant === "cover" ? (
+          <>
+            {/* Bottom-left big glow, positioned off-page so only the soft edge bleeds in */}
+            <Glow cx={W * -0.25} cy={H * 1.2} r={680} maxAlpha={0.55} />
+            {/* Right-edge mid glow */}
+            <Glow cx={W * 1.15} cy={H * 0.9} r={420} maxAlpha={0.32} />
+          </>
+        ) : (
+          <Glow cx={W * 1.05} cy={H * 0.05} r={300} maxAlpha={0.08} />
+        )}
+      </Svg>
+    </View>
   );
 }
 
@@ -750,9 +763,7 @@ function DeliverablesPage({ data }: { data: ProposalData }) {
       <View style={styles.pageInner}>
         <Text style={styles.eyebrow}>HVA ER INKLUDERT</Text>
         <AccentText baseStyle={styles.h1} accentStyle={styles.h1Accent}>
-          {data.deliverables.length > 0
-            ? `Det vi {{accent}}leverer{{/accent}}.`
-            : ""}
+          {"Det vi {{accent}}leverer{{/accent}}."}
         </AccentText>
         <Text style={styles.intro}>{data.deliverables_intro}</Text>
 
@@ -764,10 +775,17 @@ function DeliverablesPage({ data }: { data: ProposalData }) {
           }}
         />
 
-        <View style={styles.grid2x2}>
-          {data.deliverables.slice(0, 4).map((d, i) => (
-            <DeliverableCard key={i} d={d} />
-          ))}
+        <View style={styles.grid}>
+          <View style={styles.gridRow}>
+            {data.deliverables.slice(0, 2).map((d, i) => (
+              <DeliverableCard key={i} d={d} />
+            ))}
+          </View>
+          <View style={styles.gridRow}>
+            {data.deliverables.slice(2, 4).map((d, i) => (
+              <DeliverableCard key={i + 2} d={d} />
+            ))}
+          </View>
         </View>
       </View>
 
