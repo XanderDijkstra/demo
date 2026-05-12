@@ -1,5 +1,7 @@
 import "server-only";
 
+import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
+
 import { getSupabaseAdmin } from "./admin";
 import type {
   AgencyInfo,
@@ -27,7 +29,11 @@ export async function getSetting<V>(key: string): Promise<V | null> {
 }
 
 export async function getScoringWeights(): Promise<ScoringWeights | null> {
-  return getSetting<ScoringWeights>("scoring_weights");
+  const raw = await getSetting<Partial<ScoringWeights>>("scoring_weights");
+  if (!raw) return null;
+  // Merge with defaults so newly-added weights (e.g. is_handverker) work
+  // against older DB rows that predate them.
+  return { ...DEFAULT_SCORING_WEIGHTS, ...raw } as ScoringWeights;
 }
 
 export async function getTargetNaceCodes(): Promise<string[] | null> {

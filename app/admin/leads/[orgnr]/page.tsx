@@ -54,6 +54,7 @@ const SCORE_LABELS: Record<keyof ScoringWeights, string> = {
   has_phone: "Har telefon",
   org_form_as: "Selskapsform AS/ASA",
   target_nace: "Målnæring (NACE)",
+  is_handverker: "Håndverker (bygg / anlegg)",
   has_website: "Har nettside",
   has_real_address: "Reell forretningsadresse",
   freshly_founded: "Nystiftet (siste 7 dager)",

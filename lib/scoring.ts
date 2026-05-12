@@ -15,6 +15,7 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
   has_phone: 30,
   org_form_as: 20,
   target_nace: 20,
+  is_handverker: 20,
   has_website: 10,
   has_real_address: 10,
   freshly_founded: 10,
@@ -22,7 +23,23 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
 
 const AS_LIKE_FORMS = new Set(["AS", "ASA"]);
 
+/**
+ * NACE prefixes that count as håndverker (Norwegian building trades).
+ * Anything starting with "41." (bygging av bygninger), "43." (spesialisert
+ * bygge- og anleggsvirksomhet — rørlegger, elektriker, maler, taktekker,
+ * snekker, ...) or matching "81.30" (anleggsgartner).
+ */
+const HANDVERKER_NACE_PREFIXES = ["41.", "43.", "81.30"];
+
 const FRESH_DAYS = 7;
+
+function isHandverker(naceCode: string | null | undefined): boolean {
+  if (!naceCode) return false;
+  const normalized = naceCode.replace(/\.?$/, "");
+  return HANDVERKER_NACE_PREFIXES.some((prefix) =>
+    normalized.startsWith(prefix)
+  );
+}
 
 function isWithinDays(iso: string | null | undefined, days: number): boolean {
   if (!iso) return false;
@@ -79,6 +96,10 @@ export function scoreCompany(
 
   if (naceMatches(input.nace_code, targetNaceCodes)) {
     breakdown.target_nace = weights.target_nace;
+  }
+
+  if (isHandverker(input.nace_code)) {
+    breakdown.is_handverker = weights.is_handverker;
   }
 
   if (input.website) {

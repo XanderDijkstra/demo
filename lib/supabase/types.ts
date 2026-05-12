@@ -48,6 +48,7 @@ export type ScoreBreakdown = {
   has_phone?: number;
   org_form_as?: number;
   target_nace?: number;
+  is_handverker?: number;
   has_website?: number;
   has_real_address?: number;
   freshly_founded?: number;
@@ -58,6 +59,7 @@ export type ScoringWeights = {
   has_phone: number;
   org_form_as: number;
   target_nace: number;
+  is_handverker: number;
   has_website: number;
   has_real_address: number;
   freshly_founded: number;

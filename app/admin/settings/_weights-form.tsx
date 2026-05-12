@@ -19,6 +19,7 @@ const FIELDS: Array<{
   { key: "has_phone", label: "Har telefon", hint: "telefon eller mobil i Brreg" },
   { key: "org_form_as", label: "Selskapsform AS/ASA", hint: "innskutt kapital" },
   { key: "target_nace", label: "Målnæring (NACE)", hint: "matcher liste under" },
+  { key: "is_handverker", label: "Håndverker", hint: "NACE 41.x / 43.x / 81.30" },
   { key: "has_website", label: "Har nettside", hint: "hjemmeside i Brreg" },
   { key: "has_real_address", label: "Reell adresse", hint: "ikke postboks" },
   { key: "freshly_founded", label: "Nystiftet", hint: "siste 7 dager" },
