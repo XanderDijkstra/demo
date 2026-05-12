@@ -43,6 +43,7 @@ import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates"
 
 import { EmailEditor } from "./_email-editor";
 import { ProposalButton } from "./_proposal-button";
+import { ReplyToggle } from "./_reply-toggle";
 import { SendEmailButton } from "./_send-email-button";
 import { SiteCard } from "./_site-card";
 import { StatusActions } from "./_status-actions";
@@ -409,7 +410,14 @@ export default async function LeadDetailPage({
                           {entry.subject}
                         </span>
                       </div>
-                      <OutreachStatusBadge status={entry.status} />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <ReplyToggle
+                          orgNr={lead.org_nr}
+                          emailId={entry.id}
+                          replied={!!entry.replied_at}
+                        />
+                        <OutreachStatusBadge status={entry.status} />
+                      </div>
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="truncate">→ {entry.to_email}</span>
@@ -460,6 +468,16 @@ export default async function LeadDetailPage({
                           <span className="inline-flex items-center gap-1 text-destructive">
                             <Ban className="h-3 w-3" />
                             bounce
+                          </span>
+                        ) : null}
+                        {entry.replied_at ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            besvart{" "}
+                            {formatDistanceToNow(new Date(entry.replied_at), {
+                              addSuffix: true,
+                              locale: nb,
+                            })}
                           </span>
                         ) : null}
                       </div>

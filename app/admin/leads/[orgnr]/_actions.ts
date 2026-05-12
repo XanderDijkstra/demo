@@ -284,3 +284,35 @@ export async function unpublishLeadSiteAction(
   }
   return { ok: true };
 }
+
+// ─── Mark a single outreach email as replied / unreplied ────────────────────
+
+export async function toggleEmailReplied(
+  orgNr: string,
+  emailId: string,
+  markReplied: boolean
+): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!emailId) return { ok: false, error: "Mangler email-id" };
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("outreach_emails")
+    .update({ replied_at: markReplied ? new Date().toISOString() : null })
+    .eq("id", emailId)
+    .eq("org_nr", orgNr);
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: markReplied ? "outreach.email.replied" : "outreach.email.unreplied",
+    entity_type: "outreach_email",
+    entity_id: emailId,
+    metadata: { org_nr: orgNr },
+  });
+
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath("/admin/outreach");
+  return { ok: true };
+}

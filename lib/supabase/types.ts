@@ -280,6 +280,7 @@ export type Database = {
           complained_at: string | null;
           opened_at: string | null;
           clicked_at: string | null;
+          replied_at: string | null;
           last_event: string | null;
           last_event_at: string | null;
           open_count: number;
@@ -302,6 +303,7 @@ export type Database = {
           complained_at?: string | null;
           opened_at?: string | null;
           clicked_at?: string | null;
+          replied_at?: string | null;
           last_event?: string | null;
           last_event_at?: string | null;
           open_count?: number;
@@ -324,6 +326,7 @@ export type Database = {
           complained_at?: string | null;
           opened_at?: string | null;
           clicked_at?: string | null;
+          replied_at?: string | null;
           last_event?: string | null;
           last_event_at?: string | null;
           open_count?: number;
