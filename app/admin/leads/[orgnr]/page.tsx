@@ -42,6 +42,7 @@ import type {
 import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
 
 import { EmailEditor } from "./_email-editor";
+import { ProposalButton } from "./_proposal-button";
 import { SendEmailButton } from "./_send-email-button";
 import { SiteCard } from "./_site-card";
 import { StatusActions } from "./_status-actions";
@@ -213,6 +214,7 @@ export default async function LeadDetailPage({
             <div className="flex flex-wrap items-center gap-2">
               <StatusActions orgNr={lead.org_nr} current={lead.status} />
               <div className="flex-1" />
+              <ProposalButton companyName={lead.name} />
               <SendEmailButton
                 orgNr={lead.org_nr}
                 to={lead.email}
