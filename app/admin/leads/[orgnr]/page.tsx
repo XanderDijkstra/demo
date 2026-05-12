@@ -28,6 +28,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getActiveDealByOrgNr } from "@/lib/deals";
 import { publicSiteUrl } from "@/lib/jobs/generate-site";
 import { checkOutreachReadiness, fetchLeadByOrgNr } from "@/lib/leads";
 import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
@@ -41,6 +42,7 @@ import type {
 } from "@/lib/supabase/types";
 import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
 
+import { DealSection } from "./_deal-section";
 import { EmailEditor } from "./_email-editor";
 import { ProposalButton } from "./_proposal-button";
 import { ReplyToggle } from "./_reply-toggle";
@@ -120,7 +122,7 @@ export default async function LeadDetailPage({
   if (!lead) notFound();
 
   const supabase = getSupabaseAdmin();
-  const [historyRes, fromAddress, replyTo, readiness, siteRes] =
+  const [historyRes, fromAddress, replyTo, readiness, siteRes, activeDeal] =
     await Promise.all([
       supabase
         .from("outreach_emails")
@@ -136,6 +138,7 @@ export default async function LeadDetailPage({
         .select("*")
         .eq("org_nr", lead.org_nr)
         .maybeSingle(),
+      getActiveDealByOrgNr(lead.org_nr),
     ]);
   const outreachHistory = (historyRes.data ?? []) as OutreachEmail[];
   const generatedSite = (siteRes.data as GeneratedSite | null) ?? null;
@@ -216,7 +219,7 @@ export default async function LeadDetailPage({
             <div className="flex flex-wrap items-center gap-2">
               <StatusActions orgNr={lead.org_nr} current={lead.status} />
               <div className="flex-1" />
-              <ProposalButton companyName={lead.name} />
+              <ProposalButton orgNr={lead.org_nr} companyName={lead.name} />
               <SendEmailButton
                 orgNr={lead.org_nr}
                 to={lead.email}
@@ -229,6 +232,20 @@ export default async function LeadDetailPage({
                 siteUrl={publishedSite ? publicSiteUrl(lead.org_nr) : null}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Deal / CRM */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Deal</CardTitle>
+            <CardDescription>
+              Salgs­pipeline-status for dette leadet. Vises i CRM-kanban under{" "}
+              <code className="font-mono">/admin/crm</code>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DealSection orgNr={lead.org_nr} deal={activeDeal} />
           </CardContent>
         </Card>
 

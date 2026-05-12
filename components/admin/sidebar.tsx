@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Handshake,
   LayoutDashboard,
   Mail,
   Palette,
@@ -23,6 +24,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
+  { label: "CRM", href: "/admin/crm", icon: Handshake },
   { label: "Maler", href: "/admin/templates", icon: Palette },
   { label: "Utsendelser", href: "/admin/outreach", icon: Mail },
   { label: "Kø", href: "/admin/queue", icon: Activity },

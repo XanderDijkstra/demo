@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
+  createManualDeal,
+  ensureDealForReply,
+  isValidDealStage,
+  setDealStage,
+  updateDealFields,
+} from "@/lib/deals";
+import {
   runGenerateLeadSite,
   unpublishLeadSite,
   publicSiteUrl,
@@ -16,7 +23,7 @@ import {
   sendOutreachEmail,
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { CompanyStatus } from "@/lib/supabase/types";
+import type { CompanyStatus, DealStage } from "@/lib/supabase/types";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
@@ -312,7 +319,52 @@ export async function toggleEmailReplied(
     metadata: { org_nr: orgNr },
   });
 
+  // Auto-create a deal on the first reply mark — this is the CRM intake point.
+  if (markReplied) {
+    await ensureDealForReply(orgNr);
+  }
+
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath("/admin/outreach");
+  revalidatePath("/admin/crm");
+  return { ok: true };
+}
+
+// ─── Deal mutations from the lead detail page ───────────────────────────────
+
+export async function createDealAction(orgNr: string): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  const deal = await createManualDeal(orgNr);
+  if (!deal) return { ok: false, error: "Kunne ikke opprette deal" };
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath("/admin/crm");
+  return { ok: true };
+}
+
+export async function updateDealStageAction(
+  orgNr: string,
+  dealId: string,
+  stage: DealStage,
+  lostReason?: string
+): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidDealStage(stage)) return { ok: false, error: "Ugyldig stage" };
+  const deal = await setDealStage(dealId, stage, { lostReason });
+  if (!deal) return { ok: false, error: "Stage-endring feilet" };
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath("/admin/crm");
+  return { ok: true };
+}
+
+export async function updateDealFieldsAction(
+  orgNr: string,
+  dealId: string,
+  patch: { value_nok?: number | null; notes?: string | null }
+): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  const deal = await updateDealFields(dealId, patch);
+  if (!deal) return { ok: false, error: "Oppdatering feilet" };
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath("/admin/crm");
   return { ok: true };
 }

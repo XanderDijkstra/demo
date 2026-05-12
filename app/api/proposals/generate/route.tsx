@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { z } from "zod";
 
+import { advanceActiveDealStage } from "@/lib/deals";
 import {
   buildProposalData,
   formatNorwegianDate,
@@ -28,6 +29,13 @@ const FormSchema = z.object({
   free_setup: z.coerce.boolean().default(true),
   binding: z.string().trim().max(40).default("Ingen"),
   ad_budget: z.string().trim().max(40).optional(),
+  /** Optional org.nr — when supplied, the active deal (if any) is
+   *  auto-advanced to `proposal_sent` after a successful render. */
+  org_nr: z
+    .string()
+    .trim()
+    .regex(/^\d{9}$/, "Org.nr må være 9 siffer")
+    .optional(),
 });
 
 function sanitizeFilename(s: string): string {
@@ -75,6 +83,12 @@ export async function POST(request: Request) {
     const filename = sanitizeFilename(
       `FX Media - ${data.proposal_title} - ${data.client_name}.pdf`
     );
+
+    // Auto-advance the deal to "Tilbud sendt" if there's an active one.
+    // No-op when no deal exists or no org_nr was passed (preview / ad-hoc).
+    if (input.org_nr) {
+      await advanceActiveDealStage(input.org_nr, "proposal_sent");
+    }
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,

@@ -9,6 +9,12 @@
 export type CompanyStatus = "new" | "reviewed" | "qualified" | "rejected";
 export type ScrapeRunStatus = "running" | "success" | "failed";
 export type ScrapeTriggeredBy = "cron" | "manual";
+export type DealStage =
+  | "replied"
+  | "in_conversation"
+  | "proposal_sent"
+  | "won"
+  | "lost";
 export type OutreachEmailStatus =
   | "queued"
   | "sent"
@@ -172,6 +178,48 @@ export type Database = {
           raw_data?: Record<string, unknown> | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      deals: {
+        Row: {
+          id: string;
+          org_nr: string;
+          stage: DealStage;
+          value_nok: number | null;
+          notes: string | null;
+          lost_reason: string | null;
+          created_at: string;
+          updated_at: string;
+          stage_changed_at: string;
+          won_at: string | null;
+          lost_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_nr: string;
+          stage?: DealStage;
+          value_nok?: number | null;
+          notes?: string | null;
+          lost_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          stage_changed_at?: string;
+          won_at?: string | null;
+          lost_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          org_nr?: string;
+          stage?: DealStage;
+          value_nok?: number | null;
+          notes?: string | null;
+          lost_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          stage_changed_at?: string;
+          won_at?: string | null;
+          lost_at?: string | null;
         };
         Relationships: [];
       };
@@ -515,6 +563,9 @@ export type GeneratedSite =
   Database["public"]["Tables"]["generated_sites"]["Row"];
 export type GeneratedSiteInsert =
   Database["public"]["Tables"]["generated_sites"]["Insert"];
+export type Deal = Database["public"]["Tables"]["deals"]["Row"];
+export type DealInsert = Database["public"]["Tables"]["deals"]["Insert"];
+export type DealUpdate = Database["public"]["Tables"]["deals"]["Update"];
 export type NicheTemplateRow =
   Database["public"]["Tables"]["niche_templates"]["Row"];
 export type NicheTemplateUpdate =

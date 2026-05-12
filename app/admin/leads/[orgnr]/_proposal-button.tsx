@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface Props {
+  orgNr: string;
   companyName: string;
   defaultContact?: string;
 }
@@ -57,7 +58,11 @@ function parseContentDispositionFilename(header: string | null): string | null {
   return null;
 }
 
-export function ProposalButton({ companyName, defaultContact = "" }: Props) {
+export function ProposalButton({
+  orgNr,
+  companyName,
+  defaultContact = "",
+}: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -85,6 +90,7 @@ export function ProposalButton({ companyName, defaultContact = "" }: Props) {
       free_setup: freeSetup,
       binding: binding.trim() || "Ingen",
       ad_budget: isAdsService && adBudget.trim() ? adBudget.trim() : undefined,
+      org_nr: orgNr,
     };
 
     startTransition(async () => {
