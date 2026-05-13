@@ -1,4 +1,4 @@
-import { Kanban, Reply, Users } from "lucide-react";
+import { Kanban, Reply } from "lucide-react";
 
 import { EmptyState } from "@/components/admin/empty-state";
 import { Topbar } from "@/components/admin/topbar";
@@ -9,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DEAL_STAGES, fetchKanban } from "@/lib/deals";
-import { cn } from "@/lib/utils";
+import { fetchKanban } from "@/lib/deals";
 
-import { DealCard } from "./_card";
+import { KanbanBoard } from "./_kanban-board";
 
 export const dynamic = "force-dynamic";
 
@@ -73,49 +72,11 @@ export default async function CrmPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto -mx-6 px-6 pb-4">
-              <div className="grid auto-cols-[minmax(260px,1fr)] grid-flow-col gap-4">
-                {DEAL_STAGES.map((stage) => {
-                  const cards = kanban[stage.value];
-                  return (
-                    <section
-                      key={stage.value}
-                      className="flex min-h-[400px] flex-col rounded-lg border bg-muted/30 p-2"
-                    >
-                      <header className="px-2 pb-2 pt-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <h2 className="text-xs font-semibold uppercase tracking-wider">
-                            {stage.label}
-                          </h2>
-                          <span
-                            className={cn(
-                              "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums",
-                              stage.toneClass
-                            )}
-                          >
-                            {cards.length}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground leading-tight">
-                          {stage.description}
-                        </p>
-                      </header>
+            <p className="text-[11px] text-muted-foreground">
+              Tips: dra et kort mellom kolonnene for å flytte det.
+            </p>
 
-                      <div className="flex-1 space-y-2 overflow-y-auto px-1">
-                        {cards.length === 0 ? (
-                          <div className="flex h-32 items-center justify-center rounded-md border border-dashed text-[11px] text-muted-foreground/70">
-                            <Users className="mr-1.5 h-3 w-3" />
-                            ingen
-                          </div>
-                        ) : (
-                          cards.map((c) => <DealCard key={c.id} card={c} />)
-                        )}
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
-            </div>
+            <KanbanBoard initial={kanban} />
           </>
         )}
       </div>
