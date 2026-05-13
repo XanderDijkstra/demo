@@ -16,6 +16,10 @@ import {
   publicSiteUrl,
 } from "@/lib/jobs/generate-site";
 import {
+  scrapeWebsiteEmail,
+  type EmailCandidate,
+} from "@/lib/jobs/scrape-website-email";
+import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
@@ -112,6 +116,111 @@ export async function updateLeadContactName(
 
   revalidatePath(`/admin/leads/${orgNr}`);
   return { ok: true };
+}
+
+// ─── Email enrichment from website ───────────────────────────────────────────
+
+export type ScrapeEmailActionResult =
+  | {
+      ok: true;
+      saved: boolean;
+      best: EmailCandidate;
+      candidates: EmailCandidate[];
+      fetchedUrls: string[];
+    }
+  | { ok: false; error: string; fetchedUrls: string[] };
+
+export async function scrapeLeadEmail(
+  orgNr: string
+): Promise<ScrapeEmailActionResult> {
+  if (!isValidOrgNr(orgNr)) {
+    return { ok: false, error: "Ugyldig org.nr", fetchedUrls: [] };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data: lead, error: leadError } = await supabase
+    .from("companies")
+    .select("org_nr, website, email")
+    .eq("org_nr", orgNr)
+    .maybeSingle();
+
+  if (leadError) {
+    return { ok: false, error: leadError.message, fetchedUrls: [] };
+  }
+  if (!lead) {
+    return { ok: false, error: "Lead ikke funnet", fetchedUrls: [] };
+  }
+  if (!lead.website) {
+    return {
+      ok: false,
+      error: "Ingen nettside å skrape — legg til hjemmeside først",
+      fetchedUrls: [],
+    };
+  }
+
+  const result = await scrapeWebsiteEmail(lead.website);
+  if (!result.ok) {
+    await supabase.from("audit_log").insert({
+      actor: "manual",
+      action: "lead.email.scrape.failed",
+      entity_type: "company",
+      entity_id: orgNr,
+      metadata: {
+        website: lead.website,
+        error: result.error,
+        fetched_urls: result.fetchedUrls,
+      },
+    });
+    return result;
+  }
+
+  // Auto-save only when (a) there is no email yet AND (b) the top candidate
+  // is clearly the best (score gap of ≥ 30 over second place, or it's the only
+  // same-domain hit). Otherwise leave it to the operator to pick.
+  let saved = false;
+  if (!lead.email) {
+    const top = result.best;
+    const second = result.candidates[1];
+    const isClearWinner =
+      !second ||
+      top.score - second.score >= 30 ||
+      top.score >= 100;
+    if (isClearWinner) {
+      const { error: updateError } = await supabase
+        .from("companies")
+        .update({ email: top.email })
+        .eq("org_nr", orgNr);
+      if (!updateError) {
+        saved = true;
+      }
+    }
+  }
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: saved
+      ? "lead.email.scrape.auto_saved"
+      : "lead.email.scrape.candidates",
+    entity_type: "company",
+    entity_id: orgNr,
+    metadata: {
+      website: lead.website,
+      best: result.best.email,
+      saved,
+      candidate_count: result.candidates.length,
+      fetched_urls: result.fetchedUrls,
+    },
+  });
+
+  revalidatePath(`/admin/leads/${orgNr}`);
+
+  return {
+    ok: true,
+    saved,
+    best: result.best,
+    candidates: result.candidates,
+    fetchedUrls: result.fetchedUrls,
+  };
 }
 
 // ─── Email field ─────────────────────────────────────────────────────────────

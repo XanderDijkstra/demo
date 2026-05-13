@@ -306,7 +306,11 @@ export default async function LeadDetailPage({
                 value={lead.mobile}
                 href={lead.mobile ? `tel:${lead.mobile}` : undefined}
               />
-              <EmailEditor orgNr={lead.org_nr} initialEmail={lead.email} />
+              <EmailEditor
+                orgNr={lead.org_nr}
+                initialEmail={lead.email}
+                hasWebsite={!!lead.website}
+              />
               <ContactRow
                 icon={ExternalLink}
                 label="Nettside"
