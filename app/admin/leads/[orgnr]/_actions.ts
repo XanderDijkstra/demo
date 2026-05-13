@@ -73,6 +73,47 @@ export async function updateLeadStatus(
   return { ok: true };
 }
 
+// ─── Contact person ──────────────────────────────────────────────────────────
+
+const ContactNameSchema = z.string().trim().min(1).max(120);
+
+export async function updateLeadContactName(
+  orgNr: string,
+  name: string | null
+): Promise<ActionResult> {
+  if (!isValidOrgNr(orgNr)) {
+    return { ok: false, error: "Ugyldig org.nr" };
+  }
+
+  let normalized: string | null;
+  if (name == null || name.trim() === "") {
+    normalized = null;
+  } else {
+    const parsed = ContactNameSchema.safeParse(name);
+    if (!parsed.success) return { ok: false, error: "Ugyldig navn" };
+    normalized = parsed.data;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("companies")
+    .update({ contact_name: normalized })
+    .eq("org_nr", orgNr);
+
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "lead.contact_name.updated",
+    entity_type: "company",
+    entity_id: orgNr,
+    metadata: { contact_name: normalized },
+  });
+
+  revalidatePath(`/admin/leads/${orgNr}`);
+  return { ok: true };
+}
+
 // ─── Email field ─────────────────────────────────────────────────────────────
 
 const EmailSchema = z.string().trim().email().max(254);
@@ -145,7 +186,7 @@ export async function sendLeadEmail(
   // Load the lead so we can validate email + apply placeholders.
   const { data: lead, error: leadError } = await supabase
     .from("companies")
-    .select("org_nr, name, email, kommune")
+    .select("org_nr, name, email, kommune, contact_name")
     .eq("org_nr", orgNr)
     .maybeSingle();
 
@@ -173,11 +214,14 @@ export async function sendLeadEmail(
       .eq("org_nr", orgNr)
       .maybeSingle(),
   ]);
+  const firstName = lead.contact_name?.trim().split(/\s+/)[0] ?? null;
   const placeholders = {
     company_name: lead.name,
     kommune: lead.kommune,
     org_nr: lead.org_nr,
     site_url: siteRow.data ? publicSiteUrl(orgNr) : "",
+    contact_name: lead.contact_name,
+    contact_first_name: firstName,
   };
   const subject = applyPlaceholders(parsed.data.subject, placeholders);
   const body = applyPlaceholders(parsed.data.body, placeholders);

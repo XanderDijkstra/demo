@@ -100,6 +100,7 @@ export type Database = {
           mobile: string | null;
           email: string | null;
           website: string | null;
+          contact_name: string | null;
           employee_count: number | null;
           vat_registered: boolean;
           bankrupt: boolean;
@@ -132,6 +133,7 @@ export type Database = {
           mobile?: string | null;
           email?: string | null;
           website?: string | null;
+          contact_name?: string | null;
           employee_count?: number | null;
           vat_registered?: boolean;
           bankrupt?: boolean;
@@ -164,6 +166,7 @@ export type Database = {
           mobile?: string | null;
           email?: string | null;
           website?: string | null;
+          contact_name?: string | null;
           employee_count?: number | null;
           vat_registered?: boolean;
           bankrupt?: boolean;

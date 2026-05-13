@@ -42,6 +42,7 @@ import type {
 } from "@/lib/supabase/types";
 import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
 
+import { ContactNameEditor } from "./_contact-name-editor";
 import { DealSection } from "./_deal-section";
 import { EmailEditor } from "./_email-editor";
 import { ProposalButton } from "./_proposal-button";
@@ -289,6 +290,10 @@ export default async function LeadDetailPage({
               <CardTitle className="text-base">Kontakt</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2.5 text-sm">
+              <ContactNameEditor
+                orgNr={lead.org_nr}
+                initialName={lead.contact_name}
+              />
               <ContactRow
                 icon={Phone}
                 label="Telefon"

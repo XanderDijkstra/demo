@@ -17,6 +17,7 @@ import {
   Phone,
   RefreshCw,
   Smartphone,
+  User,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -222,6 +223,12 @@ export function Swiper({ leads }: Props) {
               <h2 className="text-2xl font-semibold tracking-tight leading-tight">
                 {current.name}
               </h2>
+              {current.contact_name ? (
+                <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground/80">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>{current.contact_name}</span>
+                </div>
+              ) : null}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                 <span className="font-mono">{current.org_nr}</span>
                 {current.org_form ? (

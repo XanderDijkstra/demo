@@ -104,6 +104,8 @@ export function SendEmailButton({
             <DialogDescription>
               Variabler:{" "}
               <code className="text-[11px]">{"{{company_name}}"}</code>{" "}
+              <code className="text-[11px]">{"{{contact_name}}"}</code>{" "}
+              <code className="text-[11px]">{"{{contact_first_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{kommune}}"}</code>{" "}
               <code className="text-[11px]">{"{{org_nr}}"}</code>{" "}
               <code className="text-[11px]">{"{{site_url}}"}</code>
