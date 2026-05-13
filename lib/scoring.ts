@@ -21,6 +21,18 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
   freshly_founded: 10,
 };
 
+/** Norwegian labels for each scoring signal — used by the lead detail page,
+ *  the swipe card, and anywhere else we surface the score breakdown. */
+export const SCORE_LABELS_NB: Record<keyof ScoringWeights, string> = {
+  has_phone: "Har telefon",
+  org_form_as: "Selskapsform AS/ASA",
+  target_nace: "Målnæring (NACE)",
+  is_handverker: "Håndverker",
+  has_website: "Har nettside",
+  has_real_address: "Reell forretningsadresse",
+  freshly_founded: "Nystiftet",
+};
+
 const AS_LIKE_FORMS = new Set(["AS", "ASA"]);
 
 /**
