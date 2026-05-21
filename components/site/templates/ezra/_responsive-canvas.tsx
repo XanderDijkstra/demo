@@ -7,18 +7,16 @@ interface Props {
 }
 
 /**
- * Scales a fixed-width Framer canvas to fill the viewport horizontally.
+ * Fits a fixed-width Framer canvas inside the viewport without
+ * upscaling. Framer's exported variants ship with hardcoded pixel
+ * widths (Desktop=1400, Tablet=768, Phone=200). On viewports wider
+ * than the canvas we just center the native design — upscaling looks
+ * chunky. On narrower viewports we scale down so nothing overflows.
  *
- * Framer's exported variants ship with hardcoded pixel widths
- * (Desktop=1400, Tablet=768, Phone=200). This wrapper:
- *   1. Measures the intrinsic width via scrollWidth (transform-agnostic).
- *   2. Computes scale = viewport / intrinsic.
- *   3. Applies transform: scale() with origin top-left.
- *   4. Sets the outer wrapper's height to the *scaled* inner height so
- *      following sections don't overlap.
- *
- * Re-measures on window resize and when the child content changes size
- * (ResizeObserver), via requestAnimationFrame to coalesce.
+ * Measures the intrinsic scrollWidth/scrollHeight (transform-agnostic)
+ * via ResizeObserver, applies transform: scale() with origin top-
+ * center, and sets the wrapper height to the scaled height so
+ * following sections don't overlap.
  */
 export function ResponsiveCanvas({ children }: Props) {
   const innerRef = useRef<HTMLDivElement>(null);
@@ -40,7 +38,9 @@ export function ResponsiveCanvas({ children }: Props) {
       const intrinsicHeight = inner.scrollHeight;
       const viewport = window.innerWidth;
       if (intrinsicWidth <= 0) return;
-      const nextScale = viewport / intrinsicWidth;
+      // Never upscale — capped at 1. Wide screens see the design centered
+      // at its native canvas width; narrow screens scale it down to fit.
+      const nextScale = Math.min(1, viewport / intrinsicWidth);
       const nextHeight = intrinsicHeight * nextScale;
       setMetrics((prev) =>
         Math.abs(prev.scale - nextScale) < 0.0005 &&
@@ -74,6 +74,8 @@ export function ResponsiveCanvas({ children }: Props) {
         width: "100%",
         height: metrics.height || undefined,
         overflow: "hidden",
+        display: "flex",
+        justifyContent: "center",
       }}
     >
       <div
@@ -81,7 +83,7 @@ export function ResponsiveCanvas({ children }: Props) {
         style={{
           width: "fit-content",
           transform: `scale(${metrics.scale})`,
-          transformOrigin: "top left",
+          transformOrigin: "top center",
         }}
       >
         {children}
