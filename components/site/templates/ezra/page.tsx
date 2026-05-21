@@ -26,6 +26,7 @@ import Stats from "./Stats.js";
 import WhyChoose from "./WhyChoose.js";
 // @ts-expect-error -- no .d.ts
 import { WithBreakpoints } from "./_responsive-runtime.js";
+import { ResponsiveCanvas } from "./_responsive-canvas";
 
 // Map each section's Framer variant ids (Desktop / Tablet / Phone) onto
 // our breakpoints so the runtime hook picks the correct one per viewport.
@@ -52,36 +53,56 @@ export function EzraPage() {
   return (
     <div className="bg-white text-black min-h-screen">
       <EzraHeader />
-      <main className="w-full mx-auto flex flex-col items-center">
-        <section id="hero" className="w-full flex justify-center">
-          <WithBreakpoints Component={Hero} variants={HERO_V} />
+      <main className="w-full">
+        <section id="hero">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Hero} variants={HERO_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="why-choose" className="w-full flex justify-center">
-          <WithBreakpoints Component={WhyChoose} variants={WHYCHOOSE_V} />
+        <section id="why-choose">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={WhyChoose} variants={WHYCHOOSE_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="about" className="w-full flex justify-center">
-          <WithBreakpoints Component={About} variants={ABOUT_V} />
+        <section id="about">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={About} variants={ABOUT_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="service" className="w-full flex justify-center">
-          <WithBreakpoints Component={Service} variants={SERVICE_V} />
+        <section id="service">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Service} variants={SERVICE_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="stats" className="w-full flex justify-center">
-          <WithBreakpoints Component={Stats} variants={STATS_V} />
+        <section id="stats">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Stats} variants={STATS_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="outdoor" className="w-full flex justify-center">
-          <WithBreakpoints Component={Outdoor} variants={OUTDOOR_V} />
+        <section id="outdoor">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Outdoor} variants={OUTDOOR_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="how-it-works" className="w-full flex justify-center">
-          <WithBreakpoints Component={HowItWork} variants={HOWITWORK_V} />
+        <section id="how-it-works">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={HowItWork} variants={HOWITWORK_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="review" className="w-full flex justify-center">
-          <WithBreakpoints Component={Review} variants={REVIEW_V} />
+        <section id="review">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Review} variants={REVIEW_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="gallery" className="w-full flex justify-center">
-          <WithBreakpoints Component={Gallery} variants={GALLERY_V} />
+        <section id="gallery">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Gallery} variants={GALLERY_V} />
+          </ResponsiveCanvas>
         </section>
-        <section id="faq" className="w-full flex justify-center">
-          <WithBreakpoints Component={Faq} variants={FAQ_V} />
+        <section id="faq">
+          <ResponsiveCanvas>
+            <WithBreakpoints Component={Faq} variants={FAQ_V} />
+          </ResponsiveCanvas>
         </section>
       </main>
     </div>
