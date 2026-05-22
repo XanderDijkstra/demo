@@ -8,7 +8,7 @@
  * Hero / CTA headlines use {{accent}}…{{/accent}} markers around the words
  * that should render in orange (rendered inline in pdf.tsx).
  *
- * {client_name} placeholder is substituted at form-prefill hour.
+ * {client_name} placeholder is substituted at form-prefill time.
  */
 
 import type { Deliverable, ServiceType } from "./types";

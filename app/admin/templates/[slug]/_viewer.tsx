@@ -13,7 +13,7 @@ interface Props {
 
 const HERO_LAYOUT_LABEL: Record<HeroLayout, string> = {
   split: "Split",
-  centered: "Sentrert",
+  centered: "Centered",
   overlay: "Overlay",
 };
 
@@ -53,14 +53,14 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
           </div>
         </div>
 
-        <Section title="Farger">
+        <Section title="Colors">
           <SwatchRow label="Primary" value={niche.primaryColor} />
-          <SwatchRow label="Aksent" value={niche.accentColor} />
+          <SwatchRow label="Accent" value={niche.accentColor} />
         </Section>
 
         <Section title="Hero">
           <KeyValue label="Layout" value={HERO_LAYOUT_LABEL[niche.heroLayout]} />
-          <KeyValue label="Bilde-emne" value={niche.heroImageKeyword} />
+          <KeyValue label="Image keyword" value={niche.heroImageKeyword} />
           <KeyValue label="CTA" value={niche.ctaText} />
         </Section>
 
@@ -93,7 +93,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
         <div className="rounded-md border border-dashed bg-muted/40 p-3 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-medium">
             <MessageSquare className="h-3.5 w-3.5" />
-            Endre denne malen
+            Edit this template
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
             Design work happens in the Claude chat — share screenshots
@@ -110,7 +110,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
             )}
           >
             {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            {copied ? "Kopiert" : "Kopier chat-prompt"}
+            {copied ? "Copied" : "Copy chat prompt"}
           </button>
         </div>
       </aside>
@@ -119,7 +119,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
       <div className="relative flex flex-col bg-muted/30">
         <div className="flex items-center justify-between gap-2 border-b bg-card px-4 py-2 text-xs">
           <span className="text-muted-foreground">
-            Forhåndsvisning · sample-data
+            Preview · sample data
           </span>
           <div className="flex items-center gap-2">
             <a
@@ -128,7 +128,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              Åpne i ny fane
+              Open in new tab
               <ExternalLink className="h-3 w-3" />
             </a>
             <span className="text-muted-foreground/50">·</span>

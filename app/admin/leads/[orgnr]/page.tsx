@@ -391,7 +391,7 @@ export default async function LeadDetailPage({
         {/* NACE + flags */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Industry og status</CardTitle>
+            <CardTitle className="text-base">Industry and status</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>

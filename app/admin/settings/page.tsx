@@ -193,7 +193,7 @@ export default async function SettingsPage() {
             <CardTitle className="text-base">Demo siter</CardTitle>
             <CardDescription>
               AI-genererte landingssider per lead. Modellen settes i
-              <code className="font-mono mx-1">claude_model</code>-settnone
+              <code className="font-mono mx-1">claude_model</code> setting
               (ikke redigerbar fra UI enda).
             </CardDescription>
           </CardHeader>

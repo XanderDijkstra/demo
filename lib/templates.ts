@@ -75,7 +75,7 @@ const PLUMBER: NicheConfig = {
     },
   ],
   ctaText: "Bestill befaring",
-  benefitTags: ["Døgnvakt", "Fastpris", "5 yearss garanti"],
+  benefitTags: ["Døgnvakt", "Fastpris", "5 års garanti"],
 };
 
 const ELECTRICIAN: NicheConfig = {
@@ -97,7 +97,7 @@ const ELECTRICIAN: NicheConfig = {
         "Installasjon av elbillader, smarte lyskontroller og nettverk i hele boligen.",
     },
     {
-      title: "Industry og industri",
+      title: "Næring og industri",
       description:
         "Prosjektering og utførelse for kontorbygg, butikker og verksteder.",
     },
@@ -120,14 +120,14 @@ const RESTAURANT: NicheConfig = {
         "Fersk meny basert på sesongens råvarer fra lokale produsenter.",
     },
     {
-      title: "Company og catering",
+      title: "Selskap og catering",
       description:
         "Bryllup, runde tall, firmafest. Vi planlegger og leverer hele opplevelsen.",
     },
     {
       title: "Take-away",
       description:
-        "Bestill via nett — klart til avhentning på 20 minutes.",
+        "Bestill via nett — klart til avhentning på 20 minutter.",
     },
   ],
   ctaText: "Reserver bord",
@@ -145,7 +145,7 @@ const SALON: NicheConfig = {
     {
       title: "Klipp og styling",
       description:
-        "Personlig konsultasjon, presisjonsklipp og moderne styling for alle hyearstyper.",
+        "Personlig konsultasjon, presisjonsklipp og moderne styling for alle hårtyper.",
     },
     {
       title: "Farge og striper",
@@ -155,11 +155,11 @@ const SALON: NicheConfig = {
     {
       title: "Brud og bryllup",
       description:
-        "Hyears og oppsett til den store dagen — prøvehour inkludert.",
+        "Hår og oppsett til den store dagen — prøvetime inkludert.",
     },
   ],
-  ctaText: "Book hour",
-  benefitTags: ["Online booking", "Erfarne frisører", "Plant-based produkter"],
+  ctaText: "Book time",
+  benefitTags: ["Online booking", "Erfarne frisører", "Plantebaserte produkter"],
 };
 
 const AUTO_REPAIR: NicheConfig = {
@@ -178,7 +178,7 @@ const AUTO_REPAIR: NicheConfig = {
     {
       title: "Service og reparasjon",
       description:
-        "From olje­skift til motorrenovering — alle merker, fast pris på vanlige jobber.",
+        "Fra olje­skift til motorrenovering — alle merker, fast pris på vanlige jobber.",
     },
     {
       title: "Dekk og hjul",
@@ -186,8 +186,8 @@ const AUTO_REPAIR: NicheConfig = {
         "Hjulskift, oppbevaring av dekk og avansert hjulstilling i moderne lokaler.",
     },
   ],
-  ctaText: "Bestill verkstedhour",
-  benefitTags: ["Lånebil", "All merker", "Fast pris"],
+  ctaText: "Bestill verkstedtime",
+  benefitTags: ["Lånebil", "Alle merker", "Fast pris"],
 };
 
 const LANDSCAPER: NicheConfig = {
@@ -209,7 +209,7 @@ const LANDSCAPER: NicheConfig = {
     {
       title: "Steinarbeid",
       description:
-        "Solid steinlegging, oppkjørsler og terrasser som varer i mange years.",
+        "Solid steinlegging, oppkjørsler og terrasser som varer i mange år.",
     },
     {
       title: "Gjerder",
@@ -224,7 +224,7 @@ const LANDSCAPER: NicheConfig = {
     {
       title: "Grunnarbeid",
       description:
-        "Outgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
+        "Utgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
     },
     {
       title: "Vedlikehold",
@@ -233,7 +233,7 @@ const LANDSCAPER: NicheConfig = {
     },
   ],
   ctaText: "Be om tilbud",
-  benefitTags: ["10+ yearss erfaring", "Fast pris", "Personlig service"],
+  benefitTags: ["10+ års erfaring", "Fast pris", "Personlig service"],
 };
 
 const CONTRACTOR: NicheConfig = {
@@ -249,7 +249,7 @@ const CONTRACTOR: NicheConfig = {
     {
       title: "Total boligrenovasjon",
       description:
-        "From første tegning til siste finish — vi tar hele renovernone og leverer et hjem som føles nytt fra grunnen.",
+        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles nytt fra grunnen.",
     },
     {
       title: "Kjøkken og stueoppussing",
@@ -302,7 +302,7 @@ const GENERIC: NicheConfig = {
     {
       title: "Kvalitet i alle ledd",
       description:
-        "From første kontakt til done leveranse — kvalitet er hovedfokus.",
+        "Fra første kontakt til ferdig leveranse — kvalitet er hovedfokus.",
     },
   ],
   ctaText: "Ta kontakt",

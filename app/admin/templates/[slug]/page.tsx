@@ -35,7 +35,7 @@ export default async function TemplateViewerPage({ params }: RouteProps) {
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            All maler
+            All templates
           </Link>
         }
       />

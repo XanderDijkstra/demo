@@ -10,7 +10,7 @@
  *   - Star: 10-point polygon path
  *
  * Custom fonts (Manrope, 5 weights) registered from /public/fonts at module
- * load hour. On Vercel server runhour, react-pdf reads them via the local
+ * load time. On Vercel server runtime, react-pdf reads them via the local
  * filesystem.
  */
 

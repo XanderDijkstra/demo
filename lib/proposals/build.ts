@@ -84,7 +84,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
     hero,
     sublead: `Vi har satt sammen et tilbud for ${input.client_name}. Klare leveranser, åpne priser og full transparens fra start til slutt.`,
     deliverables_intro:
-      "Her er nøyaktig hva som inngyears i tilbudet. Ingen skjulte ledd, none tilleggsfakturaer for det som er listet.",
+      "Her er nøyaktig hva som inngår i tilbudet. Ingen skjulte ledd, ingen tilleggsfakturaer for det som er listet.",
     deliverables: tpl.deliverables,
     pricing: {
       intro:
@@ -139,7 +139,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
         {
           num: "04",
           title: "Lansering og oppfølging",
-          desc: "Vi lanserer, gyears gjennom resultatet sammen, og følger opp månedlig fremover.",
+          desc: "Vi lanserer, går gjennom resultatet sammen, og følger opp månedlig fremover.",
         },
       ],
     },
