@@ -7,17 +7,32 @@ interface Props {
 }
 
 /**
- * Fits a fixed-width Framer canvas inside the viewport without
- * upscaling. Framer's exported variants ship with hardcoded pixel
- * widths (Desktop=1400, Tablet=768, Phone=200). On viewports wider
- * than the canvas we just center the native design — upscaling looks
- * chunky. On narrower viewports we scale down so nothing overflows.
+ * Fits a fixed-width Framer canvas inside the viewport.
  *
- * Measures the intrinsic scrollWidth/scrollHeight (transform-agnostic)
- * via ResizeObserver, applies transform: scale() with origin top-
- * center, and sets the wrapper height to the scaled height so
- * following sections don't overlap.
+ * Framer's exported variants ship with hardcoded pixel widths
+ * (Desktop=1400, Tablet=768, Phone≈200). Each is designed at a
+ * different "natural" rendering width, so we apply different scaling
+ * rules per breakpoint, detected from the measured intrinsic width:
+ *
+ *   - intrinsic ≥ 1200 → Desktop variant. Cap scale at 1.0 — its
+ *     1400px native size is the intended display size; upscaling
+ *     makes fonts look chunky on wide monitors.
+ *   - 700 ≤ intrinsic < 1200 → Tablet variant. Cap at 1.4 — small
+ *     upscale OK to fill tablet/laptop viewports without distortion.
+ *   - intrinsic < 700 → Phone variant. No cap — the 200px canvas is
+ *     clearly meant to be upscaled to viewport width on real phones.
+ *
+ * Always scales DOWN if viewport is narrower than the canvas.
+ * Re-measures via ResizeObserver and on window resize.
  */
+function computeScale(intrinsicWidth: number, viewportWidth: number): number {
+  if (intrinsicWidth <= 0) return 1;
+  const ratio = viewportWidth / intrinsicWidth;
+  if (intrinsicWidth >= 1200) return Math.min(1, ratio);
+  if (intrinsicWidth >= 700) return Math.min(1.4, ratio);
+  return ratio;
+}
+
 export function ResponsiveCanvas({ children }: Props) {
   const innerRef = useRef<HTMLDivElement>(null);
   const [metrics, setMetrics] = useState<{ scale: number; height: number }>({
@@ -38,9 +53,7 @@ export function ResponsiveCanvas({ children }: Props) {
       const intrinsicHeight = inner.scrollHeight;
       const viewport = window.innerWidth;
       if (intrinsicWidth <= 0) return;
-      // Never upscale — capped at 1. Wide screens see the design centered
-      // at its native canvas width; narrow screens scale it down to fit.
-      const nextScale = Math.min(1, viewport / intrinsicWidth);
+      const nextScale = computeScale(intrinsicWidth, viewport);
       const nextHeight = intrinsicHeight * nextScale;
       setMetrics((prev) =>
         Math.abs(prev.scale - nextScale) < 0.0005 &&
