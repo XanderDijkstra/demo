@@ -1,6 +1,7 @@
 "use client";
 
 import "./_responsive-runtime.css";
+import "./ezra-overrides.css";
 
 import Link from "next/link";
 
@@ -26,7 +27,6 @@ import Stats from "./Stats.js";
 import WhyChoose from "./WhyChoose.js";
 // @ts-expect-error -- no .d.ts
 import { WithBreakpoints } from "./_responsive-runtime.js";
-import { ResponsiveCanvas } from "./_responsive-canvas";
 
 // Map each section's Framer variant ids (Desktop / Tablet / Phone) onto
 // our breakpoints so the runtime hook picks the correct one per viewport.
@@ -51,58 +51,38 @@ const NAV_LINKS = [
 
 export function EzraPage() {
   return (
-    <div className="bg-white text-black min-h-screen">
+    <div className="ezra-fullwidth bg-white text-black min-h-screen">
       <EzraHeader />
       <main className="w-full">
         <section id="hero">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Hero} variants={HERO_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Hero} variants={HERO_V} />
         </section>
         <section id="why-choose">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={WhyChoose} variants={WHYCHOOSE_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={WhyChoose} variants={WHYCHOOSE_V} />
         </section>
         <section id="about">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={About} variants={ABOUT_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={About} variants={ABOUT_V} />
         </section>
         <section id="service">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Service} variants={SERVICE_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Service} variants={SERVICE_V} />
         </section>
         <section id="stats">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Stats} variants={STATS_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Stats} variants={STATS_V} />
         </section>
         <section id="outdoor">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Outdoor} variants={OUTDOOR_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Outdoor} variants={OUTDOOR_V} />
         </section>
         <section id="how-it-works">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={HowItWork} variants={HOWITWORK_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={HowItWork} variants={HOWITWORK_V} />
         </section>
         <section id="review">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Review} variants={REVIEW_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Review} variants={REVIEW_V} />
         </section>
         <section id="gallery">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Gallery} variants={GALLERY_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Gallery} variants={GALLERY_V} />
         </section>
         <section id="faq">
-          <ResponsiveCanvas>
-            <WithBreakpoints Component={Faq} variants={FAQ_V} />
-          </ResponsiveCanvas>
+          <WithBreakpoints Component={Faq} variants={FAQ_V} />
         </section>
       </main>
     </div>

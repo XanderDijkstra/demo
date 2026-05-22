@@ -1,0 +1,32 @@
+/* Make each Framer variant's outer canvas fill the viewport width.
+ *
+ * Framer's export sets a fixed pixel width on the outer container per
+ * variant (Desktop=1400px, Tablet=768px, Phone≈200px). That leaves big
+ * white gutters on monitors wider than 1400px and squashes the phone
+ * variant on real mobiles.
+ *
+ * Overriding the variant container to width: 100% lets the background
+ * image / section frame stretch edge-to-edge, while the internal
+ * `max-width: 1204px` (and similar) rules baked into the Framer CSS
+ * still keep the actual content centered at the original design width.
+ */
+
+.ezra-fullwidth [data-framer-name="Desktop"],
+.ezra-fullwidth [data-framer-name="Tablet"],
+.ezra-fullwidth [data-framer-name="Phone"],
+.ezra-fullwidth [data-framer-name^="Variant"],
+.ezra-fullwidth [data-framer-name^="Desktop v"],
+.ezra-fullwidth [data-framer-name^="Laptop"],
+.ezra-fullwidth [data-framer-name^="Tablet V"],
+.ezra-fullwidth [data-framer-name^="Phone V"],
+.ezra-fullwidth [data-framer-name^="Phone v"] {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Direct child of each <section> is the WithBreakpoints wrapper that
+ * Framer fills — also force it to span the whole row so the outer
+ * variant has room to grow. */
+.ezra-fullwidth section > div {
+  width: 100%;
+}
