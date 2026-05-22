@@ -61,7 +61,7 @@ export default async function DashboardPage() {
     <>
       <Topbar
         title="Dashboard"
-        description="Daglig oversikt over leads fra Brreg"
+        description="Daily overview of leads from Brreg"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -85,20 +85,20 @@ export default async function DashboardPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={Users}
-            label="Leads denne uken"
+            label="Leads this week"
             value={stats.weekLeads}
             hint={`${stats.weekLeadsPrev} forrige 7 dager`}
             trend={trend}
           />
           <StatCard
             icon={Sparkles}
-            label="Høy kvalitet (≥70)"
+            label="High quality (≥70)"
             value={stats.weekHighQuality}
-            hint="Denne uken"
+            hint="This week"
           />
           <StatCard
             icon={TrendingUp}
-            label="Snittscore denne uken"
+            label="Average score this week"
             value={stats.weekAvgScore}
             hint="0–100"
           />
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
                 <EmptyState
                   icon={LayoutDashboard}
                   title="Ingen data enda"
-                  description="Trigger første innhenting fra Kø-siden, så fylles grafen opp."
+                  description="Trigger første innhenting fra Queue-siden, så fylles grafen opp."
                 />
               ) : (
                 <DailyIntakeChart data={stats.dailyIntake} />
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Cron-status</CardTitle>
-              <CardDescription>Siste Brreg-kjøring</CardDescription>
+              <CardDescription>Siste Brreg-run</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {lastRun ? (
@@ -150,10 +150,10 @@ export default async function DashboardPage() {
                       }
                     >
                       {lastRun.status === "success"
-                        ? "ferdig"
+                        ? "done"
                         : lastRun.status === "running"
-                          ? "kjører"
-                          : "feilet"}
+                          ? "running"
+                          : "failed"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Hentet</span>
+                    <span className="text-muted-foreground">Fetched</span>
                     <span className="tabular-nums">
                       {lastRun.fetched_count}
                     </span>
@@ -192,14 +192,14 @@ export default async function DashboardPage() {
                     href="/admin/queue"
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
-                    Gå til Kø
+                    Gå til Queue
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </>
               ) : (
                 <div className="space-y-3">
                   <p className="text-muted-foreground">
-                    Ingen kjøringer enda.
+                    No runs yet.
                   </p>
                   <Link
                     href="/admin/queue"
@@ -219,12 +219,12 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Score-fordeling</CardTitle>
-              <CardDescription>Denne uken</CardDescription>
+              <CardDescription>This week</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {stats.scoreDistribution.every((b) => b.count === 0) ? (
                 <p className="text-sm text-muted-foreground">
-                  Ingen leads denne uken enda.
+                  No leads this week enda.
                 </p>
               ) : (
                 stats.scoreDistribution.map((b) => (
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Topp næringer</CardTitle>
-              <CardDescription>Denne uken (NACE)</CardDescription>
+              <CardDescription>This week (NACE)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {stats.topNace.length === 0 ? (
@@ -300,9 +300,9 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-base">Topp leads denne uken</CardTitle>
+              <CardTitle className="text-base">Top leads this week</CardTitle>
               <CardDescription>
-                Sortert etter score · ukens 10 beste
+                Sorted by score · this week's top 10
               </CardDescription>
             </div>
             <Link
@@ -318,8 +318,8 @@ export default async function DashboardPage() {
               <div className="p-6">
                 <EmptyState
                   icon={Activity}
-                  title="Ingen leads denne uken"
-                  description="Trigger en kjøring fra Kø-siden, eller vent til morgendagens cron."
+                  title="No leads this week"
+                  description="Trigger en run fra Queue-siden, eller vent til morgendagens cron."
                 />
               </div>
             ) : (
@@ -328,10 +328,10 @@ export default async function DashboardPage() {
                   <thead className="bg-muted/40 text-muted-foreground">
                     <tr className="text-left">
                       <th className="px-4 py-2 font-medium w-14">Score</th>
-                      <th className="px-4 py-2 font-medium">Selskap</th>
-                      <th className="px-4 py-2 font-medium">Næring</th>
+                      <th className="px-4 py-2 font-medium">Company</th>
+                      <th className="px-4 py-2 font-medium">Industry</th>
                       <th className="px-4 py-2 font-medium">Kommune</th>
-                      <th className="px-4 py-2 font-medium">Registrert</th>
+                      <th className="px-4 py-2 font-medium">Registered</th>
                       <th className="px-4 py-2 font-medium">Status</th>
                     </tr>
                   </thead>

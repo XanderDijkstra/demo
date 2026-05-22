@@ -15,7 +15,7 @@ const label: Record<CompanyStatus, string> = {
   new: "ny",
   reviewed: "vurdert",
   qualified: "kvalifisert",
-  rejected: "avvist",
+  rejected: "rejected",
 };
 
 export function StatusBadge({ status }: { status: CompanyStatus }) {

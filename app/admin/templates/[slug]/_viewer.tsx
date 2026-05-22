@@ -35,7 +35,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
       <aside className="flex flex-col gap-5 overflow-y-auto border-r p-6 bg-card text-sm">
         <div>
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Mal
+            Template
           </div>
           <div className="mt-1 flex items-center gap-2.5">
             <div
@@ -54,7 +54,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
         </div>
 
         <Section title="Farger">
-          <SwatchRow label="Primær" value={niche.primaryColor} />
+          <SwatchRow label="Primary" value={niche.primaryColor} />
           <SwatchRow label="Aksent" value={niche.accentColor} />
         </Section>
 
@@ -64,7 +64,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
           <KeyValue label="CTA" value={niche.ctaText} />
         </Section>
 
-        <Section title="Fordeler">
+        <Section title="Benefits">
           <ul className="space-y-1">
             {niche.benefitTags.map((tag) => (
               <li
@@ -77,7 +77,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
           </ul>
         </Section>
 
-        <Section title="Tjenester">
+        <Section title="Services">
           <ul className="space-y-2">
             {niche.services.map((s, i) => (
               <li key={i} className="rounded-md border border-input bg-background p-2">
@@ -96,10 +96,10 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
             Endre denne malen
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            Designarbeid skjer i Claude-chatten — del skjermbilder der, så
-            oppdateres koden i{" "}
-            <code className="font-mono">lib/templates.ts</code>. Endringer vises
-            her etter neste deploy.
+            Design work happens in the Claude chat — share screenshots
+            there and the code in{" "}
+            <code className="font-mono">lib/templates.ts</code> updates.
+            Changes appear here after the next deploy.
           </p>
           <button
             type="button"
@@ -138,14 +138,14 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
               <RefreshCw className="h-3 w-3" />
-              Last på nytt
+              Reload
             </button>
           </div>
         </div>
         <iframe
           key={previewKey}
           src={previewUrl}
-          title="Mal-forhåndsvisning"
+          title="Template preview"
           className="flex-1 w-full bg-white"
           sandbox="allow-scripts allow-same-origin"
         />

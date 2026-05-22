@@ -14,7 +14,7 @@ import type { ScrapeEmailActionResult } from "./_actions";
 interface Props {
   orgNr: string;
   initialEmail: string | null;
-  /** When true, surfaces the "Finn e-post" scrape button. */
+  /** When true, surfaces the "Find email" scrape button. */
   hasWebsite: boolean;
 }
 
@@ -32,7 +32,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
     startSave(async () => {
       const result = await updateLeadEmail(orgNr, next);
       if (result.ok) {
-        toast.success(next ? "E-post oppdatert" : "E-post fjernet");
+        toast.success(next ? "Email updated" : "Email removed");
         setEditing(false);
         setScrapeResult(null);
       } else {
@@ -56,14 +56,14 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
         return;
       }
       if (result.saved) {
-        toast.success(`Fant e-post: ${result.best.email}`);
+        toast.success(`Found email: ${result.best.email}`);
         setEmail(result.best.email);
         setEditing(false);
         return;
       }
       // Need operator pick — surface the candidate list.
       toast.message(
-        `Fant ${result.candidates.length} kandidat${result.candidates.length === 1 ? "" : "er"} — velg én`
+        `Found ${result.candidates.length} candidate${result.candidates.length === 1 ? "" : "s"} — pick one`
       );
       setScrapeResult(result);
       setEditing(true);
@@ -77,7 +77,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
     startSave(async () => {
       const result = await updateLeadEmail(orgNr, value);
       if (result.ok) {
-        toast.success(`Lagret ${value}`);
+        toast.success(`Saved ${value}`);
         setEditing(false);
       } else {
         toast.error(result.error);
@@ -90,7 +90,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
       <div className="flex items-start gap-2">
         <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <div className="text-xs text-muted-foreground">E-post</div>
+          <div className="text-xs text-muted-foreground">Email</div>
           <div className="flex items-center gap-2 group">
             <a
               href={`mailto:${initialEmail}`}
@@ -102,7 +102,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
               type="button"
               onClick={() => setEditing(true)}
               className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-              aria-label="Rediger e-post"
+              aria-label="Edit email"
             >
               <Pencil className="h-3 w-3" />
             </button>
@@ -118,7 +118,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
     <div className="flex items-start gap-2">
       <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="text-xs text-muted-foreground">E-post</div>
+        <div className="text-xs text-muted-foreground">Email</div>
         <div className={cn("flex items-center gap-1.5", busy && "opacity-70")}>
           <Input
             type="email"
@@ -143,7 +143,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
             onClick={save}
             disabled={busy}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
-            aria-label="Lagre"
+            aria-label="Save"
           >
             {savePending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -157,7 +157,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
               onClick={cancel}
               disabled={busy}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
-              aria-label="Avbryt"
+              aria-label="Cancel"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -178,18 +178,18 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
             ) : (
               <Sparkles className="h-3 w-3" />
             )}
-            Finn e-post fra nettsiden
+            Find email from website
           </Button>
         ) : (
           <p className="text-[11px] text-muted-foreground">
-            Brreg har ingen e-post-data — legg til manuelt etter research.
+            Brreg has no email data — add manually after research.
           </p>
         )}
 
         {scrapeResult ? (
           <div className="mt-1.5 space-y-1 rounded-md border bg-muted/30 p-2 text-[11px]">
             <div className="font-medium text-muted-foreground">
-              Velg én av {scrapeResult.candidates.length} treff:
+              Pick one of {scrapeResult.candidates.length} matches:
             </div>
             <ul className="space-y-0.5">
               {scrapeResult.candidates.slice(0, 6).map((c) => (
@@ -206,7 +206,7 @@ export function EmailEditor({ orgNr, initialEmail, hasWebsite }: Props) {
                         ? "mailto"
                         : c.source === "deobfuscated"
                           ? "(at)"
-                          : "tekst"}
+                          : "text"}
                       {c.fromPath !== "/" ? ` · ${c.fromPath}` : ""}
                     </span>
                   </button>

@@ -27,7 +27,7 @@ export default async function CrmPage() {
     <>
       <Topbar
         title="CRM"
-        description="Aktive samtaler — fra første svar til lukket avtale"
+        description="Active conversations — from first reply to closed deal"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -36,18 +36,18 @@ export default async function CrmPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Reply className="h-4 w-4" />
-                Ingen aktive avtaler enda
+                No active deals yet
               </CardTitle>
               <CardDescription>
-                CRM-kort opprettes automatisk når du markerer en e-post som
-                besvart på lead-detaljsiden.
+                CRM cards are created automatically when you mark an email
+                as replied on the lead detail page.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <EmptyState
                 icon={Kanban}
-                title="Tomt salgsbord"
-                description="Når en lead svarer, marker e-posten som «Besvart» — så dukker leadet opp her i «Ny svar»."
+                title="Empty pipeline"
+                description='When a lead replies, mark the email as "Replied" — it shows up here under "New reply".'
               />
             </CardContent>
           </Card>
@@ -55,17 +55,17 @@ export default async function CrmPage() {
           <>
             <div className="flex flex-wrap items-center gap-3 text-sm">
               <div className="rounded-md border bg-card px-3 py-1.5">
-                <span className="text-muted-foreground">Aktive: </span>
+                <span className="text-muted-foreground">Active: </span>
                 <span className="font-semibold tabular-nums">{totalActive}</span>
               </div>
               <div className="rounded-md border bg-card px-3 py-1.5">
-                <span className="text-muted-foreground">Vunnet (30d): </span>
+                <span className="text-muted-foreground">Won (30d): </span>
                 <span className="font-semibold tabular-nums text-emerald-700">
                   {kanban.won.length}
                 </span>
               </div>
               <div className="rounded-md border bg-card px-3 py-1.5">
-                <span className="text-muted-foreground">Tapt (30d): </span>
+                <span className="text-muted-foreground">Lost (30d): </span>
                 <span className="font-semibold tabular-nums text-rose-700">
                   {kanban.lost.length}
                 </span>
@@ -73,7 +73,7 @@ export default async function CrmPage() {
             </div>
 
             <p className="text-[11px] text-muted-foreground">
-              Tips: dra et kort mellom kolonnene for å flytte det.
+              Tip: drag a card between columns to move it.
             </p>
 
             <KanbanBoard initial={kanban} />

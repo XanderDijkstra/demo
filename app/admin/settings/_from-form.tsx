@@ -22,7 +22,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
   function onSubmitFrom(formData: FormData) {
     startFromTransition(async () => {
       const result = await saveOutreachFromAddress(formData);
-      if (result.ok) toast.success(result.message ?? "Lagret");
+      if (result.ok) toast.success(result.message ?? "Saved");
       else toast.error(result.error);
     });
   }
@@ -30,7 +30,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
   function onSubmitReplyTo(formData: FormData) {
     startReplyToTransition(async () => {
       const result = await saveOutreachReplyTo(formData);
-      if (result.ok) toast.success(result.message ?? "Lagret");
+      if (result.ok) toast.success(result.message ?? "Saved");
       else toast.error(result.error);
     });
   }
@@ -57,7 +57,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
         </div>
         <Button type="submit" disabled={pendingFrom}>
           {pendingFrom ? <Loader2 className="animate-spin" /> : <Save />}
-          Lagre
+          Save
         </Button>
       </form>
 
@@ -78,13 +78,13 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
             disabled={pendingReplyTo}
           />
           <p className="text-[11px] text-muted-foreground">
-            Adressen som mottar svar når noen svarer på en utsendelse. Bør
-            være en reell, overvåket innboks.
+            Address that receives replies when a recipient responds.
+            Should be a real, monitored inbox.
           </p>
         </div>
         <Button type="submit" disabled={pendingReplyTo}>
           {pendingReplyTo ? <Loader2 className="animate-spin" /> : <Save />}
-          Lagre
+          Save
         </Button>
       </form>
     </div>

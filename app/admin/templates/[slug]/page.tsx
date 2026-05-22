@@ -28,14 +28,14 @@ export default async function TemplateViewerPage({ params }: RouteProps) {
     <>
       <Topbar
         title={meta.displayName}
-        description={`Mal · ${meta.slug}`}
+        description={`Template · ${meta.slug}`}
         actions={
           <Link
             href="/admin/templates"
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Alle maler
+            All maler
           </Link>
         }
       />

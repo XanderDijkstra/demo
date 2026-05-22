@@ -29,9 +29,9 @@ const statusVariant: Record<
 };
 
 const statusLabel: Record<ScrapeRunStatus, string> = {
-  running: "kjører",
-  success: "ferdig",
-  failed: "feilet",
+  running: "running",
+  success: "done",
+  failed: "failed",
 };
 
 function formatDuration(ms: number | null): string {
@@ -54,8 +54,8 @@ export default async function QueuePage() {
   return (
     <>
       <Topbar
-        title="Kø"
-        description="Daglig Brreg-innhenting og kjørehistorikk"
+        title="Queue"
+        description="Daily Brreg ingestion and run history"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -63,8 +63,8 @@ export default async function QueuePage() {
           <CardHeader>
             <CardTitle className="text-base">Manuell innhenting</CardTitle>
             <CardDescription>
-              Trigger Brreg-jobben for en spesifikk dato. Standard er gårsdagen
-              — samme som den daglige cron-jobben (kjører kl 06:00 UTC / 07–08
+              Trigger Brreg-jobben for en spesifikk dato. Default er gyearssdagen
+              — samme som den daglige cron job (runs at 06:00 UTC / 07–08
               Oslo).
             </CardDescription>
           </CardHeader>
@@ -75,12 +75,12 @@ export default async function QueuePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Siste kjøringer</CardTitle>
+            <CardTitle className="text-base">Siste runs</CardTitle>
             <CardDescription>
               {error ? (
                 <span className="text-destructive">{error.message}</span>
               ) : (
-                `${runs.length} kjøringer logget`
+                `${runs.length} runs logget`
               )}
             </CardDescription>
           </CardHeader>
@@ -89,8 +89,8 @@ export default async function QueuePage() {
               <div className="p-6">
                 <EmptyState
                   icon={Activity}
-                  title="Ingen kjøringer enda"
-                  description="Trykk «Kjør nå» over for å starte den første innhentingen."
+                  title="No runs yet"
+                  description="Press 'Run now' above to start the first ingestion."
                 />
               </div>
             ) : (
@@ -100,18 +100,18 @@ export default async function QueuePage() {
                     <tr className="text-left">
                       <th className="px-4 py-2 font-medium">Status</th>
                       <th className="px-4 py-2 font-medium">Dato</th>
-                      <th className="px-4 py-2 font-medium text-right">Hentet</th>
+                      <th className="px-4 py-2 font-medium text-right">Fetched</th>
                       <th className="px-4 py-2 font-medium text-right">
                         Lagt til
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Hoppet over
+                        Skipet over
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Varighet
+                        Duration
                       </th>
                       <th className="px-4 py-2 font-medium">Trigger</th>
-                      <th className="px-4 py-2 font-medium">Startet</th>
+                      <th className="px-4 py-2 font-medium">Started</th>
                     </tr>
                   </thead>
                   <tbody>

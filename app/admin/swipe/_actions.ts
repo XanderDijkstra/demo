@@ -17,7 +17,7 @@ async function setStatus(
   status: CompanyStatus,
   action: string
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
@@ -61,7 +61,7 @@ export async function swipeToCrm(orgNr: string): Promise<ActionResult> {
     return {
       ok: false,
       error:
-        "Kvalifisert, men kunne ikke opprette deal (kanskje finnes en aktiv allerede)",
+        "Qualified, men kunne ikke opprette deal (kanskje finnes en aktiv allerede)",
     };
   }
 

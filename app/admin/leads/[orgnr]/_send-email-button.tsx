@@ -69,10 +69,10 @@ export function SendEmailButton({
     startTransition(async () => {
       const result = await sendLeadEmail(orgNr, fd);
       if (result.ok) {
-        toast.success(`E-post sendt til ${to}`);
+        toast.success(`Email sent til ${to}`);
         setOpen(false);
       } else {
-        toast.error(`Send feilet: ${result.error}`);
+        toast.error(`Send failed: ${result.error}`);
       }
     });
   }
@@ -87,22 +87,22 @@ export function SendEmailButton({
           variant={suppressedReason ? "outline" : "default"}
           title={
             suppressedReason
-              ? `Suppressed (${suppressedReason}) — kan ikke sende`
+              ? `Suppressed (${suppressedReason}) — cannot send`
               : !to
-                ? "Legg til e-post først"
+                ? "Add an email first"
                 : undefined
           }
         >
           {suppressedReason ? <Ban /> : <Send />}
-          Send e-post
+          Send email
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>Send e-post til {companyName}</DialogTitle>
+            <DialogTitle>Send email til {companyName}</DialogTitle>
             <DialogDescription>
-              Variabler:{" "}
+              Variables:{" "}
               <code className="text-[11px]">{"{{company_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{contact_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{contact_first_name}}"}</code>{" "}
@@ -115,7 +115,7 @@ export function SendEmailButton({
                 </span>
               ) : (
                 <span className="block mt-1 text-[11px] text-amber-700">
-                  site_url → tom (ingen demoside publisert)
+                  site_url → empty (no demo site published)
                 </span>
               )}
             </DialogDescription>
@@ -126,16 +126,16 @@ export function SendEmailButton({
               <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <div>
-                  Du har allerede sendt {previousSendCount}{" "}
-                  {previousSendCount === 1 ? "e-post" : "e-poster"} til dette
-                  leadet. Forsikre deg om at en oppfølging er ønsket før du
-                  sender på nytt.
+                  You've already sent {previousSendCount}{" "}
+                  {previousSendCount === 1 ? "email" : "emails"} to this
+                  lead. Make sure a follow-up is wanted before sending
+                  again.
                 </div>
               </div>
             ) : null}
 
             <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Fra</span>
+              <span className="text-muted-foreground">From</span>
               <span className="truncate">{fromAddress}</span>
             </div>
             <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
@@ -143,13 +143,13 @@ export function SendEmailButton({
               <span className="truncate">{replyTo}</span>
             </div>
             <div className="grid grid-cols-[80px_1fr] items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Til</span>
-              <span>{to ?? <em className="text-muted-foreground">ingen</em>}</span>
+              <span className="text-muted-foreground">To</span>
+              <span>{to ?? <em className="text-muted-foreground">none</em>}</span>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="subject" className="text-xs">
-                Emne
+                Subject
               </Label>
               <Input
                 id="subject"
@@ -163,7 +163,7 @@ export function SendEmailButton({
 
             <div className="space-y-1.5">
               <Label htmlFor="body" className="text-xs">
-                Innhold
+                Body
               </Label>
               <textarea
                 id="body"
@@ -185,11 +185,11 @@ export function SendEmailButton({
               onClick={() => setOpen(false)}
               disabled={pending}
             >
-              Avbryt
+              Cancel
             </Button>
             <Button type="submit" disabled={pending || !to}>
               {pending ? <Loader2 className="animate-spin" /> : <Send />}
-              Send nå
+              Send now
             </Button>
           </DialogFooter>
         </form>

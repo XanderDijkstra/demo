@@ -24,10 +24,10 @@ export function RunNowForm() {
       const result = await triggerScrapeNow(formData);
       if (result.status === "success") {
         toast.success(
-          `Hentet ${result.fetched} selskaper, lagt til ${result.inserted} nye`
+          `Fetched ${result.fetched} selskaper, lagt til ${result.inserted} nye`
         );
       } else {
-        toast.error(`Innhenting feilet: ${result.error ?? "ukjent feil"}`);
+        toast.error(`Inhenting failed: ${result.error ?? "ukjent feil"}`);
       }
     });
   }
@@ -58,7 +58,7 @@ export function RunNowForm() {
         ) : (
           <>
             <Play />
-            Kjør nå
+            Run now
           </>
         )}
       </Button>

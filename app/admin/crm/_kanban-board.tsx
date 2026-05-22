@@ -82,7 +82,7 @@ export function KanbanBoard({ initial }: Props) {
             duration: 1500,
           });
         } else {
-          toast.error(`Feilet: ${result.error}`);
+          toast.error(`Failed: ${result.error}`);
           setBoard(prevBoard);
         }
       });
@@ -157,11 +157,11 @@ export function KanbanBoard({ initial }: Props) {
                     )}
                   >
                     {isHover && !isOriginOfDragging ? (
-                      <span>Slipp her</span>
+                      <span>Drop here</span>
                     ) : (
                       <>
                         <Users className="mr-1.5 h-3 w-3" />
-                        ingen
+                        none
                       </>
                     )}
                   </div>

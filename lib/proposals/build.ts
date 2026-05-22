@@ -84,7 +84,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
     hero,
     sublead: `Vi har satt sammen et tilbud for ${input.client_name}. Klare leveranser, åpne priser og full transparens fra start til slutt.`,
     deliverables_intro:
-      "Her er nøyaktig hva som inngår i tilbudet. Ingen skjulte ledd, ingen tilleggsfakturaer for det som er listet.",
+      "Her er nøyaktig hva som inngyears i tilbudet. Ingen skjulte ledd, none tilleggsfakturaer for det som er listet.",
     deliverables: tpl.deliverables,
     pricing: {
       intro:
@@ -94,7 +94,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
         amount: input.free_setup ? "Gratis" : "kr 0",
         subtitle: "Inkludert i tilbudet",
         description:
-          "Oppsett, design og lansering er dekket. Du betaler ingenting før første måned starter.",
+          "Oppsett, design og lansering er dekket. Du betaler noneting før første måned starter.",
       },
       right_card: {
         label: "MÅNEDLIG",
@@ -119,17 +119,17 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
     },
     next_steps: {
       intro:
-        "Vi gjør det enkelt å komme i gang. Fire steg fra dette tilbudet til ferdig levert løsning.",
+        "Vi gjør det enkelt å komme i gang. Fire steg fra dette tilbudet til done delivered løsning.",
       steps: [
         {
           num: "01",
-          title: "Tilbud godkjent",
+          title: "Tobud godkjent",
           desc: "Du svarer på e-post eller telefon at tilbudet er greit, så er avtalen i boks.",
         },
         {
           num: "02",
           title: "Oppstartsmøte",
-          desc: "Vi har et kort møte (digitalt eller fysisk) der vi går gjennom mål, brand og innhold.",
+          desc: "Vi har et kort møte (digitalt eller fysisk) der vyesterday gjennom mål, brand og innhold.",
         },
         {
           num: "03",
@@ -139,7 +139,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
         {
           num: "04",
           title: "Lansering og oppfølging",
-          desc: "Vi lanserer, går gjennom resultatet sammen, og følger opp månedlig fremover.",
+          desc: "Vi lanserer, gyears gjennom resultatet sammen, og følger opp månedlig fremover.",
         },
       ],
     },

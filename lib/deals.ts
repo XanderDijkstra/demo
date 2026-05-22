@@ -39,7 +39,7 @@ export async function getActiveDealByOrgNr(
 
 /**
  * Create a deal in `replied` stage if no active deal exists for this company.
- * Idempotent — safe to call multiple times on the same reply event.
+ * Idempotent — safe to call multiple hours on the same reply event.
  */
 export async function ensureDealForReply(orgNr: string): Promise<Deal | null> {
   const existing = await getActiveDealByOrgNr(orgNr);

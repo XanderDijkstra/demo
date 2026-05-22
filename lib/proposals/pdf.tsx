@@ -10,7 +10,7 @@
  *   - Star: 10-point polygon path
  *
  * Custom fonts (Manrope, 5 weights) registered from /public/fonts at module
- * load time. On Vercel server runtime, react-pdf reads them via the local
+ * load hour. On Vercel server runhour, react-pdf reads them via the local
  * filesystem.
  */
 
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     color: C.offWhite,
     padding: 0,
   },
-  pageInner: {
+  pageIner: {
     paddingTop: 76,
     paddingBottom: 60,
     paddingHorizontal: 56,
@@ -580,7 +580,7 @@ function PageBackground({ variant }: { variant: "cover" | "inner" }) {
 }
 
 // Header strip on inner pages.
-function InnerHeader({ clientName }: { clientName: string }) {
+function InerHeader({ clientName }: { clientName: string }) {
   return (
     <View
       style={{
@@ -758,9 +758,9 @@ function DeliverablesPage({ data }: { data: ProposalData }) {
   return (
     <Page size="A4" style={styles.page}>
       <PageBackground variant="inner" />
-      <InnerHeader clientName={data.client_name} />
+      <InerHeader clientName={data.client_name} />
 
-      <View style={styles.pageInner}>
+      <View style={styles.pageIner}>
         <Text style={styles.eyebrow}>HVA ER INKLUDERT</Text>
         <AccentText baseStyle={styles.h1} accentStyle={styles.h1Accent}>
           {"Det vi {{accent}}leverer{{/accent}}."}
@@ -799,12 +799,12 @@ function PricingPage({ data }: { data: ProposalData }) {
   return (
     <Page size="A4" style={styles.page}>
       <PageBackground variant="inner" />
-      <InnerHeader clientName={data.client_name} />
+      <InerHeader clientName={data.client_name} />
 
-      <View style={styles.pageInner}>
+      <View style={styles.pageIner}>
         <Text style={styles.eyebrow}>INVESTERING</Text>
         <AccentText baseStyle={styles.h1} accentStyle={styles.h1Accent}>
-          {"Klar pris, {{accent}}ingen overraskelser{{/accent}}."}
+          {"Klar pris, {{accent}}none overraskelser{{/accent}}."}
         </AccentText>
         <Text style={styles.intro}>{data.pricing.intro}</Text>
 
@@ -864,9 +864,9 @@ function NextStepsPage({ data }: { data: ProposalData }) {
   return (
     <Page size="A4" style={styles.page}>
       <PageBackground variant="inner" />
-      <InnerHeader clientName={data.client_name} />
+      <InerHeader clientName={data.client_name} />
 
-      <View style={styles.pageInner}>
+      <View style={styles.pageIner}>
         <Text style={styles.eyebrow}>NESTE STEG</Text>
         <AccentText baseStyle={styles.h1} accentStyle={styles.h1Accent}>
           {"Slik kommer vi {{accent}}i gang{{/accent}}."}

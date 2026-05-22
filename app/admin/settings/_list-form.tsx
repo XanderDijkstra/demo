@@ -29,7 +29,7 @@ export function ListForm({
   function onSubmit(formData: FormData) {
     startTransition(async () => {
       const result = await saveAction(formData);
-      if (result.ok) toast.success(result.message ?? "Lagret");
+      if (result.ok) toast.success(result.message ?? "Saved");
       else toast.error(result.error);
     });
   }
@@ -54,7 +54,7 @@ export function ListForm({
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Save />}
-          Lagre
+          Save
         </Button>
       </div>
     </form>

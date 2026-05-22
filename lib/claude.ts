@@ -61,14 +61,14 @@ Du svarer KUN med gyldig JSON i denne nøyaktige formen, uten kodeblokk-markerin
 Regler:
 - Bruk selskapsnavnet naturlig — ikke press det inn i hver setning.
 - Hvis kommune er oppgitt, nevn den minst én gang i subheadline eller about.
-- Aldri bruk klisjeer som "ditt førstevalg", "vi går den ekstra milen".
-- Aldri lov noe konkret om priser, timer, garantier hvis det ikke er gitt.
+- Aldri bruk klisjeer som "ditt førstevalg", "vyesterday den ekstra milen".
+- Aldri lov noe konkret om priser, hours, garantier hvis det ikke er gitt.
 - Tone: varm, troverdig, kortfattet. Norsk bokmål.`;
 
 function buildUserPrompt(args: SiteCopyArgs): string {
   const { company, niche } = args;
   return [
-    `Selskap: ${company.name}`,
+    `Company: ${company.name}`,
     `Bransje: ${niche.displayName}`,
     company.kommune ? `Kommune: ${company.kommune}` : "Kommune: ukjent",
     company.nace_description
@@ -76,7 +76,7 @@ function buildUserPrompt(args: SiteCopyArgs): string {
       : null,
     "",
     "Generer hero-overskrift, hero-underoverskrift og en kort om-oss-paragraf.",
-    "Svar med JSON-objektet, ingenting annet.",
+    "Svar med JSON-objektet, noneting annet.",
   ]
     .filter(Boolean)
     .join("\n");

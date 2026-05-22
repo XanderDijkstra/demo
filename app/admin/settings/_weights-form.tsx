@@ -16,13 +16,13 @@ const FIELDS: Array<{
   label: string;
   hint: string;
 }> = [
-  { key: "has_phone", label: "Har telefon", hint: "telefon eller mobil i Brreg" },
-  { key: "org_form_as", label: "Selskapsform AS/ASA", hint: "innskutt kapital" },
-  { key: "target_nace", label: "Målnæring (NACE)", hint: "matcher liste under" },
-  { key: "is_handverker", label: "Håndverker", hint: "NACE 41.x / 43.x / 81.30" },
-  { key: "has_website", label: "Har nettside", hint: "hjemmeside i Brreg" },
-  { key: "has_real_address", label: "Reell adresse", hint: "ikke postboks" },
-  { key: "freshly_founded", label: "Nystiftet", hint: "siste 7 dager" },
+  { key: "has_phone", label: "Has phone", hint: "phone or mobile in Brreg" },
+  { key: "org_form_as", label: "Org form AS/ASA", hint: "subscribed capital" },
+  { key: "target_nace", label: "Target NACE", hint: "matches list below" },
+  { key: "is_handverker", label: "Tradesperson", hint: "NACE 41.x / 43.x / 81.30" },
+  { key: "has_website", label: "Has website", hint: "homepage in Brreg" },
+  { key: "has_real_address", label: "Real address", hint: "not a PO box" },
+  { key: "freshly_founded", label: "Newly founded", hint: "last 7 days" },
 ];
 
 export function WeightsForm({ initial }: { initial: ScoringWeights }) {
@@ -43,7 +43,7 @@ export function WeightsForm({ initial }: { initial: ScoringWeights }) {
   function onSubmit(formData: FormData) {
     startTransition(async () => {
       const result = await saveScoringWeights(formData);
-      if (result.ok) toast.success(result.message ?? "Lagret");
+      if (result.ok) toast.success(result.message ?? "Saved");
       else toast.error(result.error);
     });
   }
@@ -89,7 +89,7 @@ export function WeightsForm({ initial }: { initial: ScoringWeights }) {
         </p>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Save />}
-          Lagre vekter
+          Save vekter
         </Button>
       </div>
     </form>

@@ -42,7 +42,7 @@ export default async function LeadsPage({
     <>
       <Topbar
         title="Leads"
-        description="Selskaper hentet fra Brreg, sortert etter score"
+        description="Companies pulled from Brreg, sorted by score"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -56,11 +56,11 @@ export default async function LeadsPage({
         {rows.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="Ingen leads matcher"
+            title="No leads match"
             description={
               total === 0 && totals.all === 0
-                ? "Trigger første innhenting fra Kø-siden for å se leads her."
-                : "Prøv å endre filtre eller bytt til «Alle»-fanen."
+                ? "Trigger første innhenting fra Queue-siden for å se leads her."
+                : "Prøv å endre filtre eller bytt til «All»-fanen."
             }
           />
         ) : (
@@ -71,12 +71,12 @@ export default async function LeadsPage({
                   <thead className="bg-muted/40 text-muted-foreground">
                     <tr className="text-left">
                       <th className="px-4 py-2 font-medium w-14">Score</th>
-                      <th className="px-4 py-2 font-medium">Selskap</th>
+                      <th className="px-4 py-2 font-medium">Company</th>
                       <th className="px-4 py-2 font-medium">Form</th>
-                      <th className="px-4 py-2 font-medium">Næring</th>
+                      <th className="px-4 py-2 font-medium">Industry</th>
                       <th className="px-4 py-2 font-medium">Kommune</th>
                       <th className="px-4 py-2 font-medium">Kontakt</th>
-                      <th className="px-4 py-2 font-medium">Registrert</th>
+                      <th className="px-4 py-2 font-medium">Registered</th>
                       <th className="px-4 py-2 font-medium">Status</th>
                     </tr>
                   </thead>
@@ -128,13 +128,13 @@ export default async function LeadsPage({
                             {lead.phone || lead.mobile ? (
                               <Phone
                                 className="h-3.5 w-3.5"
-                                aria-label="Har telefon"
+                                aria-label="Has phone"
                               />
                             ) : null}
                             {lead.website ? (
                               <Globe
                                 className="h-3.5 w-3.5"
-                                aria-label="Har nettside"
+                                aria-label="Has website"
                               />
                             ) : null}
                             {!lead.phone && !lead.mobile && !lead.website ? (

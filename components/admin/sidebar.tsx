@@ -27,10 +27,10 @@ const navItems: NavItem[] = [
   { label: "Leads", href: "/admin/leads", icon: Users },
   { label: "Swipe", href: "/admin/swipe", icon: Layers },
   { label: "CRM", href: "/admin/crm", icon: Handshake },
-  { label: "Maler", href: "/admin/templates", icon: Palette },
-  { label: "Utsendelser", href: "/admin/outreach", icon: Mail },
-  { label: "Kø", href: "/admin/queue", icon: Activity },
-  { label: "Innstillinger", href: "/admin/settings", icon: Settings },
+  { label: "Templates", href: "/admin/templates", icon: Palette },
+  { label: "Outreach", href: "/admin/outreach", icon: Mail },
+  { label: "Queue", href: "/admin/queue", icon: Activity },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string) {

@@ -52,7 +52,7 @@ export interface NicheConfig {
 
 const PLUMBER: NicheConfig = {
   slug: "plumber",
-  displayName: "Rørlegger",
+  displayName: "Plumber",
   primaryColor: "oklch(0.55 0.16 245)",
   accentColor: "oklch(0.92 0.04 245)",
   heroImageKeyword: "plumber",
@@ -75,12 +75,12 @@ const PLUMBER: NicheConfig = {
     },
   ],
   ctaText: "Bestill befaring",
-  benefitTags: ["Døgnvakt", "Fastpris", "5 års garanti"],
+  benefitTags: ["Døgnvakt", "Fastpris", "5 yearss garanti"],
 };
 
 const ELECTRICIAN: NicheConfig = {
   slug: "electrician",
-  displayName: "Elektriker",
+  displayName: "Electrician",
   primaryColor: "oklch(0.7 0.18 90)",
   accentColor: "oklch(0.95 0.05 90)",
   heroImageKeyword: "electrician",
@@ -97,7 +97,7 @@ const ELECTRICIAN: NicheConfig = {
         "Installasjon av elbillader, smarte lyskontroller og nettverk i hele boligen.",
     },
     {
-      title: "Næring og industri",
+      title: "Industry og industri",
       description:
         "Prosjektering og utførelse for kontorbygg, butikker og verksteder.",
     },
@@ -120,14 +120,14 @@ const RESTAURANT: NicheConfig = {
         "Fersk meny basert på sesongens råvarer fra lokale produsenter.",
     },
     {
-      title: "Selskap og catering",
+      title: "Company og catering",
       description:
         "Bryllup, runde tall, firmafest. Vi planlegger og leverer hele opplevelsen.",
     },
     {
       title: "Take-away",
       description:
-        "Bestill via nett — klart til avhentning på 20 minutter.",
+        "Bestill via nett — klart til avhentning på 20 minutes.",
     },
   ],
   ctaText: "Reserver bord",
@@ -136,7 +136,7 @@ const RESTAURANT: NicheConfig = {
 
 const SALON: NicheConfig = {
   slug: "salon",
-  displayName: "Frisør",
+  displayName: "Salon",
   primaryColor: "oklch(0.6 0.16 350)",
   accentColor: "oklch(0.96 0.04 350)",
   heroImageKeyword: "hair-salon",
@@ -145,7 +145,7 @@ const SALON: NicheConfig = {
     {
       title: "Klipp og styling",
       description:
-        "Personlig konsultasjon, presisjonsklipp og moderne styling for alle hårtyper.",
+        "Personlig konsultasjon, presisjonsklipp og moderne styling for alle hyearstyper.",
     },
     {
       title: "Farge og striper",
@@ -155,16 +155,16 @@ const SALON: NicheConfig = {
     {
       title: "Brud og bryllup",
       description:
-        "Hår og oppsett til den store dagen — prøvetime inkludert.",
+        "Hyears og oppsett til den store dagen — prøvehour inkludert.",
     },
   ],
-  ctaText: "Book time",
+  ctaText: "Book hour",
   benefitTags: ["Online booking", "Erfarne frisører", "Plant-based produkter"],
 };
 
 const AUTO_REPAIR: NicheConfig = {
   slug: "auto_repair",
-  displayName: "Bilverksted",
+  displayName: "Auto Repair",
   primaryColor: "oklch(0.5 0.2 25)",
   accentColor: "oklch(0.95 0.04 25)",
   heroImageKeyword: "auto-repair",
@@ -178,7 +178,7 @@ const AUTO_REPAIR: NicheConfig = {
     {
       title: "Service og reparasjon",
       description:
-        "Fra olje­skift til motorrenovering — alle merker, fast pris på vanlige jobber.",
+        "From olje­skift til motorrenovering — alle merker, fast pris på vanlige jobber.",
     },
     {
       title: "Dekk og hjul",
@@ -186,13 +186,13 @@ const AUTO_REPAIR: NicheConfig = {
         "Hjulskift, oppbevaring av dekk og avansert hjulstilling i moderne lokaler.",
     },
   ],
-  ctaText: "Bestill verkstedtime",
-  benefitTags: ["Lånebil", "Alle merker", "Fast pris"],
+  ctaText: "Bestill verkstedhour",
+  benefitTags: ["Lånebil", "All merker", "Fast pris"],
 };
 
 const LANDSCAPER: NicheConfig = {
   slug: "landscaper",
-  displayName: "Anleggsgartner",
+  displayName: "Landscaper",
   // Dark forest green as primary; cream as accent. Lime CTA is hardcoded
   // inside components/site/templates/landscaper.tsx since it's an identity
   // signal of this template.
@@ -209,7 +209,7 @@ const LANDSCAPER: NicheConfig = {
     {
       title: "Steinarbeid",
       description:
-        "Solid steinlegging, oppkjørsler og terrasser som varer i mange år.",
+        "Solid steinlegging, oppkjørsler og terrasser som varer i mange years.",
     },
     {
       title: "Gjerder",
@@ -224,7 +224,7 @@ const LANDSCAPER: NicheConfig = {
     {
       title: "Grunnarbeid",
       description:
-        "Utgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
+        "Outgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
     },
     {
       title: "Vedlikehold",
@@ -233,12 +233,12 @@ const LANDSCAPER: NicheConfig = {
     },
   ],
   ctaText: "Be om tilbud",
-  benefitTags: ["10+ års erfaring", "Fast pris", "Personlig service"],
+  benefitTags: ["10+ yearss erfaring", "Fast pris", "Personlig service"],
 };
 
 const CONTRACTOR: NicheConfig = {
   slug: "contractor",
-  displayName: "Generalentreprenør",
+  displayName: "General Contractor",
   // Warm charcoal as primary, sand cream as accent. Bronze CTA accent
   // is hardcoded inside components/site/templates/contractor.tsx.
   primaryColor: "oklch(0.18 0.012 70)",
@@ -249,7 +249,7 @@ const CONTRACTOR: NicheConfig = {
     {
       title: "Total boligrenovasjon",
       description:
-        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles nytt fra grunnen.",
+        "From første tegning til siste finish — vi tar hele renovernone og leverer et hjem som føles nytt fra grunnen.",
     },
     {
       title: "Kjøkken og stueoppussing",
@@ -283,7 +283,7 @@ const CONTRACTOR: NicheConfig = {
 
 const GENERIC: NicheConfig = {
   slug: "generic",
-  displayName: "Generell",
+  displayName: "Generic",
   primaryColor: "oklch(0.6 0.118 184.704)",
   accentColor: "oklch(0.95 0.03 184)",
   heroImageKeyword: "norwegian-business",
@@ -302,7 +302,7 @@ const GENERIC: NicheConfig = {
     {
       title: "Kvalitet i alle ledd",
       description:
-        "Fra første kontakt til ferdig leveranse — kvalitet er hovedfokus.",
+        "From første kontakt til done leveranse — kvalitet er hovedfokus.",
     },
   ],
   ctaText: "Ta kontakt",
@@ -333,9 +333,9 @@ const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   ["81.30", "landscaper"], // Beplantning av hager og parkanlegg
   ["01.30", "landscaper"], // Planteformering — small overlap, treat as landscaper
   ["41.20", "contractor"], // Bygging av boliger og andre bygninger
-  ["41.10", "contractor"], // Utvikling av byggeprosjekter
+  ["41.10", "contractor"], // Outvikling av byggeprosjekter
   ["43.99", "contractor"], // Annen spesialisert bygge- og anleggsvirksomhet
-  ["43.39", "contractor"], // Annen ferdiggjøring av bygninger
+  ["43.39", "contractor"], // Annen donegjøring av bygninger
 ];
 
 export function pickNicheFromNace(naceCode: string | null | undefined): NicheSlug {

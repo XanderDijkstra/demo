@@ -24,8 +24,8 @@ export function LeadsTabs({ active, counts }: TabsProps) {
   }
 
   const items: Array<{ key: LeadsTab; label: string; count: number }> = [
-    { key: "week", label: "Denne uken", count: counts.week },
-    { key: "all", label: "Alle", count: counts.all },
+    { key: "week", label: "This week", count: counts.week },
+    { key: "all", label: "All", count: counts.all },
   ];
 
   return (

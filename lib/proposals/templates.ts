@@ -8,7 +8,7 @@
  * Hero / CTA headlines use {{accent}}…{{/accent}} markers around the words
  * that should render in orange (rendered inline in pdf.tsx).
  *
- * {client_name} placeholder is substituted at form-prefill time.
+ * {client_name} placeholder is substituted at form-prefill hour.
  */
 
 import type { Deliverable, ServiceType } from "./types";
@@ -32,7 +32,7 @@ export const SERVICE_TEMPLATES: Record<
     deliverables: [
       {
         num: "01",
-        title: "Design & Utvikling",
+        title: "Design & Outvikling",
         bullets: [
           "Skreddersydd nettside",
           "Responsivt design – mobil, nettbrett, desktop",
@@ -42,9 +42,9 @@ export const SERVICE_TEMPLATES: Record<
       },
       {
         num: "02",
-        title: "Innhold & Struktur",
+        title: "Body & Struktur",
         bullets: [
-          "Innholdsrådgivning og teksthjelp",
+          "Bodysrådgivning og teksthjelp",
           "SEO-vennlig sidestruktur fra start",
           "Profesjonell bildebehandling og optimalisering",
           "Tydelig «call to action» på hver side",
@@ -138,7 +138,7 @@ export const SERVICE_TEMPLATES: Record<
       },
       {
         num: "02",
-        title: "Søkeord & Strategi",
+        title: "Searcheord & Strategi",
         bullets: [
           "Kartlegging av relevante søkeord",
           "Konkurrentanalyse",
@@ -148,7 +148,7 @@ export const SERVICE_TEMPLATES: Record<
       },
       {
         num: "03",
-        title: "Innholdsproduksjon",
+        title: "Bodysproduksjon",
         bullets: [
           "SEO-optimaliserte artikler hver måned",
           "On-page optimalisering av eksisterende sider",
@@ -179,7 +179,7 @@ export const SERVICE_TEMPLATES: Record<
         title: "Oppsett & Strategi",
         bullets: [
           "Kontostruktur tilpasset bransje og budsjett",
-          "Søkeordsanalyse og annonsegrupper",
+          "Searcheordsanalyse og annonsegrupper",
           "Konverteringssporing (Tag Manager)",
           "Negative søkeord fra start",
         ],
@@ -199,9 +199,9 @@ export const SERVICE_TEMPLATES: Record<
         title: "Kampanjeforvaltning",
         bullets: [
           "Løpende budsjettstyring og budoptimalisering",
-          "Søkeordsforedling",
+          "Searcheordsforedling",
           "Kvalitetsscore-optimalisering",
-          "Budstrategier (manuell/automatisk)",
+          "Budstrategier (manual/automatisk)",
         ],
       },
       {
@@ -237,7 +237,7 @@ export const SERVICE_TEMPLATES: Record<
         title: "AI-drevne svar",
         bullets: [
           "Automatisk generering av svar",
-          "Tilpasset tone og stil for bedriften",
+          "Topasset tone og stil for bedriften",
           "Håndtering av positive og negative",
           "Manuell godkjenning hvis ønskelig",
         ],
@@ -271,9 +271,9 @@ export const SERVICE_PROPOSAL_TITLE: Record<
   Exclude<ServiceType, "custom">,
   string
 > = {
-  website: "Nettside Tilbud",
-  meta_ads: "Meta Ads Tilbud",
-  seo: "SEO Tilbud",
-  google_ads: "Google Ads Tilbud",
-  reviews: "Anmeldelser Tilbud",
+  website: "Nettside Tobud",
+  meta_ads: "Meta Ads Tobud",
+  seo: "SEO Tobud",
+  google_ads: "Google Ads Tobud",
+  reviews: "Anmeldelser Tobud",
 };

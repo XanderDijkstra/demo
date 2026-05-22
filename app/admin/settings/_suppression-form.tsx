@@ -20,8 +20,8 @@ interface Props {
 
 const REASON_LABEL: Record<OutreachSuppression["reason"], string> = {
   bounced: "bounce",
-  complained: "klage",
-  manual: "manuell",
+  complained: "complaint",
+  manual: "manual",
   unsubscribed: "avmeldt",
 };
 
@@ -49,7 +49,7 @@ export function SuppressionManager({ suppressions }: Props) {
   function handleRemove(email: string) {
     startTransition(async () => {
       const result = await removeSuppression(email);
-      if (result.ok) toast.success(result.message ?? "Fjernet");
+      if (result.ok) toast.success(result.message ?? "Removeet");
       else toast.error(result.error);
     });
   }
@@ -72,7 +72,7 @@ export function SuppressionManager({ suppressions }: Props) {
         </div>
         <div className="space-y-1.5 flex-1 min-w-40">
           <Label htmlFor="supp-notes" className="text-xs">
-            Notat (valgfritt)
+            Notat (optional)
           </Label>
           <Input
             id="supp-notes"
@@ -89,8 +89,8 @@ export function SuppressionManager({ suppressions }: Props) {
 
       {suppressions.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Ingen adresser i suppression list. Bounces og klager fra Resend
-          legges til automatisk via webhook.
+          No addresses in the suppression list. Bounces and complaints
+          from Resend are added automatically via webhook.
         </p>
       ) : (
         <ul className="divide-y rounded-md border">
@@ -127,8 +127,8 @@ export function SuppressionManager({ suppressions }: Props) {
                 onClick={() => handleRemove(s.email)}
                 disabled={pending}
                 className="text-muted-foreground hover:text-destructive p-1"
-                aria-label="Fjern"
-                title="Fjern fra suppression list"
+                aria-label="Remove"
+                title="Remove fra suppression list"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

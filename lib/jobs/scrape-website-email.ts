@@ -262,7 +262,7 @@ export async function scrapeWebsiteEmail(
   const fetchedUrls: string[] = [];
   const rootUrl = normalizeWebsite(website);
   if (!rootUrl) {
-    return { ok: false, error: "Ingen gyldig nettside", fetchedUrls };
+    return { ok: false, error: "No valid website", fetchedUrls };
   }
   const registrableDomain = getRegistrableDomain(rootUrl.host);
 
@@ -303,7 +303,7 @@ export async function scrapeWebsiteEmail(
   if (scored.length === 0) {
     return {
       ok: false,
-      error: "Fant ingen e-post på nettsiden",
+      error: "Found no email on the website",
       fetchedUrls,
     };
   }
@@ -312,7 +312,7 @@ export async function scrapeWebsiteEmail(
   if (!best) {
     return {
       ok: false,
-      error: "Fant ingen e-post på nettsiden",
+      error: "Found no email on the website",
       fetchedUrls,
     };
   }

@@ -93,12 +93,12 @@ export function Swiper({ leads }: Props) {
 
         const msg =
           action === "reject"
-            ? "Avvist"
+            ? "Rejected"
             : action === "review"
-              ? "Markert som vurdert"
+              ? "Marked as reviewed"
               : action === "qualify"
-                ? "Kvalifisert"
-                : "Sendt til CRM";
+                ? "Qualified"
+                : "Sent to CRM";
         toast.success(msg, { duration: 1200 });
 
         // Wait for the exit animation, then advance.
@@ -173,13 +173,13 @@ export function Swiper({ leads }: Props) {
               style={{ width: `${((index + 1) / total) * 100}%` }}
             />
           </div>
-          <span>{remaining} igjen</span>
+          <span>{remaining} left</span>
         </div>
         <div className="hidden gap-3 text-muted-foreground sm:flex">
-          <KeyHint label="Avvis" hint="←" />
-          <KeyHint label="Hopp" hint="↑" />
+          <KeyHint label="Reject" hint="←" />
+          <KeyHint label="Skip" hint="↑" />
           <KeyHint label="CRM" hint="C / ↓" />
-          <KeyHint label="Behold" hint="→" />
+          <KeyHint label="Keep" hint="→" />
         </div>
       </div>
 
@@ -202,7 +202,7 @@ export function Swiper({ leads }: Props) {
                   Score
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  av {current.score >= 70 ? "høy" : current.score >= 40 ? "moderat" : "svak"} kvalitet
+                  of {current.score >= 70 ? "high" : current.score >= 40 ? "moderate" : "low"} quality
                 </div>
               </div>
             </div>
@@ -212,7 +212,7 @@ export function Swiper({ leads }: Props) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Full detalj
+              Full detail
               <ExternalLink className="h-3 w-3" />
             </Link>
           </header>
@@ -249,7 +249,7 @@ export function Swiper({ leads }: Props) {
             <section className="grid gap-4 sm:grid-cols-2">
               <FactRow
                 icon={Building2}
-                label="Næring"
+                label="Industry"
                 value={
                   <>
                     {current.nace_code ? (
@@ -263,7 +263,7 @@ export function Swiper({ leads }: Props) {
               />
               <FactRow
                 icon={Building2}
-                label="Registrert"
+                label="Registered"
                 value={formatDate(current.registered_at)}
               />
             </section>
@@ -271,19 +271,19 @@ export function Swiper({ leads }: Props) {
             <section className="grid gap-2.5">
               <ContactLine
                 icon={Phone}
-                label="Telefon"
+                label="Phone"
                 value={current.phone}
                 href={current.phone ? `tel:${current.phone}` : undefined}
               />
               <ContactLine
                 icon={Smartphone}
-                label="Mobil"
+                label="Mobile"
                 value={current.mobile}
                 href={current.mobile ? `tel:${current.mobile}` : undefined}
               />
               <ContactLine
                 icon={Mail}
-                label="E-post"
+                label="Email"
                 value={current.email}
                 href={current.email ? `mailto:${current.email}` : undefined}
               />
@@ -303,7 +303,7 @@ export function Swiper({ leads }: Props) {
 
             <section>
               <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Score-bruddrapport
+                Score breakdown
               </div>
               <ul className="space-y-1 text-sm">
                 {(Object.keys(SCORE_LABELS_NB) as Array<keyof ScoringWeights>).map(
@@ -347,7 +347,7 @@ export function Swiper({ leads }: Props) {
       {/* Action bar */}
       <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
         <ActionButton
-          label="Avvis"
+          label="Reject"
           icon={X}
           tone="destructive"
           hint="←"
@@ -355,7 +355,7 @@ export function Swiper({ leads }: Props) {
           onClick={() => handleAction("reject")}
         />
         <ActionButton
-          label="Hopp"
+          label="Skip"
           icon={ArrowUp}
           tone="ghost"
           hint="↑"
@@ -363,7 +363,7 @@ export function Swiper({ leads }: Props) {
           onClick={() => handleAction("review")}
         />
         <ActionButton
-          label="Send til CRM"
+          label="Send to CRM"
           icon={Handshake}
           tone="secondary"
           hint="C"
@@ -371,7 +371,7 @@ export function Swiper({ leads }: Props) {
           onClick={() => handleAction("crm")}
         />
         <ActionButton
-          label="Behold"
+          label="Keep"
           icon={Check}
           tone="primary"
           hint="→"
@@ -506,16 +506,16 @@ function EmptyQueue() {
         <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <Check className="h-5 w-5" />
         </div>
-        <h3 className="font-medium">Ingen nye leads i køen</h3>
+        <h3 className="font-medium">No new leads in the queue</h3>
         <p className="text-sm text-muted-foreground">
-          Alle ny-status-leads er gjennomgått. Kjør Brreg-innhenting fra Kø
+          All ny-status-leads er gjennomgått. Kjør Brreg-innhenting fra Queue
           for å hente nye.
         </p>
         <Link
           href="/admin/queue"
           className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
-          Gå til Kø →
+          Gå til Queue →
         </Link>
       </div>
     </div>
@@ -529,9 +529,9 @@ function DoneState({ total }: { total: number }) {
         <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
           <Check className="h-6 w-6" />
         </div>
-        <h3 className="text-lg font-semibold">Ferdig — {total} leads gjennomgått</h3>
+        <h3 className="text-lg font-semibold">Done — {total} leads triaged</h3>
         <p className="text-sm text-muted-foreground">
-          Last siden på nytt for å hente eventuelle nye leads.
+          Reload the page to fetch any new leads.
         </p>
         <div className="flex items-center justify-center gap-2 pt-2">
           <Button
@@ -541,13 +541,13 @@ function DoneState({ total }: { total: number }) {
             onClick={() => window.location.reload()}
           >
             <RefreshCw />
-            Last på nytt
+            Reload
           </Button>
           <Link
             href="/admin/crm"
             className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Til CRM
+            To CRM
             <ArrowUpRight className="h-3 w-3" />
           </Link>
         </div>

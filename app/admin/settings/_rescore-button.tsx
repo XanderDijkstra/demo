@@ -17,7 +17,7 @@ export function RescoreButton({ totalLeads }: { totalLeads: number }) {
       if (result.ok) {
         toast.success(`Rescoret ${result.count} leads`);
       } else {
-        toast.error(`Feilet: ${result.error}`);
+        toast.error(`Failed: ${result.error}`);
       }
     });
   }

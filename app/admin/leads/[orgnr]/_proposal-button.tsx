@@ -108,9 +108,9 @@ export function ProposalButton({
         const filename =
           parseContentDispositionFilename(
             res.headers.get("Content-Disposition")
-          ) ?? `FX Media - Tilbud - ${clientName}.pdf`;
+          ) ?? `FX Media - Tobud - ${clientName}.pdf`;
         downloadBlob(blob, filename);
-        toast.success("Tilbud generert — lasta ned");
+        toast.success("Proposal generated — downloaded");
         setOpen(false);
       } catch (err) {
         toast.error(
@@ -133,7 +133,7 @@ export function ProposalButton({
           <DialogHeader>
             <DialogTitle>Generer tilbud for {companyName}</DialogTitle>
             <DialogDescription>
-              Velg tjeneste og pris — leveranser fylles fra mal og kan
+              Select tjeneste og pris — leveranser fylles fra mal og kan
               redigeres i en neste runde.
             </DialogDescription>
           </DialogHeader>
@@ -175,13 +175,13 @@ export function ProposalButton({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="contact" className="text-xs">
-                  Kontaktperson
+                  Contact person
                 </Label>
                 <Input
                   id="contact"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  placeholder="Fornavn Etternavn"
+                  placeholder="First Last"
                   disabled={pending}
                 />
               </div>
@@ -190,7 +190,7 @@ export function ProposalButton({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="date" className="text-xs">
-                  Tilbudsdato
+                  Tobudsdato
                 </Label>
                 <Input
                   id="date"
@@ -244,7 +244,7 @@ export function ProposalButton({
             {isAdsService ? (
               <div className="space-y-1.5">
                 <Label htmlFor="adbudget" className="text-xs">
-                  Anbefalt annonsebudsjett (valgfritt)
+                  Anbefalt annonsebudsjett (optional)
                 </Label>
                 <Input
                   id="adbudget"
@@ -264,7 +264,7 @@ export function ProposalButton({
               onClick={() => setOpen(false)}
               disabled={pending}
             >
-              Avbryt
+              Cancel
             </Button>
             <Button type="submit" disabled={pending}>
               {pending ? <Loader2 className="animate-spin" /> : <FileText />}

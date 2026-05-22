@@ -48,10 +48,10 @@ export function DealSection({ orgNr, deal }: Props) {
         </div>
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">
-            Ingen aktiv deal for dette leadet ennå. Den opprettes automatisk
-            når du markerer en e-post som besvart — eller du kan opprette en
-            manuelt her hvis dialogen startet et annet sted (telefon,
-            møte, osv).
+            No active deal for this lead yet. One is created automatically
+            when you mark an email as replied — or create one manually
+            here if the conversation started elsewhere (phone, meeting,
+            etc.).
           </p>
           <Button
             type="button"
@@ -62,7 +62,7 @@ export function DealSection({ orgNr, deal }: Props) {
             onClick={() =>
               startCreateTransition(async () => {
                 const result = await createDealAction(orgNr);
-                if (result.ok) toast.success("Deal opprettet");
+                if (result.ok) toast.success("Deal created");
                 else toast.error(result.error);
               })
             }
@@ -72,7 +72,7 @@ export function DealSection({ orgNr, deal }: Props) {
             ) : (
               <PlusCircle />
             )}
-            Opprett deal manuelt
+            Create deal manuelt
           </Button>
         </div>
       </div>
@@ -87,7 +87,7 @@ export function DealSection({ orgNr, deal }: Props) {
     let lostReason: string | undefined;
     if (stage === "lost") {
       lostReason =
-        window.prompt("Hva er grunnen til at avtalen falt? (valgfritt)") ??
+        window.prompt("What's the reason the deal was lost? (optional)") ??
         undefined;
     }
     startStageTransition(async () => {
@@ -114,7 +114,7 @@ export function DealSection({ orgNr, deal }: Props) {
         value_nok: value,
         notes: notes.trim() || null,
       });
-      if (result.ok) toast.success("Deal oppdatert");
+      if (result.ok) toast.success("Deal updated");
       else toast.error(result.error);
     });
   }
@@ -176,7 +176,7 @@ export function DealSection({ orgNr, deal }: Props) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="deal-value" className="text-xs">
-            Verdi (NOK)
+            Value (NOK)
           </Label>
           <Input
             id="deal-value"
@@ -193,7 +193,7 @@ export function DealSection({ orgNr, deal }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="deal-notes" className="text-xs">
-          Notater
+          Notes
         </Label>
         <textarea
           id="deal-notes"
@@ -209,7 +209,7 @@ export function DealSection({ orgNr, deal }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-[11px] text-muted-foreground">
           {isClosed && deal.stage === "lost" && deal.lost_reason ? (
-            <>Tapt-grunn: {deal.lost_reason}</>
+            <>Lost-grunn: {deal.lost_reason}</>
           ) : null}
         </div>
         <Button
@@ -219,7 +219,7 @@ export function DealSection({ orgNr, deal }: Props) {
           disabled={savePending}
         >
           {savePending ? <Loader2 className="animate-spin" /> : <Save />}
-          Lagre
+          Save
         </Button>
       </div>
     </div>

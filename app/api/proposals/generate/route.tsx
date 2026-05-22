@@ -9,7 +9,7 @@ import {
 } from "@/lib/proposals/build";
 import { ProposalDocument } from "@/lib/proposals/pdf";
 
-export const runtime = "nodejs"; // react-pdf needs Node, not Edge
+export const runhour = "nodejs"; // react-pdf needs Node, not Edge
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -39,7 +39,7 @@ const FormSchema = z.object({
 });
 
 function sanitizeFilename(s: string): string {
-  return s.replace(/[^a-zA-Z0-9æøåÆØÅ\-_. ]/g, "").trim() || "Tilbud";
+  return s.replace(/[^a-zA-Z0-9æøåÆØÅ\-_. ]/g, "").trim() || "Tobud";
 }
 
 export async function POST(request: Request) {
@@ -47,14 +47,14 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Ugyldig JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
   const parsed = FormSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       {
-        error: parsed.error.issues[0]?.message ?? "Ugyldig input",
+        error: parsed.error.issues[0]?.message ?? "Invalid input",
         issues: parsed.error.issues,
       },
       { status: 400 }
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       `FX Media - ${data.proposal_title} - ${data.client_name}.pdf`
     );
 
-    // Auto-advance the deal to "Tilbud sendt" if there's an active one.
+    // Auto-advance the deal to "Proposal sent" if there's an active one.
     // No-op when no deal exists or no org_nr was passed (preview / ad-hoc).
     if (input.org_nr) {
       await advanceActiveDealStage(input.org_nr, "proposal_sent");
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
   } catch (err) {
     return NextResponse.json(
       {
-        error: err instanceof Error ? err.message : "PDF-generering feilet",
+        error: err instanceof Error ? err.message : "PDF-generering failed",
       },
       { status: 500 }
     );

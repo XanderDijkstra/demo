@@ -55,10 +55,10 @@ export async function runGenerateLeadSite(params: {
   nicheOverride?: NicheSlug | null;
 }): Promise<GenerateLeadSiteResult> {
   if (!/^\d{9}$/.test(params.orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
   if (params.nicheOverride && !isNicheSlug(params.nicheOverride)) {
-    return { ok: false, error: "Ugyldig niche" };
+    return { ok: false, error: "Invalid niche" };
   }
 
   const supabase = getSupabaseAdmin();
@@ -70,7 +70,7 @@ export async function runGenerateLeadSite(params: {
     .maybeSingle();
 
   if (companyError) return { ok: false, error: companyError.message };
-  if (!company) return { ok: false, error: "Lead ikke funnet" };
+  if (!company) return { ok: false, error: "Lead not found" };
 
   const niche: NicheSlug =
     params.nicheOverride ?? pickNicheFromNace(company.nace_code);
@@ -137,7 +137,7 @@ export async function unpublishLeadSite(
   orgNr: string
 ): Promise<{ ok: boolean; error?: string }> {
   if (!/^\d{9}$/.test(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
   const supabase = getSupabaseAdmin();
   const { error } = await supabase

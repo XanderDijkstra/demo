@@ -48,10 +48,10 @@ export async function updateLeadStatus(
   status: CompanyStatus
 ): Promise<ActionResult> {
   if (!isValidOrgNr(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
   if (!VALID_STATUSES.includes(status)) {
-    return { ok: false, error: "Ugyldig status" };
+    return { ok: false, error: "Invalid status" };
   }
 
   const supabase = getSupabaseAdmin();
@@ -86,7 +86,7 @@ export async function updateLeadContactName(
   name: string | null
 ): Promise<ActionResult> {
   if (!isValidOrgNr(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
 
   let normalized: string | null;
@@ -94,7 +94,7 @@ export async function updateLeadContactName(
     normalized = null;
   } else {
     const parsed = ContactNameSchema.safeParse(name);
-    if (!parsed.success) return { ok: false, error: "Ugyldig navn" };
+    if (!parsed.success) return { ok: false, error: "Invalid name" };
     normalized = parsed.data;
   }
 
@@ -134,7 +134,7 @@ export async function scrapeLeadEmail(
   orgNr: string
 ): Promise<ScrapeEmailActionResult> {
   if (!isValidOrgNr(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr", fetchedUrls: [] };
+    return { ok: false, error: "Invalid org.nr", fetchedUrls: [] };
   }
 
   const supabase = getSupabaseAdmin();
@@ -148,12 +148,12 @@ export async function scrapeLeadEmail(
     return { ok: false, error: leadError.message, fetchedUrls: [] };
   }
   if (!lead) {
-    return { ok: false, error: "Lead ikke funnet", fetchedUrls: [] };
+    return { ok: false, error: "Lead not found", fetchedUrls: [] };
   }
   if (!lead.website) {
     return {
       ok: false,
-      error: "Ingen nettside å skrape — legg til hjemmeside først",
+      error: "No website to scrape — add a homepage first",
       fetchedUrls: [],
     };
   }
@@ -232,7 +232,7 @@ export async function updateLeadEmail(
   email: string | null
 ): Promise<ActionResult> {
   if (!isValidOrgNr(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
 
   let normalized: string | null;
@@ -240,7 +240,7 @@ export async function updateLeadEmail(
     normalized = null;
   } else {
     const parsed = EmailSchema.safeParse(email);
-    if (!parsed.success) return { ok: false, error: "Ugyldig e-postadresse" };
+    if (!parsed.success) return { ok: false, error: "Invalid email address" };
     normalized = parsed.data;
   }
 
@@ -267,8 +267,8 @@ export async function updateLeadEmail(
 // ─── Send outreach email ─────────────────────────────────────────────────────
 
 const SendSchema = z.object({
-  subject: z.string().trim().min(1, "Emne mangler").max(998),
-  body: z.string().trim().min(1, "Innhold mangler").max(50_000),
+  subject: z.string().trim().min(1, "Subject is required").max(998),
+  body: z.string().trim().min(1, "Body is required").max(50_000),
 });
 
 export async function sendLeadEmail(
@@ -276,7 +276,7 @@ export async function sendLeadEmail(
   formData: FormData
 ): Promise<ActionResult & { id?: string }> {
   if (!isValidOrgNr(orgNr)) {
-    return { ok: false, error: "Ugyldig org.nr" };
+    return { ok: false, error: "Invalid org.nr" };
   }
 
   const parsed = SendSchema.safeParse({
@@ -286,7 +286,7 @@ export async function sendLeadEmail(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Ugyldig input",
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
     };
   }
 
@@ -300,9 +300,9 @@ export async function sendLeadEmail(
     .maybeSingle();
 
   if (leadError) return { ok: false, error: leadError.message };
-  if (!lead) return { ok: false, error: "Lead ikke funnet" };
+  if (!lead) return { ok: false, error: "Lead not found" };
   if (!lead.email) {
-    return { ok: false, error: "Ingen e-postadresse på leadet" };
+    return { ok: false, error: "No email address on lead" };
   }
 
   // Hard block: email is on the suppression list.
@@ -310,7 +310,7 @@ export async function sendLeadEmail(
   if (suppression.suppressed) {
     return {
       ok: false,
-      error: `Adressen er suppressed (${suppression.reason}) og kan ikke kontaktes`,
+      error: `Addressn er suppressed (${suppression.reason}) og kan ikke kontaktes`,
     };
   }
 
@@ -352,7 +352,7 @@ export async function sendLeadEmail(
   if (insertError || !row) {
     return {
       ok: false,
-      error: insertError?.message ?? "Kunne ikke logge utsendelse",
+      error: insertError?.message ?? "Could not log send",
     };
   }
 
@@ -403,7 +403,7 @@ export async function sendLeadEmail(
   });
 
   revalidatePath(`/admin/leads/${orgNr}`);
-  return { ok: false, error: result.error ?? "Send feilet" };
+  return { ok: false, error: result.error ?? "Send failed" };
 }
 
 // ─── Demo site (Claude-generated landing page) ──────────────────────────────
@@ -412,9 +412,9 @@ export async function generateLeadSiteAction(
   orgNr: string,
   nicheOverride: NicheSlug | null
 ): Promise<ActionResult & { siteUrl?: string; niche?: NicheSlug }> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   if (nicheOverride && !isNicheSlug(nicheOverride)) {
-    return { ok: false, error: "Ugyldig niche" };
+    return { ok: false, error: "Invalid niche" };
   }
 
   const result = await runGenerateLeadSite({
@@ -426,7 +426,7 @@ export async function generateLeadSiteAction(
   revalidatePath(`/p/${orgNr}`);
 
   if (!result.ok) {
-    return { ok: false, error: result.error ?? "Generering feilet" };
+    return { ok: false, error: result.error ?? "Generation failed" };
   }
   return { ok: true, siteUrl: result.siteUrl, niche: result.niche };
 }
@@ -434,13 +434,13 @@ export async function generateLeadSiteAction(
 export async function unpublishLeadSiteAction(
   orgNr: string
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
 
   const result = await unpublishLeadSite(orgNr);
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath(`/p/${orgNr}`);
   if (!result.ok) {
-    return { ok: false, error: result.error ?? "Avpublisering feilet" };
+    return { ok: false, error: result.error ?? "Unpublish failed" };
   }
   return { ok: true };
 }
@@ -452,8 +452,8 @@ export async function toggleEmailReplied(
   emailId: string,
   markReplied: boolean
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
-  if (!emailId) return { ok: false, error: "Mangler email-id" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
+  if (!emailId) return { ok: false, error: "Missing email id" };
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
@@ -486,9 +486,9 @@ export async function toggleEmailReplied(
 // ─── Deal mutations from the lead detail page ───────────────────────────────
 
 export async function createDealAction(orgNr: string): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   const deal = await createManualDeal(orgNr);
-  if (!deal) return { ok: false, error: "Kunne ikke opprette deal" };
+  if (!deal) return { ok: false, error: "Could not create deal" };
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath("/admin/crm");
   return { ok: true };
@@ -500,10 +500,10 @@ export async function updateDealStageAction(
   stage: DealStage,
   lostReason?: string
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
-  if (!isValidDealStage(stage)) return { ok: false, error: "Ugyldig stage" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
+  if (!isValidDealStage(stage)) return { ok: false, error: "Invalid stage" };
   const deal = await setDealStage(dealId, stage, { lostReason });
-  if (!deal) return { ok: false, error: "Stage-endring feilet" };
+  if (!deal) return { ok: false, error: "Stage change failed" };
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath("/admin/crm");
   return { ok: true };
@@ -514,9 +514,9 @@ export async function updateDealFieldsAction(
   dealId: string,
   patch: { value_nok?: number | null; notes?: string | null }
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   const deal = await updateDealFields(dealId, patch);
-  if (!deal) return { ok: false, error: "Oppdatering feilet" };
+  if (!deal) return { ok: false, error: "Update failed" };
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath("/admin/crm");
   return { ok: true };

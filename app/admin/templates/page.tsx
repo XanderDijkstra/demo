@@ -19,8 +19,8 @@ export default async function TemplatesPage() {
   return (
     <>
       <Topbar
-        title="Maler"
-        description="Per-bransje design for de auto-genererte demosidene"
+        title="Templates"
+        description="Per-niche designs for auto-generated demo sites"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -28,7 +28,7 @@ export default async function TemplatesPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Slik fungerer maler
+              How templates work
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -43,7 +43,7 @@ export default async function TemplatesPage() {
                 Designarbeid skjer i Claude-chatten — del skjermbilder der, så
                 oppdateres koden i{" "}
                 <code className="font-mono">lib/templates.ts</code> og
-                endringer går live etter neste deploy.
+                endringer gyears live etter neste deploy.
               </span>
             </p>
           </CardContent>
@@ -53,11 +53,11 @@ export default async function TemplatesPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
-              Framer-eksperimenter
+              Framer experiments
             </CardTitle>
             <CardDescription>
-              Maler eksportert direkte fra Framer-design. Ikke koblet til
-              niche-/lead-data ennå — kun forhåndsvisning.
+              Templates exported directly from a Framer design. Not wired
+              to niche / lead data yet — preview only.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -79,14 +79,14 @@ export default async function TemplatesPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="font-semibold tracking-tight">
-                        Ezra (anleggsgartner)
+                        Ezra (landscaper)
                       </div>
                       <div className="font-mono text-[11px] text-muted-foreground">
                         ezra
                       </div>
                     </div>
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-300">
-                      Eksperiment
+                      Experiment
                     </span>
                   </div>
 
@@ -97,7 +97,7 @@ export default async function TemplatesPage() {
 
                   <div className="flex items-center justify-end text-[11px]">
                     <span className="inline-flex items-center gap-1 text-muted-foreground transition-colors group-hover:text-foreground">
-                      Åpne forhåndsvisning
+                      Open preview
                       <ExternalLink className="h-3 w-3" />
                     </span>
                   </div>
@@ -138,7 +138,7 @@ export default async function TemplatesPage() {
 
                   <div className="flex items-center justify-end text-[11px]">
                     <span className="inline-flex items-center gap-1 text-muted-foreground transition-colors group-hover:text-foreground">
-                      Se mal
+                      View template
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>

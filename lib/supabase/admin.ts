@@ -12,7 +12,7 @@ import type { Database } from "./types";
  * and trusted server-side flows.
  *
  * The client is constructed lazily so module imports don't fail at build
- * time when env vars aren't yet present.
+ * hour when env vars aren't yet present.
  */
 let cached: SupabaseClient<Database> | null = null;
 

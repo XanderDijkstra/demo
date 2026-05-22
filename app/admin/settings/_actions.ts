@@ -41,7 +41,7 @@ export async function saveScoringWeights(
   });
 
   if (!parsed.success) {
-    return { ok: false, error: "Ugyldige verdier (0–100 per signal)" };
+    return { ok: false, error: "Invalid values (0–100 per signal)" };
   }
 
   const supabase = getSupabaseAdmin();
@@ -62,7 +62,7 @@ export async function saveScoringWeights(
 
   revalidatePath("/admin/settings");
   revalidatePath("/admin");
-  return { ok: true, message: "Vekter oppdatert" };
+  return { ok: true, message: "Weights updated" };
 }
 
 // ─── Target NACE codes ───────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ export async function saveTargetNaceCodes(
   if (invalid.length > 0) {
     return {
       ok: false,
-      error: `Ugyldige NACE-koder: ${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "…" : ""}`,
+      error: `Invalid NACE codes: ${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "…" : ""}`,
     };
   }
 
@@ -106,7 +106,7 @@ export async function saveTargetNaceCodes(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: `Lagret ${codes.length} NACE-koder` };
+  return { ok: true, message: `Saved ${codes.length} NACE codes` };
 }
 
 // ─── Excluded org forms ──────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ export async function saveExcludedOrgForms(
   if (invalid.length > 0) {
     return {
       ok: false,
-      error: `Ugyldige selskapsformer: ${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "…" : ""}`,
+      error: `Invalid org forms: ${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "…" : ""}`,
     };
   }
 
@@ -142,7 +142,7 @@ export async function saveExcludedOrgForms(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: `Lagret ${forms.length} ekskluderte former` };
+  return { ok: true, message: `Saved ${forms.length} excluded org forms` };
 }
 
 // ─── Outreach FROM address ───────────────────────────────────────────────────
@@ -155,7 +155,7 @@ const FromAddressSchema = z
   // Accept either "name@domain.tld" or "Display Name <name@domain.tld>".
   .regex(
     /^(?:[^<>]+<\s*)?[^\s<>@]+@[^\s<>@]+\.[a-z]{2,}\s*>?$/i,
-    "Bruk format «Display Name <addr@domene.no>» eller «addr@domene.no»"
+    'Use format "Display Name <addr@domain.no>" or "addr@domain.no"'
   );
 
 export async function saveOutreachFromAddress(
@@ -165,7 +165,7 @@ export async function saveOutreachFromAddress(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Ugyldig adresse",
+      error: parsed.error.issues[0]?.message ?? "Invalid address",
     };
   }
 
@@ -186,7 +186,7 @@ export async function saveOutreachFromAddress(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: "Avsenderadresse lagret" };
+  return { ok: true, message: "Sender address saved" };
 }
 
 // ─── Reply-To address ────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ export async function saveOutreachFromAddress(
 const ReplyToSchema = z
   .string()
   .trim()
-  .email("Ugyldig e-postadresse")
+  .email("Invalid email address")
   .max(254);
 
 export async function saveOutreachReplyTo(
@@ -204,7 +204,7 @@ export async function saveOutreachReplyTo(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Ugyldig adresse",
+      error: parsed.error.issues[0]?.message ?? "Invalid address",
     };
   }
 
@@ -229,7 +229,7 @@ export async function saveOutreachReplyTo(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: "Reply-To lagret" };
+  return { ok: true, message: "Reply-To saved" };
 }
 
 // ─── Suppressions ────────────────────────────────────────────────────────────
@@ -247,7 +247,7 @@ export async function addManualSuppression(
     notes: formData.get("notes") || null,
   });
   if (!parsed.success) {
-    return { ok: false, error: "Ugyldig e-postadresse" };
+    return { ok: false, error: "Invalid email address" };
   }
 
   const supabase = getSupabaseAdmin();
@@ -271,7 +271,7 @@ export async function addManualSuppression(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: "Adresse lagt til i suppression list" };
+  return { ok: true, message: "Address lagt til i suppression list" };
 }
 
 export async function removeSuppression(
@@ -297,7 +297,7 @@ export async function removeSuppression(
   });
 
   revalidatePath("/admin/settings");
-  return { ok: true, message: "Fjernet fra suppression list" };
+  return { ok: true, message: "Removeet fra suppression list" };
 }
 
 // ─── Re-score all leads ──────────────────────────────────────────────────────
@@ -313,7 +313,7 @@ export async function rescoreAllLeads(): Promise<
   ]);
 
   if (!weights || !targets) {
-    return { ok: false, error: "Mangler innstillinger i databasen" };
+    return { ok: false, error: "Missing settings in database" };
   }
 
   const { data, error } = await supabase.from("companies").select("*");

@@ -59,7 +59,7 @@ export default async function OutreachPage({
 
   const funnel = [
     {
-      label: "Sendt",
+      label: "Sent",
       count: kpis.sent,
       pct: 100,
       color: "bg-primary",
@@ -83,7 +83,7 @@ export default async function OutreachPage({
       color: "bg-primary/55",
     },
     {
-      label: "Besvart",
+      label: "Replied",
       count: kpis.replied,
       pct: pct(kpis.replied, kpis.sent),
       color: "bg-emerald-500",
@@ -93,8 +93,8 @@ export default async function OutreachPage({
   return (
     <>
       <Topbar
-        title="Utsendelser"
-        description="E-post-statistikk og leveringskvalitet"
+        title="Outreach"
+        description="Email stats and deliverability"
         actions={
           <div className="hidden items-center gap-1 rounded-md border bg-background p-0.5 text-xs sm:inline-flex">
             {WINDOW_OPTIONS.map((w) => {
@@ -123,7 +123,7 @@ export default async function OutreachPage({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={Send}
-            label="Sendt"
+            label="Sent"
             value={kpis.sent}
             hint={`Siste ${windowDays} dager`}
             trend={sentTrend}
@@ -132,21 +132,21 @@ export default async function OutreachPage({
             icon={Mail}
             label="Leveringsrate"
             value={`${pct(kpis.delivered, kpis.sent)}%`}
-            hint={`${kpis.delivered} av ${kpis.sent} levert`}
+            hint={`${kpis.delivered} av ${kpis.sent} delivered`}
             trend={deliveredTrend}
           />
           <StatCard
             icon={Eye}
             label="Åpnings­rate"
             value={`${pct(kpis.opened, kpis.delivered)}%`}
-            hint={`${kpis.opened} av ${kpis.delivered} åpnet`}
+            hint={`${kpis.opened} av ${kpis.delivered} opened`}
             trend={openedTrend}
           />
           <StatCard
             icon={Reply}
-            label="Svarrate"
+            label="Reply rate"
             value={`${pct(kpis.replied, kpis.sent)}%`}
-            hint={`${kpis.replied} besvart`}
+            hint={`${kpis.replied} replied`}
             trend={repliedTrend}
           />
         </div>
@@ -166,8 +166,8 @@ export default async function OutreachPage({
               {stats.daily.every((d) => d.sent === 0 && d.replied === 0) ? (
                 <EmptyState
                   icon={Inbox}
-                  title="Ingen utsendelser i perioden"
-                  description="Send fra en lead-detaljside for å se aktivitet her."
+                  title="No emails sent in this period"
+                  description="Send from a lead detail page to see activity here."
                 />
               ) : (
                 <OutreachDailyChart data={stats.daily} />
@@ -182,7 +182,7 @@ export default async function OutreachPage({
                 Konverterings­trakt
               </CardTitle>
               <CardDescription>
-                Fra utsendt til svar — {windowDays} dager
+                From utsent til svar — {windowDays} dager
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -229,7 +229,7 @@ export default async function OutreachPage({
               />
               <HealthRow
                 icon={ShieldOff}
-                label="Spam-klage"
+                label="Spam-complaint"
                 count={kpis.complained}
                 ofTotal={kpis.sent}
                 tone={kpis.complained > 0 ? "warn" : "ok"}
@@ -243,7 +243,7 @@ export default async function OutreachPage({
               />
               <HealthRow
                 icon={Inbox}
-                label="Feilet (ikke sendt)"
+                label="Failed (ikke sent)"
                 count={kpis.failed}
                 ofTotal={kpis.sent + kpis.failed}
                 tone={kpis.failed > 0 ? "warn" : "ok"}
@@ -255,7 +255,7 @@ export default async function OutreachPage({
             <CardHeader>
               <CardTitle className="text-base">Suppression list</CardTitle>
               <CardDescription>
-                Adresser som ikke kan kontaktes
+                Addressr som ikke kan kontaktes
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -269,12 +269,12 @@ export default async function OutreachPage({
                   tone="destructive"
                 />
                 <SuppressionPill
-                  label="klage"
+                  label="complaint"
                   count={stats.suppressions.byReason.complained}
                   tone="destructive"
                 />
                 <SuppressionPill
-                  label="manuell"
+                  label="manual"
                   count={stats.suppressions.byReason.manual}
                 />
                 <SuppressionPill
@@ -286,7 +286,7 @@ export default async function OutreachPage({
                 href="/admin/settings"
                 className="mt-4 inline-flex text-xs text-primary hover:underline"
               >
-                Administrer i Innstillinger →
+                Administrer i Settings →
               </Link>
             </CardContent>
           </Card>
@@ -297,7 +297,7 @@ export default async function OutreachPage({
           <CardHeader>
             <CardTitle className="text-base">Mest engasjerte leads</CardTitle>
             <CardDescription>
-              Topp 8 — sortert etter svar × 5 + klikk × 2 + åpning
+              Top 8 — ranked by reply × 5 + click × 2 + open
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -305,8 +305,8 @@ export default async function OutreachPage({
               <div className="p-6">
                 <EmptyState
                   icon={Inbox}
-                  title="Ingen aktivitet enda"
-                  description="Når leads åpner eller svarer, dukker de opp her."
+                  title="No activity yet"
+                  description="When leads open or reply, they show up here."
                 />
               </div>
             ) : (
@@ -314,14 +314,14 @@ export default async function OutreachPage({
                 <table className="w-full text-sm">
                   <thead className="bg-muted/40 text-muted-foreground">
                     <tr className="text-left">
-                      <th className="px-4 py-2 font-medium">Selskap</th>
-                      <th className="px-4 py-2 font-medium text-right">Sendt</th>
+                      <th className="px-4 py-2 font-medium">Company</th>
+                      <th className="px-4 py-2 font-medium text-right">Sent</th>
                       <th className="px-4 py-2 font-medium text-right">Åpnet</th>
                       <th className="px-4 py-2 font-medium text-right">
                         Klikket
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Besvart
+                        Replied
                       </th>
                     </tr>
                   </thead>
@@ -373,15 +373,15 @@ export default async function OutreachPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Siste 20 utsendelser</CardTitle>
-            <CardDescription>Alle perioder</CardDescription>
+            <CardDescription>All perioder</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {stats.recent.length === 0 ? (
               <div className="p-6">
                 <EmptyState
                   icon={Mail}
-                  title="Ingen utsendelser enda"
-                  description="Send fra en lead-detaljside for å komme i gang."
+                  title="No emails sent yet"
+                  description="Send from a lead detail page to get started."
                 />
               </div>
             ) : (
@@ -421,7 +421,7 @@ export default async function OutreachPage({
                               : "outline"
                       }
                     >
-                      {entry.replied_at ? "besvart" : entry.status}
+                      {entry.replied_at ? "replied" : entry.status}
                     </Badge>
                   </li>
                 ))}

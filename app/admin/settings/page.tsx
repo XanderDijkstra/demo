@@ -99,8 +99,8 @@ export default async function SettingsPage() {
   return (
     <>
       <Topbar
-        title="Innstillinger"
-        description="Scoring-vekter, målnæringer og ekskluderte former"
+        title="Settings"
+        description="Scoring weights, target NACE codes, and excluded org forms"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -153,7 +153,7 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-base">Ekskluderte former</CardTitle>
               <CardDescription>
-                Selskapsformer som filtreres bort før scoring (KBO,
+                Org former som filtreres bort før scoring (KBO,
                 tvangsavviklinger, utenlandske filialer, offentlige
                 organer).
               </CardDescription>
@@ -162,7 +162,7 @@ export default async function SettingsPage() {
               <ListForm
                 inputName="forms"
                 initial={excludedForms ?? []}
-                description={`${excludedForms?.length ?? 0} former ekskludert`}
+                description={`${excludedForms?.length ?? 0} forms excluded`}
                 placeholder={"KBO\nUTLA\nSTAT"}
                 saveAction={saveExcludedOrgForms}
               />
@@ -173,10 +173,10 @@ export default async function SettingsPage() {
         {/* Outreach */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">E-post-utsendelse</CardTitle>
+            <CardTitle className="text-base">Email outreach</CardTitle>
             <CardDescription>
-              Avsenderadressen som brukes når du sender e-post fra
-              lead-detaljsiden via Resend.
+              Sender address used when you send email from the lead detail
+              page via Resend.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,27 +187,27 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Demosider — Claude usage summary */}
+        {/* Demo siter — Claude usage summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Demosider</CardTitle>
+            <CardTitle className="text-base">Demo siter</CardTitle>
             <CardDescription>
               AI-genererte landingssider per lead. Modellen settes i
-              <code className="font-mono mx-1">claude_model</code>-settingen
+              <code className="font-mono mx-1">claude_model</code>-settnone
               (ikke redigerbar fra UI enda).
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <div className="text-xs text-muted-foreground">Aktiv modell</div>
+                <div className="text-xs text-muted-foreground">Active modell</div>
                 <div className="font-mono text-sm">
                   {claudeModel ?? "claude-haiku-4-5"}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">
-                  Publiserte sider
+                  Publishede sider
                 </div>
                 <div className="text-sm tabular-nums">
                   <span className="font-medium">{totalSites}</span>
@@ -216,7 +216,7 @@ export default async function SettingsPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">
-                  Tokens brukt totalt
+                  Total tokens used
                 </div>
                 <div className="text-sm tabular-nums">
                   <span className="font-medium">
@@ -238,8 +238,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-base">Suppression list</CardTitle>
             <CardDescription>
-              Adresser som aldri skal kontaktes. Resend sender bounces og
-              spam-klager hit automatisk via webhook. Du kan også legge til
+              Addressr som aldri skal kontaktes. Resend sender bounces og
+              spam-complaintr hit automatisk via webhook. Du kan også legge til
               manuelt.
             </CardDescription>
           </CardHeader>
@@ -254,7 +254,7 @@ export default async function SettingsPage() {
             <CardTitle className="text-base">Rescore eksisterende leads</CardTitle>
             <CardDescription>
               Beregn scoren på nytt for alle leads i databasen med gjeldende
-              vekter og målnæringer. Status, notater og andre manuelle endringer
+              vekter og målnæringer. Status, notater og andre manuale endringer
               beholdes.
             </CardDescription>
           </CardHeader>

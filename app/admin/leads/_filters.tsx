@@ -9,21 +9,21 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = [
-  { value: "", label: "Alle statuser" },
-  { value: "new", label: "Ny" },
-  { value: "reviewed", label: "Vurdert" },
-  { value: "qualified", label: "Kvalifisert" },
-  { value: "rejected", label: "Avvist" },
+  { value: "", label: "All statuser" },
+  { value: "new", label: "New" },
+  { value: "reviewed", label: "Reviewed" },
+  { value: "qualified", label: "Qualified" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const SORT_OPTIONS = [
-  { value: "score", label: "Score (høyest)" },
-  { value: "registered", label: "Nyeste" },
-  { value: "name", label: "Navn (A–Å)" },
+  { value: "score", label: "Score (highest)" },
+  { value: "registered", label: "Neweste" },
+  { value: "name", label: "Name (A–Å)" },
 ];
 
 const MIN_SCORE_OPTIONS = [
-  { value: "", label: "Alle scorer" },
+  { value: "", label: "All scores" },
   { value: "30", label: "≥ 30" },
   { value: "50", label: "≥ 50" },
   { value: "70", label: "≥ 70" },
@@ -64,7 +64,7 @@ export function LeadsFilters() {
     >
       <form onSubmit={onSubmit} className="space-y-1.5 flex-1 min-w-56">
         <Label htmlFor="leads-search" className="text-xs">
-          Søk
+          Search
         </Label>
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -72,7 +72,7 @@ export function LeadsFilters() {
             id="leads-search"
             name="q"
             defaultValue={params.get("q") ?? ""}
-            placeholder="Selskapsnavn eller org.nr"
+            placeholder="Companysnavn eller org.nr"
             className="pl-8"
           />
         </div>

@@ -20,9 +20,9 @@ const TRANSITIONS: Array<{
   label: string;
   variant: "default" | "outline" | "destructive" | "secondary";
 }> = [
-  { status: "reviewed", label: "Marker som vurdert", variant: "outline" },
-  { status: "qualified", label: "Kvalifiser", variant: "default" },
-  { status: "rejected", label: "Avvis", variant: "destructive" },
+  { status: "reviewed", label: "Mark as reviewed", variant: "outline" },
+  { status: "qualified", label: "Qualify", variant: "default" },
+  { status: "rejected", label: "Reject", variant: "destructive" },
 ];
 
 export function StatusActions({ orgNr, current }: Props) {
