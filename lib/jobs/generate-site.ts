@@ -17,11 +17,27 @@ export interface GenerateLeadSiteResult {
   model?: string;
 }
 
+function resolveBaseUrl(): string {
+  // 1. Explicit operator override wins.
+  const explicit = process.env.NEXT_PUBLIC_APP_URL;
+  if (explicit) {
+    const trimmed = explicit.trim().replace(/\/$/, "");
+    if (trimmed) {
+      return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    }
+  }
+  // 2. Vercel production URL (set automatically on Vercel).
+  const prod = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (prod) return `https://${prod.replace(/\/$/, "")}`;
+  // 3. Per-deployment URL (preview deploys, also set by Vercel).
+  const vercel = process.env.VERCEL_URL;
+  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
+  // 4. Local dev.
+  return "http://localhost:3000";
+}
+
 function buildSiteUrl(orgNr: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  // Trim trailing slash so we don't end up with "//".
-  const normalized = base.replace(/\/$/, "");
-  return `${normalized}/p/${orgNr}`;
+  return `${resolveBaseUrl()}/p/${orgNr}`;
 }
 
 /**
