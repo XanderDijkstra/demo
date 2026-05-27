@@ -21,7 +21,16 @@ export type OutreachEmailStatus =
   | "delivered"
   | "bounced"
   | "complained"
-  | "failed";
+  | "failed"
+  | "received";
+export type EmailDirection = "out" | "in";
+export type EmailThreadStatus = "open" | "snoozed" | "archived";
+export type EmailAttachment = {
+  filename: string;
+  size: number;
+  content_type: string;
+  storage_url: string | null;
+};
 export type SuppressionReason =
   | "bounced"
   | "complained"
@@ -338,6 +347,17 @@ export type Database = {
           last_event_at: string | null;
           open_count: number;
           click_count: number;
+          direction: EmailDirection;
+          thread_id: string | null;
+          message_id: string | null;
+          in_reply_to: string | null;
+          references_chain: string[] | null;
+          from_name: string | null;
+          body_text: string | null;
+          body_html: string | null;
+          attachments: EmailAttachment[] | null;
+          received_at: string | null;
+          read_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -361,6 +381,17 @@ export type Database = {
           last_event_at?: string | null;
           open_count?: number;
           click_count?: number;
+          direction?: EmailDirection;
+          thread_id?: string | null;
+          message_id?: string | null;
+          in_reply_to?: string | null;
+          references_chain?: string[] | null;
+          from_name?: string | null;
+          body_text?: string | null;
+          body_html?: string | null;
+          attachments?: EmailAttachment[] | null;
+          received_at?: string | null;
+          read_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -384,6 +415,50 @@ export type Database = {
           last_event_at?: string | null;
           open_count?: number;
           click_count?: number;
+          direction?: EmailDirection;
+          thread_id?: string | null;
+          message_id?: string | null;
+          in_reply_to?: string | null;
+          references_chain?: string[] | null;
+          from_name?: string | null;
+          body_text?: string | null;
+          body_html?: string | null;
+          attachments?: EmailAttachment[] | null;
+          received_at?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      email_threads: {
+        Row: {
+          id: string;
+          org_nr: string | null;
+          subject: string | null;
+          last_activity_at: string;
+          unread_count: number;
+          status: EmailThreadStatus;
+          snooze_until: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_nr?: string | null;
+          subject?: string | null;
+          last_activity_at?: string;
+          unread_count?: number;
+          status?: EmailThreadStatus;
+          snooze_until?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          org_nr?: string | null;
+          subject?: string | null;
+          last_activity_at?: string;
+          unread_count?: number;
+          status?: EmailThreadStatus;
+          snooze_until?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -554,6 +629,9 @@ export type SettingRow<V = unknown> = {
   value: V;
   updated_at: string;
 };
+export type EmailThread = Database["public"]["Tables"]["email_threads"]["Row"];
+export type EmailThreadInsert =
+  Database["public"]["Tables"]["email_threads"]["Insert"];
 export type OutreachEmail =
   Database["public"]["Tables"]["outreach_emails"]["Row"];
 export type OutreachEmailInsert =

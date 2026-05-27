@@ -9,7 +9,7 @@ import {
 } from "@/lib/proposals/build";
 import { ProposalDocument } from "@/lib/proposals/pdf";
 
-export const runhour = "nodejs"; // react-pdf needs Node, not Edge
+export const runtime = "nodejs"; // react-pdf needs Node, not Edge
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 

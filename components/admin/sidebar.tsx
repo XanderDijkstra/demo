@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Activity,
   Handshake,
+  Inbox,
   Layers,
   LayoutDashboard,
   Mail,
@@ -25,6 +26,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
+  { label: "Inbox", href: "/admin/inbox", icon: Inbox },
   { label: "Swipe", href: "/admin/swipe", icon: Layers },
   { label: "CRM", href: "/admin/crm", icon: Handshake },
   { label: "Templates", href: "/admin/templates", icon: Palette },

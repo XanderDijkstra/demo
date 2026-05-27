@@ -20,6 +20,13 @@ import {
   type EmailCandidate,
 } from "@/lib/jobs/scrape-website-email";
 import {
+  buildThreadReplyTo,
+  ensureOutboundThread,
+  getInboundDomain,
+  makeMessageId,
+  touchThread,
+} from "@/lib/email/threads";
+import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
@@ -314,7 +321,7 @@ export async function sendLeadEmail(
     };
   }
 
-  const [fromAddress, replyTo, siteRow] = await Promise.all([
+  const [fromAddress, fallbackReplyTo, siteRow, inboundDomain] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     supabase
@@ -322,6 +329,7 @@ export async function sendLeadEmail(
       .select("org_nr")
       .eq("org_nr", orgNr)
       .maybeSingle(),
+    getInboundDomain(),
   ]);
   const firstName = lead.contact_name?.trim().split(/\s+/)[0] ?? null;
   const placeholders = {
@@ -335,6 +343,31 @@ export async function sendLeadEmail(
   const subject = applyPlaceholders(parsed.data.subject, placeholders);
   const body = applyPlaceholders(parsed.data.body, placeholders);
 
+  // Thread the send. Re-use an open thread with the same subject so
+  // follow-ups stay grouped; otherwise open a new one.
+  const thread = await ensureOutboundThread({ orgNr, subject });
+
+  // If the inbound domain is configured, route replies through our
+  // webhook via plus-addressing. Falls back to the operator-configured
+  // address otherwise (replies land in their personal inbox).
+  const replyTo = inboundDomain
+    ? buildThreadReplyTo(thread.id, inboundDomain)
+    : fallbackReplyTo;
+  const messageId = makeMessageId(inboundDomain);
+
+  // Build References from any prior outbound messages in this thread so
+  // mail clients thread the conversation natively.
+  const { data: priorMessages } = await supabase
+    .from("outreach_emails")
+    .select("message_id, in_reply_to, references_chain")
+    .eq("thread_id", thread.id)
+    .order("created_at", { ascending: true });
+  const priorIds = (priorMessages ?? [])
+    .map((m) => m.message_id)
+    .filter((v): v is string => !!v);
+  const lastMessageId = priorIds[priorIds.length - 1] ?? null;
+  const references = priorIds;
+
   // Open a row up front so we have an audit trail even if Resend errors.
   const { data: row, error: insertError } = await supabase
     .from("outreach_emails")
@@ -345,6 +378,11 @@ export async function sendLeadEmail(
       subject,
       body,
       status: "queued",
+      direction: "out",
+      thread_id: thread.id,
+      message_id: messageId,
+      in_reply_to: lastMessageId,
+      references_chain: references.length > 0 ? references : null,
     })
     .select()
     .single();
@@ -362,6 +400,9 @@ export async function sendLeadEmail(
     subject,
     body,
     replyTo,
+    messageId,
+    inReplyTo: lastMessageId ?? undefined,
+    references: references.length > 0 ? references : undefined,
   });
 
   if (result.ok) {
@@ -374,15 +415,23 @@ export async function sendLeadEmail(
       })
       .eq("id", row.id);
 
+    await touchThread({ threadId: thread.id });
+
     await supabase.from("audit_log").insert({
       actor: "manual",
       action: "outreach.email.sent",
       entity_type: "company",
       entity_id: orgNr,
-      metadata: { to: lead.email, subject, resend_id: result.resendId },
+      metadata: {
+        to: lead.email,
+        subject,
+        resend_id: result.resendId,
+        thread_id: thread.id,
+      },
     });
 
     revalidatePath(`/admin/leads/${orgNr}`);
+    revalidatePath("/admin/inbox");
     return { ok: true, id: row.id };
   }
 

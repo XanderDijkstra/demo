@@ -561,6 +561,7 @@ function OutreachStatusBadge({
     bounced: { variant: "destructive", label: "bounce" },
     complained: { variant: "destructive", label: "complaint" },
     failed: { variant: "destructive", label: "failed" },
+    received: { variant: "outline", label: "received" },
   };
   const { variant, label } = map[status];
   return <Badge variant={variant}>{label}</Badge>;

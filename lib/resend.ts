@@ -47,6 +47,14 @@ export interface SendOutreachInput {
   subject: string;
   body: string;
   replyTo?: string;
+  /** RFC 5322 Message-ID for the new outbound mail. Resend lets us set
+   *  custom headers; this lets mail clients thread us correctly and
+   *  lets our inbound webhook match replies via In-Reply-To. */
+  messageId?: string;
+  /** Most recent message_id in the thread (the one we're replying to). */
+  inReplyTo?: string;
+  /** Full RFC 5322 References chain (oldest first). */
+  references?: string[];
 }
 
 export interface SendOutreachResult {
@@ -77,12 +85,23 @@ export async function sendOutreachEmail(
 ): Promise<SendOutreachResult> {
   try {
     const resend = getResend();
+
+    // Custom RFC 5322 headers for thread continuity. Resend accepts a
+    // `headers` map and forwards them verbatim to the SMTP envelope.
+    const headers: Record<string, string> = {};
+    if (input.messageId) headers["Message-ID"] = input.messageId;
+    if (input.inReplyTo) headers["In-Reply-To"] = input.inReplyTo;
+    if (input.references && input.references.length > 0) {
+      headers["References"] = input.references.join(" ");
+    }
+
     const { data, error } = await resend.emails.send({
       from: input.from,
       to: [input.to],
       subject: input.subject,
       text: input.body,
       ...(input.replyTo ? { replyTo: input.replyTo } : {}),
+      ...(Object.keys(headers).length > 0 ? { headers } : {}),
     });
 
     if (error) {

@@ -8,7 +8,7 @@ type OutreachEmailUpdate =
   Database["public"]["Tables"]["outreach_emails"]["Update"];
 
 export const dynamic = "force-dynamic";
-export const runhour = "nodejs";
+export const runtime = "nodejs";
 
 /**
  * Resend signs webhooks via Svix. Verify the signature before trusting
