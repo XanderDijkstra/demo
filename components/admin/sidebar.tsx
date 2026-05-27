@@ -21,12 +21,14 @@ interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** When set, navItem renders a badge with this count (hidden when 0). */
+  badgeKey?: "inbox";
 }
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
-  { label: "Inbox", href: "/admin/inbox", icon: Inbox },
+  { label: "Inbox", href: "/admin/inbox", icon: Inbox, badgeKey: "inbox" },
   { label: "Swipe", href: "/admin/swipe", icon: Layers },
   { label: "CRM", href: "/admin/crm", icon: Handshake },
   { label: "Templates", href: "/admin/templates", icon: Palette },
@@ -35,12 +37,16 @@ const navItems: NavItem[] = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
+export interface SidebarBadges {
+  inbox?: number;
+}
+
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Sidebar() {
+export function Sidebar({ badges }: { badges?: SidebarBadges }) {
   const pathname = usePathname();
 
   return (
@@ -60,6 +66,8 @@ export function Sidebar() {
           {navItems.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
+            const badge =
+              item.badgeKey && badges ? badges[item.badgeKey] : undefined;
             return (
               <li key={item.href}>
                 <Link
@@ -72,7 +80,12 @@ export function Sidebar() {
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
+                  <span className="flex-1">{item.label}</span>
+                  {badge && badge > 0 ? (
+                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold tabular-nums text-primary-foreground">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             );

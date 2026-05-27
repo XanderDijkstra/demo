@@ -219,9 +219,33 @@ export async function handleInboundEmail(
       .is("replied_at", null);
   }
 
-  // First reply on this lead → ensure a CRM deal exists.
+  // First reply on this lead → ensure a CRM deal exists, and promote
+  // the lead's status so they show up as engaged in the leads list /
+  // dashboard. We never DEMOTE — already qualified / rejected leads
+  // keep their status unchanged.
   if (orgNr) {
     await ensureDealForReply(orgNr);
+    const { data: company } = await supabase
+      .from("companies")
+      .select("status")
+      .eq("org_nr", orgNr)
+      .maybeSingle();
+    if (company?.status === "new" || company?.status === "reviewed") {
+      await supabase
+        .from("companies")
+        .update({ status: "qualified" })
+        .eq("org_nr", orgNr);
+      await supabase.from("audit_log").insert({
+        actor: "system",
+        action: "lead.status.qualified",
+        entity_type: "company",
+        entity_id: orgNr,
+        metadata: {
+          trigger: "inbound_reply",
+          previous: company.status,
+        },
+      });
+    }
   }
 
   await supabase.from("audit_log").insert({
