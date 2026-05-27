@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Boxes,
   Handshake,
   Inbox,
-  Layers,
   LayoutDashboard,
   Mail,
   Palette,
@@ -29,11 +29,11 @@ const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
   { label: "Inbox", href: "/admin/inbox", icon: Inbox, badgeKey: "inbox" },
-  { label: "Swipe", href: "/admin/swipe", icon: Layers },
   { label: "CRM", href: "/admin/crm", icon: Handshake },
   { label: "Templates", href: "/admin/templates", icon: Palette },
   { label: "Outreach", href: "/admin/outreach", icon: Mail },
   { label: "Queue", href: "/admin/queue", icon: Activity },
+  { label: "Other", href: "/admin/other", icon: Boxes },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
