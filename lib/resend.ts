@@ -24,8 +24,22 @@ export async function getOutreachFromAddress(): Promise<string> {
 }
 
 export async function getOutreachReplyTo(): Promise<string> {
-  const value = await getSetting<string>("outreach_email_reply_to");
-  return value ?? "info@fx-media.no";
+  // Explicit operator-configured Reply-To wins.
+  const explicit = await getSetting<string>("outreach_email_reply_to");
+  if (explicit) return explicit;
+
+  // Otherwise auto-derive from the inbound domain so replies route
+  // through the webhook and not the operator's personal inbox.
+  // settings.resend_inbound_domain is set to e.g. "kontakt.fx-media.no"
+  // — we put "info@" on the front. Operator can override per-mailbox.
+  const inboundDomain = await getSetting<string>("resend_inbound_domain");
+  if (inboundDomain && inboundDomain.trim()) {
+    return `info@${inboundDomain.trim()}`;
+  }
+
+  // Last-resort fallback. Replies won't be threaded into the inbox
+  // until the operator configures one of the above.
+  return "info@fx-media.no";
 }
 
 /**
