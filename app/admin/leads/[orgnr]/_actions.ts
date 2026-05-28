@@ -25,12 +25,12 @@ import {
   makeMessageId,
   touchThread,
 } from "@/lib/email/threads";
+import { sendEmail } from "@/lib/email/provider";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
   isSuppressed,
-  sendOutreachEmail,
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CompanyStatus, DealStage } from "@/lib/supabase/types";
@@ -392,7 +392,7 @@ export async function sendLeadEmail(
     };
   }
 
-  const result = await sendOutreachEmail({
+  const result = await sendEmail({
     to: lead.email,
     from: fromAddress,
     subject,

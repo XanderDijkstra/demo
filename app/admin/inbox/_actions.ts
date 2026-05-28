@@ -8,12 +8,12 @@ import {
   makeMessageId,
   touchThread,
 } from "@/lib/email/threads";
+import { sendEmail } from "@/lib/email/provider";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
   isSuppressed,
-  sendOutreachEmail,
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -166,7 +166,7 @@ export async function replyToThread(
     return { ok: false, error: insertError?.message ?? "Could not log send" };
   }
 
-  const result = await sendOutreachEmail({
+  const result = await sendEmail({
     to: lead.email,
     from: fromAddress,
     subject,

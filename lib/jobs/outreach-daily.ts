@@ -7,13 +7,13 @@ import {
   touchThread,
 } from "@/lib/email/threads";
 import { publicSiteUrl } from "@/lib/jobs/generate-site";
+import { sendEmail } from "@/lib/email/provider";
 import { loadCampaignConfig } from "@/lib/outreach/campaign";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
   getOutreachReplyTo,
   isSuppressed,
-  sendOutreachEmail,
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Company } from "@/lib/supabase/types";
@@ -213,7 +213,7 @@ export async function runDailyOutreach(opts: {
       continue;
     }
 
-    const sendResult = await sendOutreachEmail({
+    const sendResult = await sendEmail({
       to: lead.email,
       from: fromAddress,
       subject,
