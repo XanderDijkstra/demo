@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  buildThreadReplyTo,
   ensureOutboundThread,
   getInboundDomain,
   makeMessageId,
@@ -134,7 +133,7 @@ export async function runDailyOutreach(opts: {
 
   if (opts.dryRun) return result;
 
-  const [fromAddress, fallbackReplyTo, inboundDomain] = await Promise.all([
+  const [fromAddress, replyTo, inboundDomain] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     getInboundDomain(),
@@ -187,9 +186,6 @@ export async function runDailyOutreach(opts: {
       continue;
     }
 
-    const replyTo = inboundDomain
-      ? buildThreadReplyTo(thread.id, inboundDomain)
-      : fallbackReplyTo;
     const messageId = makeMessageId(inboundDomain);
 
     const { data: row, error: insertError } = await supabase

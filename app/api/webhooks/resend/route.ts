@@ -84,6 +84,21 @@ function isInboundEventType(type: string): boolean {
   );
 }
 
+/**
+ * Last-resort detector: if the payload looks like a parsed inbound
+ * email (has from + to + subject + body content), treat it as one
+ * even if the event type didn't match `isInboundEventType`. Resend
+ * occasionally renames events between SDK versions; this catches the
+ * rename without dropping mail.
+ */
+function looksLikeInboundPayload(
+  data: ResendEventPayload["data"]
+): boolean {
+  if (!data || typeof data !== "object") return false;
+  if (!data.from || !data.to || !data.subject) return false;
+  return !!(data.text || data.html);
+}
+
 export async function POST(request: Request) {
   const secret = process.env.RESEND_WEBHOOK_SECRET;
   if (!secret) {
@@ -115,7 +130,23 @@ export async function POST(request: Request) {
   }
 
   // ── Inbound ────────────────────────────────────────────────────────
-  if (isInboundEventType(event.type)) {
+  const isInbound =
+    isInboundEventType(event.type) || looksLikeInboundPayload(event.data);
+  if (isInbound) {
+    // Always audit-log so we can spot Resend event-name changes.
+    const supabase = getSupabaseAdmin();
+    await supabase.from("audit_log").insert({
+      actor: "resend.webhook",
+      action: "inbound.email.received_raw",
+      entity_type: "resend_event",
+      entity_id: event.data.email_id ?? null,
+      metadata: {
+        type: event.type,
+        matched_by: isInboundEventType(event.type)
+          ? "event_type"
+          : "payload_shape",
+      },
+    });
     const result = await handleInboundEmail(event.data as ResendInboundPayload);
     if (!result.ok) {
       // Ack with 200 anyway — Resend would otherwise retry forever and

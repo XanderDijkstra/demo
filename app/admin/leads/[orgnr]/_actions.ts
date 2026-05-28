@@ -20,7 +20,6 @@ import {
   type EmailCandidate,
 } from "@/lib/jobs/scrape-website-email";
 import {
-  buildThreadReplyTo,
   ensureOutboundThread,
   getInboundDomain,
   makeMessageId,
@@ -321,7 +320,7 @@ export async function sendLeadEmail(
     };
   }
 
-  const [fromAddress, fallbackReplyTo, siteRow, inboundDomain] = await Promise.all([
+  const [fromAddress, replyTo, siteRow, inboundDomain] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     supabase
@@ -347,12 +346,11 @@ export async function sendLeadEmail(
   // follow-ups stay grouped; otherwise open a new one.
   const thread = await ensureOutboundThread({ orgNr, subject });
 
-  // If the inbound domain is configured, route replies through our
-  // webhook via plus-addressing. Falls back to the operator-configured
-  // address otherwise (replies land in their personal inbox).
-  const replyTo = inboundDomain
-    ? buildThreadReplyTo(thread.id, inboundDomain)
-    : fallbackReplyTo;
+  // Reply-To is the operator-configured address (e.g.
+  // info@kontakt.fx-media.no). We rely on RFC 5322 Message-ID +
+  // In-Reply-To + References headers for thread continuity, plus
+  // sender-email fallback on the inbound side — no more plus-addressed
+  // Reply-To, which looked ugly in recipients' mail clients.
   const messageId = makeMessageId(inboundDomain);
 
   // Build References from any prior outbound messages in this thread so

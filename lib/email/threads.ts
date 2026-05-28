@@ -6,8 +6,10 @@ import type { EmailThread } from "@/lib/supabase/types";
 
 /**
  * The subdomain whose MX records point to Resend Inbound (e.g.
- * "reply.fx-media.no"). Configured in settings.resend_inbound_domain.
- * Required for two-way email — every outbound Reply-To is built from this.
+ * "kontakt.fx-media.no"). Configured in settings.resend_inbound_domain.
+ * Only used now for resolving inbound `to` plus-addresses for any
+ * historical sends that went out before we switched to clean Reply-To
+ * addresses — new sends use the operator-configured Reply-To instead.
  */
 export async function getInboundDomain(): Promise<string | null> {
   const v = await getSetting<string>("resend_inbound_domain");

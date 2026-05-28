@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
-  buildThreadReplyTo,
   getInboundDomain,
   makeMessageId,
   touchThread,
@@ -104,8 +103,11 @@ export async function replyToThread(
     };
   }
 
-  // Build send config.
-  const [fromAddress, fallbackReplyTo, inboundDomain, priorRes] = await Promise.all([
+  // Build send config. Reply-To is the operator-configured address;
+  // threading rides on the RFC 5322 Message-ID + In-Reply-To +
+  // References headers, with a sender-email fallback on the inbound
+  // side. `inboundDomain` is only used to fingerprint Message-IDs.
+  const [fromAddress, replyTo, inboundDomain, priorRes] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     getInboundDomain(),
@@ -116,9 +118,6 @@ export async function replyToThread(
       .order("created_at", { ascending: true }),
   ]);
 
-  const replyTo = inboundDomain
-    ? buildThreadReplyTo(thread.id, inboundDomain)
-    : fallbackReplyTo;
   const messageId = makeMessageId(inboundDomain);
   const priorIds = (priorRes.data ?? [])
     .map((m) => m.message_id)
