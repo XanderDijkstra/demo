@@ -21,8 +21,15 @@ export interface ResendInboundPayload {
   to?: string[] | string;
   cc?: string[] | string;
   subject?: string;
+  // Body content lives under different keys across Resend versions —
+  // we read whichever is present.
   text?: string;
   html?: string;
+  body_text?: string;
+  body_html?: string;
+  plain?: string;
+  body?: string | { text?: string; html?: string; plain?: string };
+  content?: { text?: string; html?: string };
   headers?:
     | Record<string, string>
     | Array<{ name: string; value: string }>;
@@ -34,6 +41,37 @@ export interface ResendInboundPayload {
     url?: string;
   }>;
   [k: string]: unknown;
+}
+
+/**
+ * Find the plain-text and HTML bodies regardless of which key Resend
+ * has put them under in this version. Returns nulls when the payload
+ * is metadata-only (some integrations require a follow-up API fetch
+ * for the body — log this case so we notice).
+ */
+function extractBody(
+  data: ResendInboundPayload
+): { text: string | null; html: string | null } {
+  const bodyObj =
+    typeof data.body === "object" && data.body !== null ? data.body : null;
+  const bodyStr = typeof data.body === "string" ? data.body : null;
+
+  const text =
+    data.text ??
+    data.body_text ??
+    data.plain ??
+    bodyStr ??
+    bodyObj?.text ??
+    bodyObj?.plain ??
+    data.content?.text ??
+    null;
+  const html =
+    data.html ??
+    data.body_html ??
+    bodyObj?.html ??
+    data.content?.html ??
+    null;
+  return { text: text ?? null, html: html ?? null };
 }
 
 function asArray(v: string | string[] | undefined): string[] {
@@ -92,20 +130,35 @@ export async function handleInboundEmail(
   const toAddresses = asArray(data.to);
   const from = extractFrom(data.from);
   const subject = (data.subject ?? "").slice(0, 998);
-  const text = data.text ?? null;
-  const html = data.html ?? null;
+  const { text, html } = extractBody(data);
 
   const messageId = pickHeader(data.headers, "Message-ID");
   const inReplyTo = pickHeader(data.headers, "In-Reply-To");
   const references = splitReferences(pickHeader(data.headers, "References"));
+
+  const supabase = getSupabaseAdmin();
+
+  // If body extraction failed, drop a debug entry so we can see what
+  // keys the payload actually has. Common when Resend changes shape.
+  if (!text && !html) {
+    await supabase.from("audit_log").insert({
+      actor: "system",
+      action: "inbound.email.body_missing",
+      entity_type: "email",
+      entity_id: messageId ?? "unknown",
+      metadata: {
+        from: from.email,
+        subject,
+        payload_keys: Object.keys(data ?? {}).slice(0, 30),
+      },
+    });
+  }
 
   const threadId = await resolveInboundThread({
     toAddresses,
     inReplyTo,
     references,
   });
-
-  const supabase = getSupabaseAdmin();
 
   // Figure out which lead this thread belongs to. If we couldn't
   // resolve a thread, try matching the From address to a known company.

@@ -532,9 +532,23 @@ function MessageCard({ message }: { message: OutreachEmail }) {
         <MessageStatusBadge message={message} />
       </header>
       <div className="px-4 py-3 text-sm">
-        <pre className="whitespace-pre-wrap font-sans leading-relaxed">
-          {message.body_text ?? message.body ?? ""}
-        </pre>
+        {message.body_text || message.body ? (
+          <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+            {message.body_text || message.body}
+          </pre>
+        ) : message.body_html ? (
+          <div
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: message.body_html }}
+          />
+        ) : (
+          <p className="text-xs italic text-muted-foreground">
+            (No body extracted from this message — Resend may have sent
+            metadata only. Check the latest{" "}
+            <code className="font-mono">inbound.email.body_missing</code> entry
+            in audit_log to see which payload keys were present.)
+          </p>
+        )}
       </div>
     </article>
   );
