@@ -43,16 +43,55 @@ export function applyPlaceholders(
 }
 
 /**
- * Append a visible "unsubscribe" line to the body. Plain-text email
- * needs the link in the body too — the List-Unsubscribe header alone
- * is for mail clients; recipients reading the message need a click
- * target. Idempotent: skipped if the body already contains the URL
- * (e.g. operator manually added a {{unsubscribe_url}} placeholder).
+ * Append a visible "unsubscribe" line to the plain-text body. Plain
+ * text needs the URL spelled out — text-only clients have no other
+ * way to render the link. Idempotent: skipped if the body already
+ * contains the URL.
  */
-function appendUnsubscribeFooter(body: string, unsubUrl: string): string {
+function appendUnsubscribeFooterText(body: string, unsubUrl: string): string {
   if (body.includes(unsubUrl)) return body;
   const trimmed = body.replace(/\s+$/, "");
   return `${trimmed}\n\n—\nIkke interessert? Meld deg av: ${unsubUrl}`;
+}
+
+const HTML_ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+function htmlEscape(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c] ?? c);
+}
+
+/**
+ * Convert the operator's plain-text body into a minimal HTML version:
+ *   - escape any chars that would break HTML
+ *   - auto-linkify http(s) URLs so the demo site URL renders as a
+ *     clickable link (still showing the URL text)
+ *   - turn newlines into <br>
+ *   - append a hyperlinked "Meld deg av" footer (not the raw URL —
+ *     that's only in the plain-text fallback)
+ *
+ * Kept deliberately ugly-simple: no images, no inline CSS frameworks,
+ * no tracking pixels, no fancy fonts. Inbox placement loves boring.
+ */
+function buildHtmlBody(body: string, unsubUrl: string): string {
+  // Strip the auto-appended unsubscribe line from the text version
+  // (we add a hyperlinked footer instead).
+  const cleaned = body
+    .replace(/\n+—\nIkke interessert\? Meld deg av:.*$/s, "")
+    .trimEnd();
+
+  const escaped = htmlEscape(cleaned);
+  const linkified = escaped.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    (url) => `<a href="${url}" style="color:#0a66c2;text-decoration:none">${url}</a>`
+  );
+  const withBreaks = linkified.replace(/\n/g, "<br>");
+
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#ffffff"><div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#1a1a1a;max-width:580px;padding:8px 0">${withBreaks}<div style="margin-top:28px;padding-top:14px;border-top:1px solid #eaeaea;color:#888;font-size:12px;line-height:1.5">Ikke interessert? <a href="${htmlEscape(unsubUrl)}" style="color:#888;text-decoration:underline">Meld deg av her</a></div></div></body></html>`;
 }
 
 export interface SendOutreachInput {
@@ -117,13 +156,18 @@ export async function sendOutreachEmail(
     headers["List-Unsubscribe"] = `<${unsubUrl}>`;
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
 
-    const bodyWithFooter = appendUnsubscribeFooter(input.body, unsubUrl);
+    const bodyWithFooter = appendUnsubscribeFooterText(input.body, unsubUrl);
+    const htmlBody = buildHtmlBody(input.body, unsubUrl);
 
     const { data, error } = await resend.emails.send({
       from: input.from,
       to: [input.to],
       subject: input.subject,
+      // Send both — recipients on rich clients (Gmail / Outlook) see
+      // the hyperlinked HTML; text-only clients fall back to the
+      // plain version with the spelled-out URL.
       text: bodyWithFooter,
+      html: htmlBody,
       ...(input.replyTo ? { replyTo: input.replyTo } : {}),
       headers,
     });
