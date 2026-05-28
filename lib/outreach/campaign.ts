@@ -23,23 +23,39 @@ export interface OutreachCampaignConfig {
 
 export const CAMPAIGN_DEFAULTS: OutreachCampaignConfig = {
   enabled: false,
-  subject: "Idea for {{company_name}}",
+  subject: "Lagde en demoside til {{company_name}}",
   body: [
-    "Hei!",
+    "Hei{{contact_first_name}}!",
     "",
-    "Lagde en kjapp demoside til {{company_name}} basert på det jeg så.",
+    "Jeg så at dere driver i {{kommune}} og bygde en kjapp demoside til {{company_name}} for å vise hvordan det kunne se ut.",
     "",
-    "Se den her: {{site_url}}",
+    "Helt gratis å ta en titt: {{site_url}}",
     "",
-    "Hvis det treffer, ta en lyd. Hvis ikke, ingen stress.",
+    "Hvis det treffer, kan vi sette den live på eget domene.",
+    "Hvis ikke — ingen stress, du har siden uansett.",
     "",
     "— Xander",
     "FX Media",
   ].join("\n"),
-  minScore: 60,
-  maxPerDay: 25,
-  allowedOrgForms: ["AS", "ASA", "ENK"],
-  excludedNacePrefixes: [],
+  // Conservative warm-up defaults. Bump after 2 weeks of clean
+  // deliverability metrics.
+  minScore: 70,
+  maxPerDay: 10,
+  allowedOrgForms: ["AS", "ASA"],
+  // Skip public sector / healthcare / education / financial services
+  // by NACE prefix — they don't buy from cold outreach and have a
+  // higher chance of marking us as spam.
+  excludedNacePrefixes: [
+    "84.", // Public administration
+    "85.", // Education
+    "86.", // Healthcare
+    "87.", // Residential care
+    "88.", // Social work
+    "94.", // Membership organisations
+    "64.", // Financial services
+    "65.", // Insurance
+    "66.", // Auxiliary financial services
+  ],
 };
 
 export async function loadCampaignConfig(): Promise<OutreachCampaignConfig> {

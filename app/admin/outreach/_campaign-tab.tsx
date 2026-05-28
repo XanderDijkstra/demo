@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Loader2, Play, Save, Search } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { AlertTriangle, Loader2, Play, Save, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,56 @@ const PLACEHOLDERS = [
   "{{site_url}}",
 ];
 
+/**
+ * Cheap deliverability lints. None of these are deal-breakers, they're
+ * just signals that get flagged by Bayesian spam filters. We surface
+ * them inline so the operator can tweak before sending.
+ */
+function lintSubject(value: string): string[] {
+  const w: string[] = [];
+  // Mobile mail apps truncate around 40-50 chars; >78 starts to get spam-scored.
+  if (value.length > 50) {
+    w.push(`${value.length} characters — gets truncated on mobile around 50`);
+  }
+  if (value.length > 78) {
+    w.push("Very long subjects get spam-scored — aim for under 60");
+  }
+  if (/[!?]{2,}/.test(value) || /\?{2,}/.test(value)) {
+    w.push("Repeated punctuation (??!!) reads as spammy");
+  }
+  // Words rendered ALL CAPS (excluding placeholders + acronyms ≤ 3 chars).
+  const stripped = value.replace(/\{\{[^}]+\}\}/g, "");
+  const upperWords = stripped
+    .split(/\s+/)
+    .filter((w) => w.length >= 4 && w === w.toUpperCase() && /[A-ZÆØÅ]/.test(w));
+  if (upperWords.length > 0) {
+    w.push(`ALL-CAPS word: "${upperWords[0]}" — looks shouty`);
+  }
+  return w;
+}
+
+function lintBody(value: string): string[] {
+  const w: string[] = [];
+  // Count http(s) links in the operator-written body. The auto-appended
+  // unsubscribe URL doesn't count — it's added at send time.
+  const links = value.match(/https?:\/\/\S+/g) ?? [];
+  if (links.length > 2) {
+    w.push(`${links.length} links — 1-2 max for cold outreach`);
+  }
+  // Sentence-case the {{company_name}} placeholder if the operator
+  // typed it all caps in their template (rare but possible).
+  if (/\b(GUARANTEE|FREE!|CLICK HERE|ACT NOW|LIMITED TIME)\b/i.test(value)) {
+    w.push("Trigger phrase detected (FREE / GUARANTEE / CLICK HERE)");
+  }
+  if (value.length < 80) {
+    w.push("Very short body — recipients may flag as suspicious");
+  }
+  if (value.length > 1500) {
+    w.push("Long body — cold outreach above 1500 chars rarely converts");
+  }
+  return w;
+}
+
 export function CampaignTab({ initial }: Props) {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [subject, setSubject] = useState(initial.subject);
@@ -46,6 +96,9 @@ export function CampaignTab({ initial }: Props) {
   const [savePending, startSave] = useTransition();
   const [previewPending, startPreview] = useTransition();
   const [runPending, startRun] = useTransition();
+
+  const subjectWarnings = useMemo(() => lintSubject(subject), [subject]);
+  const bodyWarnings = useMemo(() => lintBody(body), [body]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -212,6 +265,7 @@ export function CampaignTab({ initial }: Props) {
                 onChange={(e) => setSubject(e.target.value)}
                 required
               />
+              <LintList warnings={subjectWarnings} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="body" className="text-xs">
@@ -236,6 +290,7 @@ export function CampaignTab({ initial }: Props) {
                   </code>
                 ))}
               </div>
+              <LintList warnings={bodyWarnings} />
             </div>
           </CardContent>
         </Card>
@@ -286,5 +341,22 @@ export function CampaignTab({ initial }: Props) {
         </Card>
       </div>
     </form>
+  );
+}
+
+function LintList({ warnings }: { warnings: string[] }) {
+  if (warnings.length === 0) return null;
+  return (
+    <ul className="space-y-1 pt-1">
+      {warnings.map((w, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-1.5 text-[11px] text-amber-700 dark:text-amber-400"
+        >
+          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+          <span>{w}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
