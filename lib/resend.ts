@@ -101,17 +101,17 @@ export async function fetchEmailBody(
     });
   }
 
-  // 2. Raw REST — try every URL variant we've seen across Resend
-  // versions until one returns a body.
+  // 2. Raw REST — the correct endpoint for inbound bodies per Resend
+  // support is GET /emails/receiving/{id}. The SDK's emails.get() is
+  // sent-only and 404s on inbound IDs. We try /emails/receiving/{id}
+  // first, fall back to a couple other historical variants in case the
+  // path changes again.
   const key = process.env.RESEND_API_KEY;
   if (key) {
     const urls = [
+      `https://api.resend.com/emails/receiving/${emailId}`,
       `https://api.resend.com/emails/${emailId}`,
-      `https://api.resend.com/v1/emails/${emailId}`,
-      `https://api.resend.com/inbound/emails/${emailId}`,
-      `https://api.resend.com/v1/inbound/emails/${emailId}`,
-      `https://api.resend.com/inbound/${emailId}`,
-      `https://api.resend.com/v1/inbound/${emailId}`,
+      `https://api.resend.com/v1/emails/receiving/${emailId}`,
     ];
     for (const url of urls) {
       const where = url.replace("https://api.resend.com", "");
