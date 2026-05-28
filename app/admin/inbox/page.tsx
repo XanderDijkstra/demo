@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import {
+  ArrowUpRight,
   Inbox as InboxIcon,
   Mail,
   MailOpen,
@@ -546,12 +547,30 @@ function MessageCard({ message }: { message: OutreachEmail }) {
             className="prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: message.body_html }}
           />
+        ) : message.direction === "in" && message.resend_id ? (
+          <div className="space-y-2.5 rounded-md border border-dashed bg-muted/40 p-3 text-xs">
+            <p className="text-muted-foreground leading-relaxed">
+              Resend doesn&apos;t expose inbound email bodies through their
+              API yet — only metadata reaches the webhook. The full
+              message is readable in their dashboard:
+            </p>
+            <a
+              href={`https://resend.com/emails/${message.resend_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+            >
+              View body in Resend
+              <ArrowUpRight className="h-3 w-3" />
+            </a>
+            <p className="text-[11px] text-muted-foreground/80">
+              Replies sent from this inbox still go through cleanly — only
+              reading the lead&apos;s body needs the dashboard.
+            </p>
+          </div>
         ) : (
           <p className="text-xs italic text-muted-foreground">
-            (No body extracted from this message — Resend may have sent
-            metadata only. Check the latest{" "}
-            <code className="font-mono">inbound.email.body_missing</code> entry
-            in audit_log to see which payload keys were present.)
+            (No body content on this message.)
           </p>
         )}
       </div>
