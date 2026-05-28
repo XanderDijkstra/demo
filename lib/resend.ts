@@ -38,6 +38,14 @@ export interface EmailBodyFetchResult {
    *  text/html came back null — tells us what Resend DID return. */
   responseKeys: string[];
   source: "sdk" | "rest" | "none";
+  /** Per-URL diagnostic trail so audit_log shows exactly what each
+   *  endpoint replied with. */
+  attempts: Array<{
+    where: string;
+    status: number | null;
+    keys?: string[];
+    error?: string;
+  }>;
 }
 
 function readBodyFields(obj: Record<string, unknown>): {
@@ -61,35 +69,62 @@ function readBodyFields(obj: Record<string, unknown>): {
 export async function fetchEmailBody(
   emailId: string
 ): Promise<EmailBodyFetchResult> {
-  // 1. Try the SDK (typed for sent emails).
+  const attempts: EmailBodyFetchResult["attempts"] = [];
+
+  // 1. SDK
   try {
     const resend = getResend();
     const { data, error } = await resend.emails.get(emailId);
-    if (!error && data) {
+    if (error) {
+      attempts.push({ where: "sdk", status: null, error: error.message });
+    } else if (data) {
       const obj = data as unknown as Record<string, unknown>;
+      attempts.push({ where: "sdk", status: 200, keys: Object.keys(obj) });
       const { text, html } = readBodyFields(obj);
       if (text || html) {
-        return { text, html, responseKeys: Object.keys(obj), source: "sdk" };
+        return {
+          text,
+          html,
+          responseKeys: Object.keys(obj),
+          source: "sdk",
+          attempts,
+        };
       }
+    } else {
+      attempts.push({ where: "sdk", status: null, error: "no data" });
     }
-  } catch {
-    // fall through
+  } catch (err) {
+    attempts.push({
+      where: "sdk",
+      status: null,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
-  // 2. Raw REST fetch — different API surface for received emails in
-  // some Resend versions.
+  // 2. Raw REST — try every URL variant we've seen across Resend
+  // versions until one returns a body.
   const key = process.env.RESEND_API_KEY;
   if (key) {
-    for (const url of [
+    const urls = [
       `https://api.resend.com/emails/${emailId}`,
+      `https://api.resend.com/v1/emails/${emailId}`,
       `https://api.resend.com/inbound/emails/${emailId}`,
-    ]) {
+      `https://api.resend.com/v1/inbound/emails/${emailId}`,
+      `https://api.resend.com/inbound/${emailId}`,
+      `https://api.resend.com/v1/inbound/${emailId}`,
+    ];
+    for (const url of urls) {
+      const where = url.replace("https://api.resend.com", "");
       try {
         const r = await fetch(url, {
           headers: { Authorization: `Bearer ${key}` },
         });
-        if (!r.ok) continue;
+        if (!r.ok) {
+          attempts.push({ where, status: r.status });
+          continue;
+        }
         const json = (await r.json()) as Record<string, unknown>;
+        attempts.push({ where, status: 200, keys: Object.keys(json) });
         const { text, html } = readBodyFields(json);
         if (text || html) {
           return {
@@ -97,15 +132,26 @@ export async function fetchEmailBody(
             html,
             responseKeys: Object.keys(json),
             source: "rest",
+            attempts,
           };
         }
-      } catch {
-        continue;
+      } catch (err) {
+        attempts.push({
+          where,
+          status: null,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
   }
 
-  return { text: null, html: null, responseKeys: [], source: "none" };
+  return {
+    text: null,
+    html: null,
+    responseKeys: [],
+    source: "none",
+    attempts,
+  };
 }
 
 export async function getOutreachFromAddress(): Promise<string> {

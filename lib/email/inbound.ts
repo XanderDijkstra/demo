@@ -144,12 +144,14 @@ export async function handleInboundEmail(
   // text/html, fetch the full email by id and merge.
   let fetchSource: string = "webhook";
   let fetchedKeys: string[] = [];
+  let fetchAttempts: unknown[] = [];
   if (!text && !html && data.email_id) {
     const fetched = await fetchEmailBody(data.email_id);
     text = fetched.text;
     html = fetched.html;
     fetchSource = fetched.source;
     fetchedKeys = fetched.responseKeys;
+    fetchAttempts = fetched.attempts;
   }
 
   // Still nothing? Log everything we know about the payload + API
@@ -167,6 +169,7 @@ export async function handleInboundEmail(
         had_email_id: !!data.email_id,
         fetch_source: fetchSource,
         fetch_response_keys: fetchedKeys,
+        fetch_attempts: fetchAttempts,
       },
     });
   }
