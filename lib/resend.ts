@@ -21,34 +21,91 @@ function getResend(): Resend {
 /**
  * Fetch the full text/html body of an email Resend has on file. Used
  * by the inbound webhook when the webhook payload only contained
- * metadata — Resend exposes the body via this REST call even when
- * they skip it in the webhook event.
+ * metadata — Resend exposes the body via REST even when they skip it
+ * in the webhook event.
+ *
+ * Tries the SDK's emails.get() first (typed for sent emails); falls
+ * back to a raw fetch against the API since the SDK method may not
+ * cover inbound message responses in all versions.
+ *
+ * Returns the body fields it found, the keys present on the response
+ * (for debugging), and whether either call actually returned data.
  */
+export interface EmailBodyFetchResult {
+  text: string | null;
+  html: string | null;
+  /** Keys present on whichever response we ended up using. Helps when
+   *  text/html came back null — tells us what Resend DID return. */
+  responseKeys: string[];
+  source: "sdk" | "rest" | "none";
+}
+
+function readBodyFields(obj: Record<string, unknown>): {
+  text: string | null;
+  html: string | null;
+} {
+  const text =
+    (typeof obj.text === "string" ? obj.text : null) ??
+    (typeof obj.bodyText === "string" ? obj.bodyText : null) ??
+    (typeof obj.body_text === "string" ? obj.body_text : null) ??
+    (typeof obj.plain === "string" ? obj.plain : null) ??
+    null;
+  const html =
+    (typeof obj.html === "string" ? obj.html : null) ??
+    (typeof obj.bodyHtml === "string" ? obj.bodyHtml : null) ??
+    (typeof obj.body_html === "string" ? obj.body_html : null) ??
+    null;
+  return { text, html };
+}
+
 export async function fetchEmailBody(
   emailId: string
-): Promise<{ text: string | null; html: string | null } | null> {
+): Promise<EmailBodyFetchResult> {
+  // 1. Try the SDK (typed for sent emails).
   try {
     const resend = getResend();
     const { data, error } = await resend.emails.get(emailId);
-    if (error || !data) return null;
-    // The Resend SDK types this as a sent-email shape; received
-    // emails carry the same body fields plus optional `bodyText` /
-    // `bodyHtml` variants. Cast through unknown and read defensively.
-    const d = data as unknown as Record<string, unknown>;
-    const text =
-      (typeof d.text === "string" ? d.text : null) ??
-      (typeof d.bodyText === "string" ? d.bodyText : null) ??
-      (typeof d.body_text === "string" ? d.body_text : null) ??
-      null;
-    const html =
-      (typeof d.html === "string" ? d.html : null) ??
-      (typeof d.bodyHtml === "string" ? d.bodyHtml : null) ??
-      (typeof d.body_html === "string" ? d.body_html : null) ??
-      null;
-    return { text, html };
+    if (!error && data) {
+      const obj = data as unknown as Record<string, unknown>;
+      const { text, html } = readBodyFields(obj);
+      if (text || html) {
+        return { text, html, responseKeys: Object.keys(obj), source: "sdk" };
+      }
+    }
   } catch {
-    return null;
+    // fall through
   }
+
+  // 2. Raw REST fetch — different API surface for received emails in
+  // some Resend versions.
+  const key = process.env.RESEND_API_KEY;
+  if (key) {
+    for (const url of [
+      `https://api.resend.com/emails/${emailId}`,
+      `https://api.resend.com/inbound/emails/${emailId}`,
+    ]) {
+      try {
+        const r = await fetch(url, {
+          headers: { Authorization: `Bearer ${key}` },
+        });
+        if (!r.ok) continue;
+        const json = (await r.json()) as Record<string, unknown>;
+        const { text, html } = readBodyFields(json);
+        if (text || html) {
+          return {
+            text,
+            html,
+            responseKeys: Object.keys(json),
+            source: "rest",
+          };
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  return { text: null, html: null, responseKeys: [], source: "none" };
 }
 
 export async function getOutreachFromAddress(): Promise<string> {

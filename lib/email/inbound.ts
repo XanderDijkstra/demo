@@ -142,15 +142,18 @@ export async function handleInboundEmail(
   // Resend's inbound webhook only ships metadata in some setups —
   // the actual body lives on their API. If the webhook didn't include
   // text/html, fetch the full email by id and merge.
+  let fetchSource: string = "webhook";
+  let fetchedKeys: string[] = [];
   if (!text && !html && data.email_id) {
     const fetched = await fetchEmailBody(data.email_id);
-    if (fetched) {
-      text = fetched.text;
-      html = fetched.html;
-    }
+    text = fetched.text;
+    html = fetched.html;
+    fetchSource = fetched.source;
+    fetchedKeys = fetched.responseKeys;
   }
 
-  // Still nothing? Log the payload shape so we can see what was sent.
+  // Still nothing? Log everything we know about the payload + API
+  // response so we can see exactly what Resend gave us.
   if (!text && !html) {
     await supabase.from("audit_log").insert({
       actor: "system",
@@ -160,8 +163,10 @@ export async function handleInboundEmail(
       metadata: {
         from: from.email,
         subject,
-        payload_keys: Object.keys(data ?? {}).slice(0, 30),
+        webhook_payload_keys: Object.keys(data ?? {}).slice(0, 30),
         had_email_id: !!data.email_id,
+        fetch_source: fetchSource,
+        fetch_response_keys: fetchedKeys,
       },
     });
   }

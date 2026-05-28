@@ -22,22 +22,30 @@ type ActionResult = { ok: true } | { ok: false; error: string };
 /**
  * Clear the unread badge on a thread. Called when the operator opens
  * the thread page (server-rendered effect, no UI control).
+ *
+ * Intentionally NO revalidatePath — calling that during a server
+ * component render can trigger a refetch loop / page error. The
+ * unread count will stay stale until the next navigation, which is
+ * fine for a single-operator MVP.
  */
 export async function markThreadRead(threadId: string): Promise<void> {
   if (!threadId) return;
-  const supabase = getSupabaseAdmin();
-  await supabase
-    .from("email_threads")
-    .update({ unread_count: 0 })
-    .eq("id", threadId);
-  await supabase
-    .from("outreach_emails")
-    .update({ read_at: new Date().toISOString() })
-    .eq("thread_id", threadId)
-    .eq("direction", "in")
-    .is("read_at", null);
-  revalidatePath("/admin/inbox");
-  revalidatePath(`/admin/inbox/${threadId}`);
+  try {
+    const supabase = getSupabaseAdmin();
+    await supabase
+      .from("email_threads")
+      .update({ unread_count: 0 })
+      .eq("id", threadId);
+    await supabase
+      .from("outreach_emails")
+      .update({ read_at: new Date().toISOString() })
+      .eq("thread_id", threadId)
+      .eq("direction", "in")
+      .is("read_at", null);
+  } catch {
+    // Don't fail the page render if this can't update — it's just
+    // the unread-badge UX, not the message content.
+  }
 }
 
 const ReplySchema = z.object({

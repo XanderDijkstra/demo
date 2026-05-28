@@ -185,8 +185,13 @@ export default async function InboxPage({ searchParams }: RouteProps) {
     : null;
 
   // Clear unread on open. Server-side side-effect, no UI control.
+  // Wrapped so a transient DB blip can never crash the page render.
   if (detail && detail.thread.unread_count > 0) {
-    await markThreadRead(detail.thread.id);
+    try {
+      await markThreadRead(detail.thread.id);
+    } catch {
+      // ignore
+    }
   }
 
   const totalUnread = threads.reduce(
