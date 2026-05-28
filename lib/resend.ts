@@ -18,6 +18,39 @@ function getResend(): Resend {
   return cached;
 }
 
+/**
+ * Fetch the full text/html body of an email Resend has on file. Used
+ * by the inbound webhook when the webhook payload only contained
+ * metadata — Resend exposes the body via this REST call even when
+ * they skip it in the webhook event.
+ */
+export async function fetchEmailBody(
+  emailId: string
+): Promise<{ text: string | null; html: string | null } | null> {
+  try {
+    const resend = getResend();
+    const { data, error } = await resend.emails.get(emailId);
+    if (error || !data) return null;
+    // The Resend SDK types this as a sent-email shape; received
+    // emails carry the same body fields plus optional `bodyText` /
+    // `bodyHtml` variants. Cast through unknown and read defensively.
+    const d = data as unknown as Record<string, unknown>;
+    const text =
+      (typeof d.text === "string" ? d.text : null) ??
+      (typeof d.bodyText === "string" ? d.bodyText : null) ??
+      (typeof d.body_text === "string" ? d.body_text : null) ??
+      null;
+    const html =
+      (typeof d.html === "string" ? d.html : null) ??
+      (typeof d.bodyHtml === "string" ? d.bodyHtml : null) ??
+      (typeof d.body_html === "string" ? d.body_html : null) ??
+      null;
+    return { text, html };
+  } catch {
+    return null;
+  }
+}
+
 export async function getOutreachFromAddress(): Promise<string> {
   const value = await getSetting<string>("outreach_email_from");
   return value ?? "FX Media <info@kontakt.fx-media.no>";

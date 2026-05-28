@@ -5,6 +5,7 @@ import {
   parseThreadAddress,
   resolveInboundThread,
 } from "@/lib/email/threads";
+import { fetchEmailBody } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { EmailAttachment } from "@/lib/supabase/types";
 
@@ -130,7 +131,7 @@ export async function handleInboundEmail(
   const toAddresses = asArray(data.to);
   const from = extractFrom(data.from);
   const subject = (data.subject ?? "").slice(0, 998);
-  const { text, html } = extractBody(data);
+  let { text, html } = extractBody(data);
 
   const messageId = pickHeader(data.headers, "Message-ID");
   const inReplyTo = pickHeader(data.headers, "In-Reply-To");
@@ -138,8 +139,18 @@ export async function handleInboundEmail(
 
   const supabase = getSupabaseAdmin();
 
-  // If body extraction failed, drop a debug entry so we can see what
-  // keys the payload actually has. Common when Resend changes shape.
+  // Resend's inbound webhook only ships metadata in some setups —
+  // the actual body lives on their API. If the webhook didn't include
+  // text/html, fetch the full email by id and merge.
+  if (!text && !html && data.email_id) {
+    const fetched = await fetchEmailBody(data.email_id);
+    if (fetched) {
+      text = fetched.text;
+      html = fetched.html;
+    }
+  }
+
+  // Still nothing? Log the payload shape so we can see what was sent.
   if (!text && !html) {
     await supabase.from("audit_log").insert({
       actor: "system",
@@ -150,6 +161,7 @@ export async function handleInboundEmail(
         from: from.email,
         subject,
         payload_keys: Object.keys(data ?? {}).slice(0, 30),
+        had_email_id: !!data.email_id,
       },
     });
   }
