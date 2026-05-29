@@ -327,6 +327,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      flows: {
+        Row: {
+          id: string;
+          name: string;
+          enabled: boolean;
+          trigger_type: string;
+          delay_hours: number;
+          follow_up_subject: string;
+          follow_up_body: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          enabled?: boolean;
+          trigger_type?: string;
+          delay_hours?: number;
+          follow_up_subject: string;
+          follow_up_body: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          enabled?: boolean;
+          trigger_type?: string;
+          delay_hours?: number;
+          follow_up_subject?: string;
+          follow_up_body?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      flow_runs: {
+        Row: {
+          id: string;
+          flow_id: string;
+          org_nr: string;
+          thread_id: string;
+          source_email_id: string | null;
+          status: string;
+          follow_up_email_id: string | null;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          flow_id: string;
+          org_nr: string;
+          thread_id: string;
+          source_email_id?: string | null;
+          status: string;
+          follow_up_email_id?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          flow_id?: string;
+          org_nr?: string;
+          thread_id?: string;
+          source_email_id?: string | null;
+          status?: string;
+          follow_up_email_id?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       outreach_emails: {
         Row: {
           id: string;
@@ -634,6 +706,9 @@ export type SettingRow<V = unknown> = {
 export type EmailThread = Database["public"]["Tables"]["email_threads"]["Row"];
 export type EmailThreadInsert =
   Database["public"]["Tables"]["email_threads"]["Insert"];
+export type Flow = Database["public"]["Tables"]["flows"]["Row"];
+export type FlowInsert = Database["public"]["Tables"]["flows"]["Insert"];
+export type FlowRun = Database["public"]["Tables"]["flow_runs"]["Row"];
 export type OutreachEmail =
   Database["public"]["Tables"]["outreach_emails"]["Row"];
 export type OutreachEmailInsert =

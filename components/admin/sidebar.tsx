@@ -12,6 +12,7 @@ import {
   Palette,
   Settings,
   Users,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { label: "CRM", href: "/admin/crm", icon: Handshake },
   { label: "Templates", href: "/admin/templates", icon: Palette },
   { label: "Outreach", href: "/admin/outreach", icon: Mail },
+  { label: "Flows", href: "/admin/flows", icon: Workflow },
   { label: "Queue", href: "/admin/queue", icon: Activity },
   { label: "Other", href: "/admin/other", icon: Boxes },
   { label: "Settings", href: "/admin/settings", icon: Settings },
