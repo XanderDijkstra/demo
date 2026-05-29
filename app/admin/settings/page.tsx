@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
+import { getFreepikConfig } from "@/lib/stock/freepik";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   getExcludedOrgForms,
@@ -31,6 +32,7 @@ import {
 import { OutreachFromForm } from "./_from-form";
 import { ListForm } from "./_list-form";
 import { ModelForm } from "./_model-form";
+import { StockForm } from "./_stock-form";
 import { RescoreButton } from "./_rescore-button";
 import { SuppressionManager } from "./_suppression-form";
 import { WeightsForm } from "./_weights-form";
@@ -96,6 +98,7 @@ export default async function SettingsPage() {
   );
   const recentChanges = (auditRes.data ?? []) as AuditLogEntry[];
   const suppressions = (suppressionsRes.data ?? []) as OutreachSuppression[];
+  const freepikConfigured = !!getFreepikConfig();
 
   return (
     <>
@@ -199,6 +202,16 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <ModelForm initial={claudeModel ?? "claude-haiku-4-5"} />
+            <div className="border-t pt-4">
+              <div className="mb-2 text-xs font-medium text-foreground">
+                Freepik stock-bilder
+              </div>
+              <p className="mb-3 text-[11px] text-muted-foreground">
+                Test bildesøk mot Freepik-biblioteket. Når dette funker, kan vi
+                bytte ut placeholder-bildene i malene med ekte temabilder.
+              </p>
+              <StockForm configured={freepikConfigured} />
+            </div>
             <div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
               <div>
                 <div className="text-xs text-muted-foreground">

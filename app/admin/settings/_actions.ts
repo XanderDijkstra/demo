@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { scoreCompanyInsert } from "@/lib/scoring";
+import { getFreepikConfig, searchStock } from "@/lib/stock/freepik";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   getScoringWeights,
@@ -337,6 +338,46 @@ export async function saveClaudeModel(
 
   revalidatePath("/admin/settings");
   return { ok: true, message: `Modell satt til ${model}` };
+}
+
+// ─── Freepik stock test search ───────────────────────────────────────────────
+
+export type StockTestResult =
+  | {
+      ok: true;
+      configured: true;
+      images: Array<{ id: string | null; previewUrl: string; title: string | null }>;
+      topLevelKeys: string[];
+      status: number;
+    }
+  | { ok: false; configured: boolean; error: string };
+
+export async function testFreepikSearch(
+  formData: FormData
+): Promise<StockTestResult> {
+  const query = String(formData.get("query") ?? "").trim();
+  if (!query) {
+    return { ok: false, configured: !!getFreepikConfig(), error: "Skriv et søkeord" };
+  }
+  if (!getFreepikConfig()) {
+    return {
+      ok: false,
+      configured: false,
+      error: "Freepik ikke konfigurert — sett FREEPIK_API_KEY i Vercel",
+    };
+  }
+
+  const result = await searchStock(query, { limit: 9, orientation: "landscape" });
+  if (!result.ok) {
+    return { ok: false, configured: true, error: result.error };
+  }
+  return {
+    ok: true,
+    configured: true,
+    images: result.images,
+    topLevelKeys: result.topLevelKeys,
+    status: result.status,
+  };
 }
 
 // ─── Re-score all leads ──────────────────────────────────────────────────────
