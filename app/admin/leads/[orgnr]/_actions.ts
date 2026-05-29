@@ -35,6 +35,7 @@ import {
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CompanyStatus, DealStage } from "@/lib/supabase/types";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
+import { formatCompanyName } from "@/lib/utils";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -332,7 +333,7 @@ export async function sendLeadEmail(
   ]);
   const firstName = lead.contact_name?.trim().split(/\s+/)[0] ?? null;
   const placeholders = {
-    company_name: lead.name,
+    company_name: formatCompanyName(lead.name),
     kommune: lead.kommune,
     org_nr: lead.org_nr,
     site_url: siteRow.data ? publicSiteUrl(orgNr) : "",

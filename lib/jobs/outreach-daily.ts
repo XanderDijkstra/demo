@@ -17,6 +17,7 @@ import {
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Company } from "@/lib/supabase/types";
+import { formatCompanyName } from "@/lib/utils";
 
 export interface DailyOutreachResult {
   enabled: boolean;
@@ -161,7 +162,7 @@ export async function runDailyOutreach(opts: {
       .maybeSingle();
 
     const placeholders = {
-      company_name: lead.name,
+      company_name: formatCompanyName(lead.name),
       kommune: lead.kommune,
       org_nr: lead.org_nr,
       site_url: siteRow ? publicSiteUrl(lead.org_nr) : "",
