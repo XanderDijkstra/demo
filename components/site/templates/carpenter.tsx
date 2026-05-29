@@ -698,44 +698,11 @@ function ServiceCard({ title, image }: { title: string; image: string }) {
 function DreamHome() {
   return (
     <section className="relative" style={{ background: CREAM }}>
-      <div className="mx-auto max-w-6xl px-6 pt-20 sm:pt-24">
-        <h2 className="text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-          Skap ditt
-          <br />
-          <span
-            style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
-            className="font-medium"
-          >
-            drømmehjem
-          </span>{" "}
-          i dag
-        </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-relaxed text-slate-700">
-          Våre kunder stoler på at vi tar hånd om utvidelser og oppussing med
-          omtanke, kompetanse og oppmerksomhet på detaljene.
-        </p>
-
-        <div
-          className="mt-12 rounded-2xl px-8 py-10 text-white sm:px-12"
-          style={{ background: NAVY_DARK }}
-        >
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map((s) => (
-              <div key={s.number}>
-                <div className="text-2xl font-semibold sm:text-3xl">
-                  {s.number}
-                </div>
-                <div className="mt-1 text-xs leading-snug text-white/70">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Split: photo left, dark panel right */}
-      <div className="mt-12 grid lg:grid-cols-2">
+      {/* Split: photo left, dark panel right. The centered headline + stats
+          banner that used to sit above this was dropped — stats already
+          live in the hero, and the headline repeated below in the dark
+          panel. */}
+      <div className="grid lg:grid-cols-2">
         <div className="relative aspect-[5/3] lg:aspect-auto lg:min-h-[480px]">
           <img
             src={CARPENTER_IMAGES.splitProject}
