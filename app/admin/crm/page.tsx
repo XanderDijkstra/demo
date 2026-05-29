@@ -47,7 +47,7 @@ export default async function CrmPage() {
               <EmptyState
                 icon={Kanban}
                 title="Empty pipeline"
-                description='When a lead replies, mark the email as "Replied" — it shows up here under "New reply".'
+                description='Så snart en lead svarer, havner de automatisk her i "Lead"-kolonnen.'
               />
             </CardContent>
           </Card>

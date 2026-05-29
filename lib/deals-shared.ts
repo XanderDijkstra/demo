@@ -14,8 +14,8 @@ export const DEAL_STAGES: ReadonlyArray<{
 }> = [
   {
     value: "replied",
-    label: "New reply",
-    description: "Lead has replied — first contact established",
+    label: "Lead",
+    description: "Lead har svart — automatisk inn i CRM",
     toneClass:
       "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
   },
