@@ -8,6 +8,7 @@ import {
   lookupByOrgNr,
   type One1881Contact,
 } from "@/lib/enrichment/one1881";
+import { backfillFromRaw } from "@/lib/jobs/backfill-from-raw";
 import { runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
 import { enrich1881Batch } from "@/lib/jobs/enrich-1881-batch";
 import { scrapeEmailsBatch } from "@/lib/jobs/scrape-emails-batch";
@@ -168,6 +169,21 @@ export async function testEnrich1881Lookup(
     foundIn: result.foundIn,
     status: result.status,
   };
+}
+
+export async function triggerBackfillFromRaw() {
+  try {
+    const result = await backfillFromRaw();
+    revalidatePath("/admin/queue");
+    revalidatePath("/admin/leads");
+    revalidatePath("/admin");
+    return result;
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 export async function triggerEnrich1881Batch(formData: FormData) {

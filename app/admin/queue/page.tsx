@@ -17,6 +17,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getSetting } from "@/lib/supabase/queries";
 import type { ScrapeRun, ScrapeRunStatus } from "@/lib/supabase/types";
 
+import { BackfillForm } from "./_backfill-form";
 import { CronSettingsForm } from "./_cron-settings-form";
 import { EmailBatchForm } from "./_email-batch-form";
 import { Enrich1881Form } from "./_enrich-1881-form";
@@ -72,6 +73,24 @@ export default async function QueuePage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <Card className="border-primary/40">
+          <CardHeader>
+            <CardTitle className="text-base">
+              Backfill kontaktdata fra Brreg-payload
+            </CardTitle>
+            <CardDescription>
+              Importerte leads hadde e-post=null pga. en feil i parseren
+              (leste «epost» i stedet for «epostadresse»). Adressen lå hele
+              tiden lagret i raw_data. Denne jobben leser den ut for alle
+              eksisterende leads, fyller tomme felt (e-post, telefon, mobil,
+              nettside) og re-scorer — uten å hente fra Brreg på nytt.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BackfillForm />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Daglig cron-job</CardTitle>

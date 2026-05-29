@@ -46,8 +46,14 @@ const EnhetSchema = z
     forretningsadresse: AddressSchema.optional(),
     postadresse: AddressSchema.optional(),
     antallAnsatte: z.number().int().nullable().optional(),
+    // Brreg uses these exact keys: epostadresse (NOT "epost"), mobil,
+    // telefon, hjemmeside. We also accept a couple of legacy aliases so a
+    // schema tweak on their side can't silently null these out again.
     telefon: z.string().nullable().optional(),
+    telefonnummer: z.string().nullable().optional(),
     mobil: z.string().nullable().optional(),
+    mobiltelefon: z.string().nullable().optional(),
+    epostadresse: z.string().nullable().optional(),
     epost: z.string().nullable().optional(),
     hjemmeside: z.string().nullable().optional(),
     stiftelsesdato: z.string().nullable().optional(),
@@ -157,9 +163,12 @@ export function mapEnhetToCompanyInsert(enhet: BrregEnhet): CompanyInsert {
     kommune: forretning?.kommune ?? null,
     kommune_nr: forretning?.kommunenummer ?? null,
     country_code: forretning?.landkode ?? "NO",
-    phone: enhet.telefon ?? null,
-    mobile: enhet.mobil ?? null,
-    email: enhet.epost ?? null,
+    phone: enhet.telefon ?? enhet.telefonnummer ?? null,
+    mobile: enhet.mobil ?? enhet.mobiltelefon ?? null,
+    // The actual Brreg key is `epostadresse`. Reading `epost` (which
+    // doesn't exist) silently nulled every lead's email. Keep `epost`
+    // as a fallback only.
+    email: enhet.epostadresse ?? enhet.epost ?? null,
     website: enhet.hjemmeside ?? null,
     employee_count: enhet.antallAnsatte ?? null,
     vat_registered: enhet.registrertIMvaregisteret ?? false,
