@@ -481,16 +481,6 @@ function HeroForm() {
           className="mt-0.5 h-3.5 w-3.5 rounded border-slate-400"
         />
         <span>
-          Jeg samtykker til at bedriften kontakter meg per e-post, SMS eller
-          telefon angående henvendelsen min. Send STOPP for å avbryte.
-        </span>
-      </label>
-      <label className="mt-2 flex items-start gap-2 text-[11px] leading-snug text-slate-700">
-        <input
-          type="checkbox"
-          className="mt-0.5 h-3.5 w-3.5 rounded border-slate-400"
-        />
-        <span>
           Jeg ønsker av og til å motta nyhetsbrev og tips om
           oppussingsprosjekter.
         </span>
@@ -503,11 +493,6 @@ function HeroForm() {
       >
         Send
       </button>
-      <p className="mt-3 text-center text-[10.5px] leading-snug text-slate-600">
-        Du kan lese vår{" "}
-        <a className="underline">personvernerklæring</a> og{" "}
-        <a className="underline">brukervilkår</a>.
-      </p>
     </form>
   );
 }
