@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,9 +30,16 @@ const PLACEHOLDERS = [
 
 interface FlowDialogProps {
   flow?: Flow;
+  /**
+   * Custom element to render as the dialog trigger. When omitted, falls
+   * back to the default "Ny flow" / "Rediger" button. The canvas nodes
+   * pass their own clickable card here so clicking a node opens this
+   * editor.
+   */
+  trigger?: ReactNode;
 }
 
-export function FlowDialog({ flow }: FlowDialogProps) {
+export function FlowDialog({ flow, trigger }: FlowDialogProps) {
   const isEdit = !!flow;
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -73,7 +80,9 @@ export function FlowDialog({ flow }: FlowDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {isEdit ? (
+        {trigger ? (
+          trigger
+        ) : isEdit ? (
           <Button variant="outline" size="sm">
             <Pencil className="h-3.5 w-3.5" />
             Rediger

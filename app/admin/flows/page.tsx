@@ -16,6 +16,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Flow, FlowRun } from "@/lib/supabase/types";
 import { formatCompanyName } from "@/lib/utils";
 
+import { FlowCanvas } from "./_flow-canvas";
 import { DeleteFlowButton, FlowToggle, RunNowButton } from "./_flow-controls";
 import { FlowDialog } from "./_flow-dialog";
 
@@ -44,14 +45,6 @@ const STATUS_VARIANT: Record<
   skipped_no_email: "outline",
   failed: "destructive",
 };
-
-function delayLabel(hours: number): string {
-  if (hours % 24 === 0) {
-    const d = hours / 24;
-    return `${d} ${d === 1 ? "dag" : "dager"}`;
-  }
-  return `${hours} t`;
-}
 
 export default async function FlowsPage() {
   const supabase = getSupabaseAdmin();
@@ -131,34 +124,24 @@ export default async function FlowsPage() {
                         </Badge>
                       )}
                     </CardTitle>
-                    <CardDescription>
-                      Ingen svar etter{" "}
-                      <span className="font-medium text-foreground">
-                        {delayLabel(flow.delay_hours)}
-                      </span>{" "}
-                      → sender oppfølging i samme tråd.
+                    <CardDescription className="flex items-center gap-3">
+                      <span>
+                        <span className="font-medium text-foreground">
+                          {sentByFlow.get(flow.id) ?? 0}
+                        </span>{" "}
+                        oppfølginger sendt
+                      </span>
+                      <span className="text-muted-foreground/60">·</span>
+                      <span>Klikk en node for å redigere</span>
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
                     <FlowToggle id={flow.id} enabled={flow.enabled} />
-                    <FlowDialog flow={flow} />
                     <DeleteFlowButton id={flow.id} />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Mail className="h-3.5 w-3.5" />
-                    <span className="font-medium text-foreground">
-                      {sentByFlow.get(flow.id) ?? 0}
-                    </span>{" "}
-                    oppfølginger sendt (siste 50 hendelser)
-                  </div>
-                  <div className="rounded-md border bg-muted/30 p-3 text-xs">
-                    <div className="font-medium">{flow.follow_up_subject}</div>
-                    <p className="mt-1 whitespace-pre-wrap text-muted-foreground line-clamp-4">
-                      {flow.follow_up_body}
-                    </p>
-                  </div>
+                <CardContent>
+                  <FlowCanvas flow={flow} />
                 </CardContent>
               </Card>
             ))}
