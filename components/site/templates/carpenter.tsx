@@ -350,7 +350,7 @@ function Hero({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(115deg, rgba(15,20,40,0.78) 0%, rgba(15,20,40,0.55) 45%, rgba(15,20,40,0.30) 100%)",
+              "linear-gradient(115deg, rgba(15,20,40,0.62) 0%, rgba(15,20,40,0.38) 50%, rgba(15,20,40,0.18) 100%)",
           }}
         />
       </div>
@@ -648,14 +648,14 @@ function Services({ niche }: { niche: NicheConfig }) {
     <section id="tjenester" className="py-20 sm:py-24" style={{ background: CREAM }}>
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-          Våre ekspert{" "}
+          Slik{" "}
           <span
             style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
             className="font-medium"
           >
-            tjenester
+            løfter
           </span>{" "}
-          i dag
+          vi ditt hjem
         </h2>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

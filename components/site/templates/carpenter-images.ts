@@ -20,8 +20,10 @@ const PLANNING_TABLET = `${BASE}/2149343698.webp`; // surveying with tablet
 const FRAME_NEW_BUILD = `${BASE}/9828.webp`;     // dramatic framing-stage build
 
 export const CARPENTER_IMAGES = {
-  /** Hero — full-bleed, gets dark overlay. */
-  hero: FRAME_NEW_BUILD,
+  /** Hero — full-bleed, gets dark overlay. Wants a bright, wide shot with
+   *  human presence; the framing-stage photo (9828) was too dim under the
+   *  overlay so we use the brighter exterior carpenter shot here. */
+  hero: EXTERIOR_WORK,
 
   /** "Et navn bygget på integritet" — intimate craftsmanship portrait. */
   about: CRAFT_CLOSEUP,
