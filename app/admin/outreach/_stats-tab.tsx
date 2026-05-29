@@ -31,7 +31,7 @@ import {
   trend,
   type WindowDays,
 } from "@/lib/outreach-stats";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 export const WINDOW_OPTIONS: WindowDays[] = [7, 14, 30, 90];
 
@@ -306,7 +306,7 @@ export async function StatsTab({
                             href={`/admin/leads/${row.org_nr}` as never}
                             className="font-medium hover:underline"
                           >
-                            {row.name ?? row.org_nr}
+                            {row.name ? formatCompanyName(row.name) : row.org_nr}
                           </Link>
                           <div className="text-[11px] text-muted-foreground font-mono">
                             {row.org_nr}

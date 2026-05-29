@@ -2,6 +2,7 @@ import { ArrowRight, MapPin, Phone, Mail } from "lucide-react";
 
 import type { NicheConfig } from "@/lib/templates";
 import type { GeneratedSiteContent } from "@/lib/supabase/types";
+import { formatCompanyName } from "@/lib/utils";
 
 interface SiteTemplateProps {
   company: {
@@ -23,7 +24,14 @@ function bestPhone(c: SiteTemplateProps["company"]): string | null {
   return c.mobile ?? c.phone ?? null;
 }
 
-export function SiteTemplate({ company, niche, content }: SiteTemplateProps) {
+export function SiteTemplate({
+  company: companyRaw,
+  niche,
+  content,
+}: SiteTemplateProps) {
+  // Title-case the ALL-CAPS Brreg name once; every section below reads
+  // company.name / companyName from this normalized object.
+  const company = { ...companyRaw, name: formatCompanyName(companyRaw.name) };
   const heroImage = `https://source.unsplash.com/1600x900/?${encodeURIComponent(niche.heroImageKeyword)}`;
   const phone = bestPhone(company);
   const headline = content.hero_headline ?? company.name;

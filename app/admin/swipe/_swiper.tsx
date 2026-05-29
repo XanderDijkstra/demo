@@ -26,7 +26,7 @@ import { ScoreBadge } from "@/components/admin/score-badge";
 import { Button } from "@/components/ui/button";
 import { SCORE_LABELS_NB } from "@/lib/scoring";
 import type { Company, ScoringWeights } from "@/lib/supabase/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 import {
   swipeQualify,
@@ -221,7 +221,7 @@ export function Swiper({ leads }: Props) {
           <div className="flex-1 space-y-6 px-6 py-6">
             <section>
               <h2 className="text-2xl font-semibold tracking-tight leading-tight">
-                {current.name}
+                {formatCompanyName(current.name)}
               </h2>
               {current.contact_name ? (
                 <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground/80">

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/card";
 import { fetchDashboardStats } from "@/lib/dashboard";
 import { checkSupabaseHealth } from "@/lib/supabase/queries";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -349,7 +349,7 @@ export default async function DashboardPage() {
                             href={`/admin/leads/${lead.org_nr}` as never}
                             className="font-medium hover:underline truncate block"
                           >
-                            {lead.name}
+                            {formatCompanyName(lead.name)}
                           </Link>
                           <span className="text-[11px] text-muted-foreground font-mono">
                             {lead.org_nr}

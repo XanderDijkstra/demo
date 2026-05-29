@@ -41,6 +41,7 @@ import type {
   ScoringWeights,
 } from "@/lib/supabase/types";
 import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
+import { formatCompanyName } from "@/lib/utils";
 
 import { ContactNameEditor } from "./_contact-name-editor";
 import { DealSection } from "./_deal-section";
@@ -163,7 +164,7 @@ export default async function LeadDetailPage({
   return (
     <>
       <Topbar
-        title={lead.name}
+        title={formatCompanyName(lead.name)}
         description={`Org.nr ${lead.org_nr}`}
         actions={
           <Link
@@ -185,7 +186,7 @@ export default async function LeadDetailPage({
                 <div className="flex flex-wrap items-center gap-3">
                   <ScoreBadge score={lead.score} className="h-7 min-w-11 text-sm" />
                   <h2 className="text-xl font-semibold tracking-tight">
-                    {lead.name}
+                    {formatCompanyName(lead.name)}
                   </h2>
                   <StatusBadge status={lead.status} />
                   {lead.bankrupt ? (

@@ -20,7 +20,7 @@ import type {
   EmailThread,
   OutreachEmail,
 } from "@/lib/supabase/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 import { markThreadRead } from "./_actions";
 import { ReplyComposer } from "./_reply-composer";
@@ -332,7 +332,7 @@ function ThreadView({
                 href={`/admin/leads/${lead.org_nr}` as never}
                 className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
               >
-                {lead.name}
+                {formatCompanyName(lead.name)}
                 <span className="font-mono">· {lead.org_nr}</span>
               </Link>
             ) : (

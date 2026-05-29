@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Topbar } from "@/components/admin/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetchLeads, fetchLeadsTotals, parseLeadsQuery } from "@/lib/leads";
+import { formatCompanyName } from "@/lib/utils";
 
 import { LeadsFilters } from "./_filters";
 import { LeadsPagination } from "./_pagination";
@@ -94,7 +95,7 @@ export default async function LeadsPage({
                             href={`/admin/leads/${lead.org_nr}` as never}
                             className="font-medium hover:underline truncate block"
                           >
-                            {lead.name}
+                            {formatCompanyName(lead.name)}
                           </Link>
                           <span className="text-[11px] text-muted-foreground font-mono">
                             {lead.org_nr}

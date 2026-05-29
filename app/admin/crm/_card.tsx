@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { DEAL_STAGES, type KanbanCard } from "@/lib/deals-shared";
 import type { DealStage } from "@/lib/supabase/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 import { moveDealStage } from "./_actions";
 
@@ -55,7 +55,7 @@ export function DealCard({ card }: Props) {
           className="min-w-0 flex-1 group/title"
         >
           <div className="truncate text-sm font-medium leading-tight group-hover/title:underline">
-            {card.company_name}
+            {formatCompanyName(card.company_name)}
           </div>
           <div className="mt-0.5 truncate text-[11px] text-muted-foreground font-mono">
             {card.org_nr}

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { getInboundDomain } from "@/lib/email/threads";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { EmailThread } from "@/lib/supabase/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCompanyName } from "@/lib/utils";
 
 import { InboxClient, type ThreadRow, type ViewId } from "./_inbox-client";
 
@@ -82,7 +82,9 @@ async function fetchThreadList(view: ViewId): Promise<ThreadRow[]> {
     const last = lastByThread.get(t.id);
     return {
       ...(t as EmailThread),
-      company_name: t.org_nr ? nameByOrg.get(t.org_nr) ?? null : null,
+      company_name: t.org_nr
+        ? formatCompanyName(nameByOrg.get(t.org_nr) ?? "") || null
+        : null,
       preview: last?.preview ?? null,
       last_from: last?.from ?? null,
       last_direction: last?.direction ?? null,
