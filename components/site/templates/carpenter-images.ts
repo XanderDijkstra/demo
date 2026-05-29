@@ -1,50 +1,55 @@
 /**
  * Self-hosted image registry for the carpenter / snekker template.
  *
- * Drop real photos into `/public/templates/carpenter/` using the exact
- * filenames below — they're served straight from the Vercel CDN, no API,
- * no cost, no watermark. See the README.md in that folder for the
- * recommended dimensions and what each shot should show.
+ * Photos live under `/public/templates/carpenter/`, served straight from
+ * the CDN. Filenames mirror the Freepik resource IDs the operator
+ * downloaded — keeping them as-is means a re-download from Freepik later
+ * will keep the same name and just overwrite cleanly.
  *
- * Until a file is committed, its <img> renders broken — so upload the set
- * (or point several slots at the same file) before publishing a carpenter
- * site. Reuse is fine: e.g. set `splitProject` to the same file as a
- * project shot if you're short on images.
+ * 5 images mapped across 15 slots — see the table in
+ * `public/templates/carpenter/README.md` for the rationale per slot.
  */
 
 const BASE = "/templates/carpenter";
 
+// Source images (5 distinct Freepik downloads).
+const CRAFT_CLOSEUP = `${BASE}/134781.webp`;     // hands marking wood
+const SAW_WORKSHOP = `${BASE}/18913.webp`;       // table saw cutting
+const EXTERIOR_WORK = `${BASE}/2149343676.webp`; // two carpenters, wooden house exterior
+const PLANNING_TABLET = `${BASE}/2149343698.webp`; // surveying with tablet
+const FRAME_NEW_BUILD = `${BASE}/9828.webp`;     // dramatic framing-stage build
+
 export const CARPENTER_IMAGES = {
-  /** Hero — full-bleed luxury kitchen / interior (≈2000×1200, landscape). */
-  hero: `${BASE}/hero.jpg`,
+  /** Hero — full-bleed, gets dark overlay. */
+  hero: FRAME_NEW_BUILD,
 
-  /** About — construction-in-progress, tall portrait (≈900×1100). */
-  about: `${BASE}/about.jpg`,
+  /** "Et navn bygget på integritet" — intimate craftsmanship portrait. */
+  about: CRAFT_CLOSEUP,
 
-  /** Four square service cards (≈900×900 each). */
+  /** Four service cards. */
   services: [
-    `${BASE}/service-1.jpg`, // Total renovasjon
-    `${BASE}/service-2.jpg`, // Kjøkken og bad
-    `${BASE}/service-3.jpg`, // Tilbygg og påbygg
-    `${BASE}/service-4.jpg`, // Nybygg
+    EXTERIOR_WORK,    // Total renovasjon
+    SAW_WORKSHOP,     // Kjøkken og bad — finish joinery
+    FRAME_NEW_BUILD,  // Tilbygg og påbygg
+    PLANNING_TABLET,  // Nybygg
   ],
 
-  /** Large split-section project photo (≈1400×1100). */
-  splitProject: `${BASE}/split-project.jpg`,
+  /** Large split-section project photo. */
+  splitProject: EXTERIOR_WORK,
 
-  /** Process timeline — one per step (≈700×500, landscape). */
+  /** Process timeline. */
   process: [
-    `${BASE}/process-1.jpg`, // Konsultasjon
-    `${BASE}/process-2.jpg`, // Planlegging
-    `${BASE}/process-3.jpg`, // Bygging
-    `${BASE}/process-4.jpg`, // Ferdigstillelse
+    PLANNING_TABLET, // Konsultasjon
+    CRAFT_CLOSEUP,   // Planlegging — drawing lines
+    SAW_WORKSHOP,    // Bygging
+    EXTERIOR_WORK,   // Ferdigstillelse
   ],
 
-  /** Project gallery — 2×2 grid (≈1000×700, landscape). */
+  /** 2×2 project gallery. */
   projects: [
-    `${BASE}/project-1.jpg`,
-    `${BASE}/project-2.jpg`,
-    `${BASE}/project-3.jpg`,
-    `${BASE}/project-4.jpg`,
+    FRAME_NEW_BUILD,
+    EXTERIOR_WORK,
+    CRAFT_CLOSEUP,
+    SAW_WORKSHOP,
   ],
 };
