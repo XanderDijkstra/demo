@@ -438,9 +438,11 @@ function Hero({
 }
 
 function HeroForm() {
+  // Server component: no event handlers. This is a presentational demo
+  // form (the real lead-capture wiring happens later), so the button is
+  // a plain non-submitting button and there's no onSubmit.
   return (
     <form
-      onSubmit={(e) => e.preventDefault()}
       className="rounded-2xl p-6 sm:p-7 shadow-[0_18px_44px_-20px_rgba(0,0,0,0.55)]"
       style={{ background: SAND }}
     >
@@ -495,7 +497,7 @@ function HeroForm() {
       </label>
 
       <button
-        type="submit"
+        type="button"
         className="mt-5 w-full rounded-md px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-opacity hover:opacity-95"
         style={{ background: NAVY_DARK }}
       >
