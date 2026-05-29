@@ -107,6 +107,7 @@ export function SendEmailButton({
               <code className="text-[11px]">{"{{contact_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{contact_first_name}}"}</code>{" "}
               <code className="text-[11px]">{"{{kommune}}"}</code>{" "}
+              <code className="text-[11px]">{"{{region}}"}</code>{" "}
               <code className="text-[11px]">{"{{org_nr}}"}</code>{" "}
               <code className="text-[11px]">{"{{site_url}}"}</code>
               {siteUrl ? (

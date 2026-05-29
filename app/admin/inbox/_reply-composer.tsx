@@ -83,7 +83,7 @@ export function ReplyComposer({ threadId, to, subject }: Props) {
             <p className="text-[11px] text-muted-foreground">
               Placeholders: {"{{company_name}}"}, {"{{contact_first_name}}"},
               {" "}
-              {"{{kommune}}"}
+              {"{{kommune}}"}, {"{{region}}"}
             </p>
           </div>
           <div className="flex items-center justify-end gap-2">

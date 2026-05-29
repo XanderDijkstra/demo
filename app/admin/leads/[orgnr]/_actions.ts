@@ -34,6 +34,7 @@ import {
 } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { CompanyStatus, DealStage } from "@/lib/supabase/types";
+import { fylkeFromKommuneNr } from "@/lib/regions";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 import { formatCompanyName } from "@/lib/utils";
 
@@ -302,7 +303,7 @@ export async function sendLeadEmail(
   // Load the lead so we can validate email + apply placeholders.
   const { data: lead, error: leadError } = await supabase
     .from("companies")
-    .select("org_nr, name, email, kommune, contact_name")
+    .select("org_nr, name, email, kommune, kommune_nr, contact_name")
     .eq("org_nr", orgNr)
     .maybeSingle();
 
@@ -335,6 +336,7 @@ export async function sendLeadEmail(
   const placeholders = {
     company_name: formatCompanyName(lead.name),
     kommune: lead.kommune,
+    region: fylkeFromKommuneNr(lead.kommune_nr),
     org_nr: lead.org_nr,
     site_url: siteRow.data ? publicSiteUrl(orgNr) : "",
     contact_name: lead.contact_name,

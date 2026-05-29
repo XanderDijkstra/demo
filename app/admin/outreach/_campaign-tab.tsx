@@ -25,6 +25,7 @@ const PLACEHOLDERS = [
   "{{contact_name}}",
   "{{contact_first_name}}",
   "{{kommune}}",
+  "{{region}}",
   "{{org_nr}}",
   "{{site_url}}",
 ];

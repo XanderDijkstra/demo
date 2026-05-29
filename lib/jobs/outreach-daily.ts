@@ -9,6 +9,7 @@ import {
 import { publicSiteUrl } from "@/lib/jobs/generate-site";
 import { sendEmail } from "@/lib/email/provider";
 import { loadCampaignConfig } from "@/lib/outreach/campaign";
+import { fylkeFromKommuneNr } from "@/lib/regions";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
@@ -164,6 +165,7 @@ export async function runDailyOutreach(opts: {
     const placeholders = {
       company_name: formatCompanyName(lead.name),
       kommune: lead.kommune,
+      region: fylkeFromKommuneNr(lead.kommune_nr),
       org_nr: lead.org_nr,
       site_url: siteRow ? publicSiteUrl(lead.org_nr) : "",
       contact_name: lead.contact_name,

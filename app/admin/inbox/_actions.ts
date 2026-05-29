@@ -15,6 +15,7 @@ import {
   getOutreachReplyTo,
   isSuppressed,
 } from "@/lib/resend";
+import { fylkeFromKommuneNr } from "@/lib/regions";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatCompanyName } from "@/lib/utils";
 
@@ -95,7 +96,7 @@ export async function replyToThread(
 
   const { data: lead, error: leadError } = await supabase
     .from("companies")
-    .select("org_nr, name, email, kommune, contact_name")
+    .select("org_nr, name, email, kommune, kommune_nr, contact_name")
     .eq("org_nr", thread.org_nr)
     .maybeSingle();
   if (leadError) return { ok: false, error: leadError.message };
@@ -138,6 +139,7 @@ export async function replyToThread(
   const placeholders = {
     company_name: formatCompanyName(lead.name),
     kommune: lead.kommune,
+    region: fylkeFromKommuneNr(lead.kommune_nr),
     org_nr: lead.org_nr,
     site_url: "",
     contact_name: lead.contact_name,
