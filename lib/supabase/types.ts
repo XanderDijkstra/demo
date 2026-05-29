@@ -333,6 +333,7 @@ export type Database = {
           name: string;
           enabled: boolean;
           trigger_type: string;
+          trigger_stage: string | null;
           delay_hours: number;
           follow_up_subject: string;
           follow_up_body: string;
@@ -344,6 +345,7 @@ export type Database = {
           name: string;
           enabled?: boolean;
           trigger_type?: string;
+          trigger_stage?: string | null;
           delay_hours?: number;
           follow_up_subject: string;
           follow_up_body: string;
@@ -355,11 +357,51 @@ export type Database = {
           name?: string;
           enabled?: boolean;
           trigger_type?: string;
+          trigger_stage?: string | null;
           delay_hours?: number;
           follow_up_subject?: string;
           follow_up_body?: string;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      flow_enrollments: {
+        Row: {
+          id: string;
+          flow_id: string;
+          org_nr: string;
+          due_at: string;
+          status: string;
+          thread_id: string | null;
+          sent_email_id: string | null;
+          error_message: string | null;
+          created_at: string;
+          processed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          flow_id: string;
+          org_nr: string;
+          due_at: string;
+          status?: string;
+          thread_id?: string | null;
+          sent_email_id?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+          processed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          flow_id?: string;
+          org_nr?: string;
+          due_at?: string;
+          status?: string;
+          thread_id?: string | null;
+          sent_email_id?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+          processed_at?: string | null;
         };
         Relationships: [];
       };
@@ -709,6 +751,8 @@ export type EmailThreadInsert =
 export type Flow = Database["public"]["Tables"]["flows"]["Row"];
 export type FlowInsert = Database["public"]["Tables"]["flows"]["Insert"];
 export type FlowRun = Database["public"]["Tables"]["flow_runs"]["Row"];
+export type FlowEnrollment =
+  Database["public"]["Tables"]["flow_enrollments"]["Row"];
 export type OutreachEmail =
   Database["public"]["Tables"]["outreach_emails"]["Row"];
 export type OutreachEmailInsert =

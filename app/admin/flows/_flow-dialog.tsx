@@ -16,9 +16,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEAL_STAGES } from "@/lib/deals-shared";
 import type { Flow } from "@/lib/supabase/types";
 
 import { createFlow, updateFlow } from "./_actions";
+
+const selectClass =
+  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
 const PLACEHOLDERS = [
   "{{company_name}}",
@@ -46,8 +50,14 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
 
   // Store delay as days in the UI (friendlier), convert to hours on submit.
   const [name, setName] = useState(flow?.name ?? "");
+  const [triggerType, setTriggerType] = useState<"no_reply" | "stage_entered">(
+    flow?.trigger_type === "stage_entered" ? "stage_entered" : "no_reply"
+  );
+  const [triggerStage, setTriggerStage] = useState(
+    flow?.trigger_stage ?? "in_conversation"
+  );
   const [delayDays, setDelayDays] = useState(
-    String(flow ? Math.max(1, Math.round(flow.delay_hours / 24)) : 3)
+    String(flow ? Math.round(flow.delay_hours / 24) : 3)
   );
   const [subject, setSubject] = useState(
     flow?.follow_up_subject ?? "Re: {{company_name}}"
@@ -55,11 +65,15 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
   const [body, setBody] = useState(flow?.follow_up_body ?? "");
   const [enabled, setEnabled] = useState(flow?.enabled ?? false);
 
+  const isStage = triggerType === "stage_entered";
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData();
     fd.set("name", name);
-    fd.set("delay_hours", String(Math.max(1, Number(delayDays) || 1) * 24));
+    fd.set("trigger_type", triggerType);
+    if (isStage) fd.set("trigger_stage", triggerStage);
+    fd.set("delay_hours", String(Math.max(0, Number(delayDays) || 0) * 24));
     fd.set("follow_up_subject", subject);
     fd.set("follow_up_body", body);
     if (enabled) fd.set("enabled", "on");
@@ -104,27 +118,86 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="flow-name" className="text-xs">
+                Navn
+              </Label>
+              <Input
+                id="flow-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Påminnelse etter 3 dager"
+                disabled={pending}
+              />
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="flow-name" className="text-xs">
-                  Navn
+                <Label htmlFor="flow-trigger" className="text-xs">
+                  Trigger
                 </Label>
-                <Input
-                  id="flow-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Påminnelse etter 3 dager"
+                <select
+                  id="flow-trigger"
+                  value={triggerType}
+                  onChange={(e) =>
+                    setTriggerType(e.target.value as "no_reply" | "stage_entered")
+                  }
+                  className={selectClass}
                   disabled={pending}
-                />
+                >
+                  <option value="no_reply">Ingen svar på e-post</option>
+                  <option value="stage_entered">Flyttet til CRM-stage</option>
+                </select>
               </div>
+
+              {isStage ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="flow-stage" className="text-xs">
+                    Når lead havner i
+                  </Label>
+                  <select
+                    id="flow-stage"
+                    value={triggerStage}
+                    onChange={(e) => setTriggerStage(e.target.value)}
+                    className={selectClass}
+                    disabled={pending}
+                  >
+                    {DEAL_STAGES.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="flow-delay-top" className="text-xs">
+                    Vent (dager uten svar)
+                  </Label>
+                  <Input
+                    id="flow-delay-top"
+                    type="number"
+                    min={0}
+                    max={90}
+                    step={1}
+                    value={delayDays}
+                    onChange={(e) => setDelayDays(e.target.value)}
+                    className="w-28 tabular-nums"
+                    disabled={pending}
+                  />
+                </div>
+              )}
+            </div>
+
+            {isStage ? (
               <div className="space-y-1.5">
                 <Label htmlFor="flow-delay" className="text-xs">
-                  Vent (dager uten svar)
+                  Vent (dager etter at lead havner i stagen)
                 </Label>
                 <Input
                   id="flow-delay"
                   type="number"
-                  min={1}
+                  min={0}
                   max={90}
                   step={1}
                   value={delayDays}
@@ -132,8 +205,11 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
                   className="w-28 tabular-nums"
                   disabled={pending}
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  0 = send med en gang leaden flyttes dit.
+                </p>
               </div>
-            </div>
+            ) : null}
 
             <div className="space-y-1.5">
               <Label htmlFor="flow-subject" className="text-xs">

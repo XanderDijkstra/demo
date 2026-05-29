@@ -1,5 +1,6 @@
 import "server-only";
 
+import { enrollLeadInStageFlows } from "@/lib/flows-enroll";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Deal, DealStage, DealUpdate } from "@/lib/supabase/types";
 
@@ -66,6 +67,8 @@ export async function ensureDealForReply(orgNr: string): Promise<Deal | null> {
     metadata: { org_nr: orgNr, stage: "replied", trigger: "reply" },
   });
 
+  await enrollLeadInStageFlows(orgNr, "replied");
+
   return data as Deal;
 }
 
@@ -115,6 +118,8 @@ export async function advanceActiveDealStage(
     metadata: { org_nr: orgNr, from: active.stage, to: toStage },
   });
 
+  await enrollLeadInStageFlows(orgNr, toStage);
+
   return data as Deal;
 }
 
@@ -152,6 +157,8 @@ export async function setDealStage(
     entity_id: dealId,
     metadata: { stage: toStage, lost_reason: options.lostReason ?? null },
   });
+
+  await enrollLeadInStageFlows((data as Deal).org_nr, toStage);
 
   return data as Deal;
 }
@@ -200,6 +207,8 @@ export async function createManualDeal(orgNr: string): Promise<Deal | null> {
     entity_id: data.id,
     metadata: { org_nr: orgNr, stage: "in_conversation", trigger: "manual" },
   });
+
+  await enrollLeadInStageFlows(orgNr, "in_conversation");
 
   return data as Deal;
 }

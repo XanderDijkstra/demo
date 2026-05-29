@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Flow, FlowRun } from "@/lib/supabase/types";
+import type { Flow, FlowEnrollment, FlowRun } from "@/lib/supabase/types";
 import { formatCompanyName } from "@/lib/utils";
 
 import { FlowCanvas } from "./_flow-canvas";
@@ -22,7 +22,13 @@ import { FlowDialog } from "./_flow-dialog";
 
 export const dynamic = "force-dynamic";
 
-interface RunRow extends FlowRun {
+interface ActivityRow {
+  id: string;
+  flow_id: string;
+  org_nr: string;
+  status: string;
+  at: string;
+  error_message: string | null;
   company_name: string | null;
   flow_name: string | null;
 }
@@ -33,6 +39,8 @@ const STATUS_LABEL: Record<string, string> = {
   skipped_suppressed: "Suppressed",
   skipped_no_email: "Ingen e-post",
   failed: "Feilet",
+  pending: "Planlagt",
+  cancelled: "Avbrutt",
 };
 
 const STATUS_VARIANT: Record<
@@ -44,33 +52,70 @@ const STATUS_VARIANT: Record<
   skipped_suppressed: "warning",
   skipped_no_email: "outline",
   failed: "destructive",
+  pending: "default",
+  cancelled: "outline",
 };
 
 export default async function FlowsPage() {
   const supabase = getSupabaseAdmin();
 
-  const [{ data: flowsData }, { data: runsData }] = await Promise.all([
-    supabase.from("flows").select("*").order("created_at", { ascending: true }),
-    supabase
-      .from("flow_runs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50),
-  ]);
+  const [{ data: flowsData }, { data: runsData }, { data: enrData }] =
+    await Promise.all([
+      supabase
+        .from("flows")
+        .select("*")
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("flow_runs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("flow_enrollments")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
 
   const flows = (flowsData ?? []) as Flow[];
   const runs = (runsData ?? []) as FlowRun[];
+  const enrollments = (enrData ?? []) as FlowEnrollment[];
 
-  // Per-flow sent counts.
+  // Unified activity from both sources (no_reply → flow_runs,
+  // stage_entered → flow_enrollments).
+  const activity: ActivityRow[] = [
+    ...runs.map((r) => ({
+      id: r.id,
+      flow_id: r.flow_id,
+      org_nr: r.org_nr,
+      status: r.status,
+      at: r.created_at,
+      error_message: r.error_message,
+      company_name: null,
+      flow_name: null,
+    })),
+    ...enrollments.map((e) => ({
+      id: e.id,
+      flow_id: e.flow_id,
+      org_nr: e.org_nr,
+      status: e.status,
+      at: e.processed_at ?? e.created_at,
+      error_message: e.error_message,
+      company_name: null,
+      flow_name: null,
+    })),
+  ].sort((a, b) => (a.at < b.at ? 1 : -1));
+
+  // Per-flow sent counts (both sources).
   const sentByFlow = new Map<string, number>();
-  for (const r of runs) {
-    if (r.status === "sent") {
-      sentByFlow.set(r.flow_id, (sentByFlow.get(r.flow_id) ?? 0) + 1);
+  for (const a of activity) {
+    if (a.status === "sent") {
+      sentByFlow.set(a.flow_id, (sentByFlow.get(a.flow_id) ?? 0) + 1);
     }
   }
 
-  // Enrich the runs log with company + flow names.
-  const orgNrs = [...new Set(runs.map((r) => r.org_nr))];
+  // Enrich with company + flow names.
+  const orgNrs = [...new Set(activity.map((a) => a.org_nr))];
   const flowNameById = new Map(flows.map((f) => [f.id, f.name]));
   const nameByOrg = new Map<string, string>();
   if (orgNrs.length > 0) {
@@ -80,17 +125,17 @@ export default async function FlowsPage() {
       .in("org_nr", orgNrs);
     for (const c of companies ?? []) nameByOrg.set(c.org_nr, c.name);
   }
-  const runRows: RunRow[] = runs.map((r) => ({
-    ...r,
-    company_name: nameByOrg.get(r.org_nr) ?? null,
-    flow_name: flowNameById.get(r.flow_id) ?? null,
+  const runRows: ActivityRow[] = activity.slice(0, 60).map((a) => ({
+    ...a,
+    company_name: nameByOrg.get(a.org_nr) ?? null,
+    flow_name: flowNameById.get(a.flow_id) ?? null,
   }));
 
   return (
     <>
       <Topbar
         title="Flows"
-        description="Automatiske oppfølginger til leads som ikke svarer"
+        description="Automatiske oppfølginger — ved manglende svar eller når en lead flyttes i CRM"
         actions={
           <div className="flex items-center gap-2">
             <RunNowButton />
@@ -201,9 +246,9 @@ export default async function FlowsPage() {
                         </td>
                         <td
                           className="px-4 py-2 text-muted-foreground"
-                          title={r.created_at}
+                          title={r.at}
                         >
-                          {formatDistanceToNow(new Date(r.created_at), {
+                          {formatDistanceToNow(new Date(r.at), {
                             addSuffix: true,
                             locale: nb,
                           })}

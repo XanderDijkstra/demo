@@ -8,17 +8,34 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
-const FlowSchema = z.object({
-  name: z.string().trim().min(1, "Navn er påkrevd").max(120),
-  delay_hours: z.coerce.number().int().min(1, "Minst 1 time").max(2160), // ≤ 90 dager
-  follow_up_subject: z.string().trim().min(1, "Emne er påkrevd").max(998),
-  follow_up_body: z.string().trim().min(1, "Tekst er påkrevd").max(50_000),
-  enabled: z.boolean(),
-});
+const VALID_STAGES = ["replied", "in_conversation", "proposal_sent", "won", "lost"];
+
+const FlowSchema = z
+  .object({
+    name: z.string().trim().min(1, "Navn er påkrevd").max(120),
+    trigger_type: z.enum(["no_reply", "stage_entered"]),
+    trigger_stage: z.string().trim().nullable(),
+    delay_hours: z.coerce.number().int().min(0, "Kan ikke være negativ").max(2160), // ≤ 90 dager
+    follow_up_subject: z.string().trim().min(1, "Emne er påkrevd").max(998),
+    follow_up_body: z.string().trim().min(1, "Tekst er påkrevd").max(50_000),
+    enabled: z.boolean(),
+  })
+  .refine(
+    (v) =>
+      v.trigger_type !== "stage_entered" ||
+      (v.trigger_stage && VALID_STAGES.includes(v.trigger_stage)),
+    { message: "Velg en gyldig CRM-stage for trigger", path: ["trigger_stage"] }
+  );
 
 function parseForm(formData: FormData) {
+  const triggerType = String(formData.get("trigger_type") ?? "no_reply");
   return FlowSchema.safeParse({
     name: formData.get("name"),
+    trigger_type: triggerType,
+    trigger_stage:
+      triggerType === "stage_entered"
+        ? String(formData.get("trigger_stage") ?? "")
+        : null,
     delay_hours: formData.get("delay_hours"),
     follow_up_subject: formData.get("follow_up_subject"),
     follow_up_body: formData.get("follow_up_body"),
@@ -38,7 +55,11 @@ export async function createFlow(formData: FormData): Promise<ActionResult> {
     follow_up_subject: parsed.data.follow_up_subject,
     follow_up_body: parsed.data.follow_up_body,
     enabled: parsed.data.enabled,
-    trigger_type: "no_reply",
+    trigger_type: parsed.data.trigger_type,
+    trigger_stage:
+      parsed.data.trigger_type === "stage_entered"
+        ? parsed.data.trigger_stage
+        : null,
   });
   if (error) return { ok: false, error: error.message };
 
@@ -64,6 +85,11 @@ export async function updateFlow(
       follow_up_subject: parsed.data.follow_up_subject,
       follow_up_body: parsed.data.follow_up_body,
       enabled: parsed.data.enabled,
+      trigger_type: parsed.data.trigger_type,
+      trigger_stage:
+        parsed.data.trigger_type === "stage_entered"
+          ? parsed.data.trigger_stage
+          : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
