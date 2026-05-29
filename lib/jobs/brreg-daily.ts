@@ -40,6 +40,21 @@ export function defaultTargetDate(now: Date = new Date()): string {
 }
 
 /**
+ * Same idea as defaultTargetDate but parameterised. `offsetDays` is the
+ * number of days back from "now" — 0 = today, 1 = yesterday, 7 = a week
+ * ago. Used by the cron route so the operator can shift the window
+ * without redeploying (via the `brreg_cron_day_offset` setting).
+ */
+export function dateWithOffset(
+  offsetDays: number,
+  now: Date = new Date()
+): string {
+  const safe = Math.max(0, Math.min(365, Math.round(offsetDays)));
+  const d = new Date(now.getTime() - safe * 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
  * Run the daily Brreg scrape.
  *
  * Steps:

@@ -13,10 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getSetting } from "@/lib/supabase/queries";
 import type { ScrapeRun, ScrapeRunStatus } from "@/lib/supabase/types";
 
+import { CronSettingsForm } from "./_cron-settings-form";
 import { EmailBatchForm } from "./_email-batch-form";
 import { RunNowForm } from "./_run-now-form";
+
+// Mirrors the schedule in vercel.json — kept here for display only.
+const BRREG_CRON_SCHEDULE = "0 6 * * *";
 
 export const dynamic = "force-dynamic";
 
@@ -44,11 +49,15 @@ function formatDuration(ms: number | null): string {
 
 export default async function QueuePage() {
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("scrape_runs")
-    .select("*")
-    .order("started_at", { ascending: false })
-    .limit(50);
+  const [{ data, error }, cronEnabled, cronDayOffset] = await Promise.all([
+    supabase
+      .from("scrape_runs")
+      .select("*")
+      .order("started_at", { ascending: false })
+      .limit(50),
+    getSetting<boolean>("brreg_cron_enabled"),
+    getSetting<number>("brreg_cron_day_offset"),
+  ]);
 
   const runs: ScrapeRun[] = data ?? [];
 
@@ -60,6 +69,25 @@ export default async function QueuePage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Daglig cron-job</CardTitle>
+            <CardDescription>
+              Pause eller endre måldato uten å re-deploye. Cron-en sjekker
+              disse settingsene før den kjører.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CronSettingsForm
+              initialEnabled={cronEnabled ?? true}
+              initialDayOffset={
+                typeof cronDayOffset === "number" ? cronDayOffset : 1
+              }
+              schedule={BRREG_CRON_SCHEDULE}
+            />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Manuell innhenting</CardTitle>

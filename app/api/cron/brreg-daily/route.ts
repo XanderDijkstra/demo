@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
+import { dateWithOffset, runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getSetting } from "@/lib/supabase/queries";
 
 // This route runs the Brreg scrape. It must not be cached or pre-rendered.
 export const dynamic = "force-dynamic";
@@ -29,10 +31,35 @@ export async function GET(request: Request) {
 
   // Optional `?date=YYYY-MM-DD` for backfills. Defaults to yesterday.
   const url = new URL(request.url);
-  const targetDate = url.searchParams.get("date") ?? undefined;
+  const explicitDate = url.searchParams.get("date") ?? undefined;
   const triggeredBy = url.searchParams.get("trigger") === "manual"
     ? "manual"
     : "cron";
+
+  // Operator-controlled kill switch. Only honoured for unattended cron
+  // runs — a manual trigger from /admin/queue always proceeds so the
+  // operator can ad-hoc backfill while the schedule is paused.
+  if (triggeredBy === "cron") {
+    const enabled = await getSetting<boolean>("brreg_cron_enabled");
+    if (enabled === false) {
+      await getSupabaseAdmin().from("audit_log").insert({
+        actor: "cron",
+        action: "brreg.cron.skipped",
+        entity_type: "settings",
+        entity_id: "brreg_cron_enabled",
+        metadata: { reason: "disabled" },
+      });
+      return NextResponse.json({ status: "skipped", reason: "disabled" });
+    }
+  }
+
+  // Pick the target date. Explicit `?date=` always wins (backfills);
+  // otherwise use the operator-configured offset (default 1 day back).
+  let targetDate = explicitDate;
+  if (!targetDate) {
+    const offset = await getSetting<number>("brreg_cron_day_offset");
+    targetDate = dateWithOffset(typeof offset === "number" ? offset : 1);
+  }
 
   const result = await runBrregDailyScrape({
     targetDate,
