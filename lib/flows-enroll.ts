@@ -4,6 +4,43 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Flow } from "@/lib/supabase/types";
 
 /**
+ * Reply = hard stop. The moment a lead replies (or otherwise enters a
+ * live conversation) we cancel every still-pending flow enrollment for
+ * them, so no automated nudge can land in a warm thread. Called from the
+ * inbound webhook handler. Fail-soft.
+ */
+export async function cancelPendingEnrollments(
+  orgNr: string,
+  reason: string
+): Promise<void> {
+  if (!orgNr) return;
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from("flow_enrollments")
+      .update({
+        status: "cancelled",
+        error_message: reason,
+        processed_at: new Date().toISOString(),
+      })
+      .eq("org_nr", orgNr)
+      .eq("status", "pending")
+      .select("id");
+    if (data && data.length > 0) {
+      await supabase.from("audit_log").insert({
+        actor: "system",
+        action: "flow.enrollments_cancelled",
+        entity_type: "company",
+        entity_id: orgNr,
+        metadata: { reason, count: data.length },
+      });
+    }
+  } catch {
+    // Never block inbound handling on this side-effect.
+  }
+}
+
+/**
  * Enroll a lead into every enabled stage-triggered flow whose
  * trigger_stage matches the stage the lead just entered.
  *

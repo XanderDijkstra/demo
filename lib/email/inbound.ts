@@ -1,6 +1,7 @@
 import "server-only";
 
 import { ensureDealForReply } from "@/lib/deals";
+import { cancelPendingEnrollments } from "@/lib/flows-enroll";
 import {
   parseThreadAddress,
   resolveInboundThread,
@@ -297,6 +298,9 @@ export async function handleInboundEmail(
   // dashboard. We never DEMOTE — already qualified / rejected leads
   // keep their status unchanged.
   if (orgNr) {
+    // Reply = hard stop: pull this lead out of any pending automated
+    // follow-ups so a flow nudge can't land in a live conversation.
+    await cancelPendingEnrollments(orgNr, "lead replied");
     await ensureDealForReply(orgNr);
     const { data: company } = await supabase
       .from("companies")

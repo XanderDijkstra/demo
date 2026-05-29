@@ -30,6 +30,7 @@ import {
 } from "./_actions";
 import { OutreachFromForm } from "./_from-form";
 import { ListForm } from "./_list-form";
+import { ModelForm } from "./_model-form";
 import { RescoreButton } from "./_rescore-button";
 import { SuppressionManager } from "./_suppression-form";
 import { WeightsForm } from "./_weights-form";
@@ -192,19 +193,13 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-base">Demo siter</CardTitle>
             <CardDescription>
-              AI-genererte landingssider per lead. Modellen settes i
-              <code className="font-mono mx-1">claude_model</code> setting
-              (ikke redigerbar fra UI enda).
+              AI-genererte landingssider per lead. Velg hvilken Claude-modell
+              som skriver teksten — bytt til Opus/Sonnet for bedre maler.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <div className="text-xs text-muted-foreground">Active modell</div>
-                <div className="font-mono text-sm">
-                  {claudeModel ?? "claude-haiku-4-5"}
-                </div>
-              </div>
+          <CardContent className="space-y-5">
+            <ModelForm initial={claudeModel ?? "claude-haiku-4-5"} />
+            <div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
               <div>
                 <div className="text-xs text-muted-foreground">
                   Publishede sider

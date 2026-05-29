@@ -302,6 +302,43 @@ export async function removeSuppression(
   return { ok: true, message: "Removeet fra suppression list" };
 }
 
+// ─── Claude model (site generation) ──────────────────────────────────────────
+
+// The models we let the operator pick for AI site copy. Keep this in
+// sync with what's actually available on the Anthropic account.
+const ALLOWED_CLAUDE_MODELS = [
+  "claude-opus-4-8",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5",
+];
+
+export async function saveClaudeModel(
+  formData: FormData
+): Promise<ActionResult> {
+  const model = String(formData.get("model") ?? "").trim();
+  if (!ALLOWED_CLAUDE_MODELS.includes(model)) {
+    return { ok: false, error: "Ukjent modell" };
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("settings").upsert(
+    { key: "claude_model", value: model, updated_at: new Date().toISOString() },
+    { onConflict: "key" }
+  );
+  if (error) return { ok: false, error: error.message };
+
+  await supabase.from("audit_log").insert({
+    actor: "manual",
+    action: "settings.claude_model.updated",
+    entity_type: "settings",
+    entity_id: "claude_model",
+    metadata: { model },
+  });
+
+  revalidatePath("/admin/settings");
+  return { ok: true, message: `Modell satt til ${model}` };
+}
+
 // ─── Re-score all leads ──────────────────────────────────────────────────────
 
 export async function rescoreAllLeads(): Promise<

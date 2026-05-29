@@ -295,6 +295,20 @@ async function processDueEnrollments(
       continue;
     }
 
+    // Reply = hard stop. Even though inbound cancels pending enrollments,
+    // re-check here so a reply that landed between cancel and processing
+    // can never get an automated nudge into a live conversation.
+    const { count: repliedCount } = await supabase
+      .from("outreach_emails")
+      .select("id", { count: "exact", head: true })
+      .eq("org_nr", enr.org_nr)
+      .eq("direction", "in");
+    if ((repliedCount ?? 0) > 0) {
+      await finishEnrollment(supabase, enr.id, "skipped_replied");
+      result.skippedReplied += 1;
+      continue;
+    }
+
     const sup = await isSuppressed(lead.email);
     if (sup.suppressed) {
       await finishEnrollment(supabase, enr.id, "skipped_suppressed");
