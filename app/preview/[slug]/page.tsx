@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
+import { CarpenterTemplate } from "@/components/site/templates/carpenter";
 import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { loadNicheConfig } from "@/lib/template-store";
@@ -55,6 +56,13 @@ const SAMPLE_CONTENT_BY_SLUG: Record<string, typeof SAMPLE_CONTENT> = {
     about_paragraph:
       "Eksempelbedrift AS er totalentreprenør for hjem som skal vare. Med over 20 års erfaring leverer vi prosjekter med åpne priser, dokumentert kvalitet og en stødig prosess. Visjonen din er rammen vi bygger innenfor.",
   },
+  carpenter: {
+    hero_headline: "Bygger din visjon, skaper varige rom",
+    hero_subheadline:
+      "Fra skreddersydde nybygg til kjøkken- og badrenoveringer — Eksempelbedrift AS bringer 20+ år med pålitelig håndverk og ærlig prosjektledelse til hvert hjem vi rører.",
+    about_paragraph:
+      "Eksempelbedrift AS er en familieeid snekkerbedrift med over 20 års erfaring i Bergen. John Eksempel leder personlig hvert prosjekt med en hands-on tilnærming — ærlige priser, nitid fokus på detaljer og en sømløs opplevelse fra første konsultasjon til overlevering.",
+  },
 };
 
 export default async function TemplatePreviewPage({ params }: RouteProps) {
@@ -77,6 +85,16 @@ export default async function TemplatePreviewPage({ params }: RouteProps) {
   if (slug === "contractor") {
     return (
       <ContractorTemplate
+        company={SAMPLE_COMPANY}
+        niche={niche}
+        content={content}
+      />
+    );
+  }
+
+  if (slug === "carpenter") {
+    return (
+      <CarpenterTemplate
         company={SAMPLE_COMPANY}
         niche={niche}
         content={content}

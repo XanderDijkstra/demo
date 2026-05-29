@@ -20,6 +20,7 @@ export type NicheSlug =
   | "auto_repair"
   | "landscaper"
   | "contractor"
+  | "carpenter"
   | "generic";
 
 export interface NicheService {
@@ -281,6 +282,43 @@ const CONTRACTOR: NicheConfig = {
   benefitTags: ["Sentral godkjenning", "Fastpris", "Egen prosjektleder"],
 };
 
+const CARPENTER: NicheConfig = {
+  slug: "carpenter",
+  displayName: "Snekker",
+  // Warm beige / cream + deep navy. Identity colours are largely
+  // hardcoded inside components/site/templates/carpenter.tsx since the
+  // template has a specific editorial look; these are kept for the
+  // shared niche-color UI bits (badges, etc.).
+  primaryColor: "oklch(0.22 0.04 250)",
+  accentColor: "oklch(0.86 0.05 70)",
+  heroImageKeyword: "luxury-kitchen,interior,wood",
+  heroLayout: "split",
+  services: [
+    {
+      title: "Total renovasjon",
+      description:
+        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles helt nytt.",
+    },
+    {
+      title: "Kjøkken og bad",
+      description:
+        "Skreddersydde kjøkkenløsninger og våtromsarbeid med sertifisering, presisjon og varig kvalitet.",
+    },
+    {
+      title: "Tilbygg og påbygg",
+      description:
+        "Påbygg, ekstraetasjer og uthus utført med fagkyndig prosjektledelse i hvert eneste trinn.",
+    },
+    {
+      title: "Nybygg",
+      description:
+        "Vi bygger boligen din fra grunnen — med åpne priser, dokumentert kvalitet og en stødig prosess.",
+    },
+  ],
+  ctaText: "Få et gratis tilbud",
+  benefitTags: ["20+ års erfaring", "Sentral godkjenning", "Egen prosjektleder"],
+};
+
 const GENERIC: NicheConfig = {
   slug: "generic",
   displayName: "Generic",
@@ -317,6 +355,7 @@ const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
   auto_repair: AUTO_REPAIR,
   landscaper: LANDSCAPER,
   contractor: CONTRACTOR,
+  carpenter: CARPENTER,
   generic: GENERIC,
 };
 
@@ -335,7 +374,10 @@ const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   ["41.20", "contractor"], // Bygging av boliger og andre bygninger
   ["41.10", "contractor"], // Outvikling av byggeprosjekter
   ["43.99", "contractor"], // Annen spesialisert bygge- og anleggsvirksomhet
-  ["43.39", "contractor"], // Annen donegjøring av bygninger
+  ["43.39", "contractor"], // Annen ferdigjøring av bygninger
+  // Snekker-spesifikke koder. Mer spesifikke enn 41.xx contractor-kodene.
+  ["43.32", "carpenter"], // Snekkerarbeid (innebygging av kjøkken, dører, vinduer)
+  ["16.23", "carpenter"], // Produksjon av andre bygningsartikler av tre
 ];
 
 export function pickNicheFromNace(naceCode: string | null | undefined): NicheSlug {
@@ -364,6 +406,7 @@ export const ALL_NICHES: NicheConfig[] = (
     "auto_repair",
     "landscaper",
     "contractor",
+    "carpenter",
     "generic",
   ] as const
 ).map((slug) => NICHE_REGISTRY[slug]);
