@@ -13,6 +13,7 @@ import type { CompanyInsert, ScoreBreakdown, ScoringWeights } from "@/lib/supaba
 
 export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
   has_phone: 30,
+  has_email: 25,
   org_form_as: 20,
   target_nace: 20,
   is_handverker: 20,
@@ -25,6 +26,7 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
  *  the swipe card, and anywhere else we surface the score breakdown. */
 export const SCORE_LABELS_NB: Record<keyof ScoringWeights, string> = {
   has_phone: "Har telefon",
+  has_email: "Har e-post",
   org_form_as: "Selskapsform AS/ASA",
   target_nace: "Målnæring (NACE)",
   is_handverker: "Håndverker",
@@ -74,6 +76,7 @@ function naceMatches(naceCode: string | null | undefined, targets: string[]): bo
 export interface ScoreInput {
   phone: string | null;
   mobile: string | null;
+  email: string | null;
   org_form: string | null;
   nace_code: string | null;
   website: string | null;
@@ -100,6 +103,10 @@ export function scoreCompany(
 
   if (input.phone || input.mobile) {
     breakdown.has_phone = weights.has_phone;
+  }
+
+  if (input.email && input.email.trim()) {
+    breakdown.has_email = weights.has_email;
   }
 
   if (input.org_form && AS_LIKE_FORMS.has(input.org_form)) {
@@ -156,6 +163,7 @@ export function scoreCompanyInsert(
     {
       phone: insert.phone ?? null,
       mobile: insert.mobile ?? null,
+      email: insert.email ?? null,
       org_form: insert.org_form ?? null,
       nace_code: insert.nace_code ?? null,
       website: insert.website ?? null,

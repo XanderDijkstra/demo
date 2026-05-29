@@ -61,6 +61,7 @@ export type VisionSummary = {
 
 export type ScoreBreakdown = {
   has_phone?: number;
+  has_email?: number;
   org_form_as?: number;
   target_nace?: number;
   is_handverker?: number;
@@ -72,6 +73,7 @@ export type ScoreBreakdown = {
 
 export type ScoringWeights = {
   has_phone: number;
+  has_email: number;
   org_form_as: number;
   target_nace: number;
   is_handverker: number;

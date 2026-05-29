@@ -15,6 +15,7 @@ import {
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { ScrapeRun, ScrapeRunStatus } from "@/lib/supabase/types";
 
+import { EmailBatchForm } from "./_email-batch-form";
 import { RunNowForm } from "./_run-now-form";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,21 @@ export default async function QueuePage() {
           </CardHeader>
           <CardContent>
             <RunNowForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Scrape e-poster fra nettsider</CardTitle>
+            <CardDescription>
+              Brreg gir sjelden ut e-post — denne jobben henter homepage +
+              kontaktside for hver lead uten e-post som er registrert nylig,
+              ekstraherer kandidater og lagrer den beste automatisk. Re-scorer
+              også raden så den får uttelling for &quot;Har e-post&quot;-vekten.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <EmailBatchForm />
           </CardContent>
         </Card>
 

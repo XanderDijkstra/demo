@@ -19,6 +19,7 @@ type ActionResult =
 
 const WeightsSchema = z.object({
   has_phone: z.coerce.number().int().min(0).max(100),
+  has_email: z.coerce.number().int().min(0).max(100),
   org_form_as: z.coerce.number().int().min(0).max(100),
   target_nace: z.coerce.number().int().min(0).max(100),
   is_handverker: z.coerce.number().int().min(0).max(100),
@@ -32,6 +33,7 @@ export async function saveScoringWeights(
 ): Promise<ActionResult> {
   const parsed = WeightsSchema.safeParse({
     has_phone: formData.get("has_phone"),
+    has_email: formData.get("has_email"),
     org_form_as: formData.get("org_form_as"),
     target_nace: formData.get("target_nace"),
     is_handverker: formData.get("is_handverker"),

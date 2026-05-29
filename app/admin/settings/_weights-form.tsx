@@ -17,6 +17,7 @@ const FIELDS: Array<{
   hint: string;
 }> = [
   { key: "has_phone", label: "Has phone", hint: "phone or mobile in Brreg" },
+  { key: "has_email", label: "Has email", hint: "from Brreg or scraped" },
   { key: "org_form_as", label: "Org form AS/ASA", hint: "subscribed capital" },
   { key: "target_nace", label: "Target NACE", hint: "matches list below" },
   { key: "is_handverker", label: "Tradesperson", hint: "NACE 41.x / 43.x / 81.30" },

@@ -55,6 +55,7 @@ export const dynamic = "force-dynamic";
 
 const SCORE_LABELS: Record<keyof ScoringWeights, string> = {
   has_phone: "Has phone",
+  has_email: "Has email",
   org_form_as: "Org form AS/ASA",
   target_nace: "Target NACE",
   is_handverker: "Tradesperson (construction)",
