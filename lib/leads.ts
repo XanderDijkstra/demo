@@ -5,12 +5,15 @@ import type { Company, CompanyStatus } from "@/lib/supabase/types";
 
 export type LeadsTab = "week" | "all";
 export type LeadsSort = "score" | "registered" | "name";
+export type PresenceFilter = "yes" | "no";
 
 export interface LeadsQuery {
   tab: LeadsTab;
   q?: string;
   status?: CompanyStatus;
   minScore?: number;
+  hasEmail?: PresenceFilter;
+  hasPhone?: PresenceFilter;
   sort: LeadsSort;
   page: number;
   pageSize: number;
@@ -56,11 +59,18 @@ export function parseLeadsQuery(
 
   const q = pickString("q")?.trim() || undefined;
 
+  function pickPresence(key: string): PresenceFilter | undefined {
+    const v = pickString(key);
+    return v === "yes" || v === "no" ? v : undefined;
+  }
+
   return {
     tab,
     q,
     status,
     minScore,
+    hasEmail: pickPresence("hasEmail"),
+    hasPhone: pickPresence("hasPhone"),
     sort,
     page,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -90,6 +100,19 @@ export async function fetchLeads(query: LeadsQuery): Promise<LeadsResult> {
 
   if (typeof query.minScore === "number") {
     req = req.gte("score", query.minScore);
+  }
+
+  if (query.hasEmail === "yes") {
+    req = req.not("email", "is", null);
+  } else if (query.hasEmail === "no") {
+    req = req.is("email", null);
+  }
+
+  // Phone presence covers either landline (phone) or mobile (mobile).
+  if (query.hasPhone === "yes") {
+    req = req.or("phone.not.is.null,mobile.not.is.null");
+  } else if (query.hasPhone === "no") {
+    req = req.is("phone", null).is("mobile", null);
   }
 
   if (query.q) {

@@ -30,6 +30,12 @@ const MIN_SCORE_OPTIONS = [
   { value: "90", label: "≥ 90" },
 ];
 
+const PRESENCE_OPTIONS = [
+  { value: "", label: "Uansett" },
+  { value: "yes", label: "Has" },
+  { value: "no", label: "Mangler" },
+];
+
 export function LeadsFilters() {
   const router = useRouter();
   const params = useSearchParams();
@@ -101,6 +107,36 @@ export function LeadsFilters() {
           className="flex h-9 w-36 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           {MIN_SCORE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">E-post</Label>
+        <select
+          value={params.get("hasEmail") ?? ""}
+          onChange={(e) => update({ hasEmail: e.target.value || undefined })}
+          className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {PRESENCE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">Telefon</Label>
+        <select
+          value={params.get("hasPhone") ?? ""}
+          onChange={(e) => update({ hasPhone: e.target.value || undefined })}
+          className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {PRESENCE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
