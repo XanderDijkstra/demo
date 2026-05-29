@@ -48,20 +48,21 @@ export const CARPENTER_IMAGES = {
   /** Large split-section project photo. */
   splitProject: EXTERIOR_WORK,
 
-  /** Process timeline. Unsplash house shots so this row reads as
-   *  varied homes rather than four more carpenter close-ups. */
+  /** Process timeline. Carpenter shots so each step shows phase-appropriate
+   *  work (planning → drawing → cutting → finished exterior). */
   process: [
-    HOUSE_GARDEN,   // Konsultasjon
-    HOUSE_INTERIOR, // Planlegging
-    HOUSE_POOL,     // Bygging
-    HOUSE_MODERN,   // Ferdigstillelse
+    PLANNING_TABLET, // Konsultasjon
+    CRAFT_CLOSEUP,   // Planlegging (drawing pencil lines)
+    SAW_WORKSHOP,    // Bygging
+    EXTERIOR_WORK,   // Ferdigstillelse
   ],
 
-  /** 2×2 project gallery. */
+  /** 2×2 project gallery. Unsplash house shots so this reads as a row of
+   *  finished homes rather than four more workshop close-ups. */
   projects: [
-    FRAME_NEW_BUILD,
-    EXTERIOR_WORK,
-    CRAFT_CLOSEUP,
-    SAW_WORKSHOP,
+    HOUSE_GARDEN,
+    HOUSE_INTERIOR,
+    HOUSE_POOL,
+    HOUSE_MODERN,
   ],
 };
