@@ -181,23 +181,33 @@ export async function getOutreachReplyTo(): Promise<string> {
 /**
  * Replace {{placeholders}} in a string.
  *
- * - Known key, value present → substitute the value.
- * - Known key, value null/empty → substitute an empty string. This is the
- *   common case (e.g. {{contact_first_name}} when we never found a contact
- *   on file). Leaving the literal token in place would ship "Hei
- *   {{contact_first_name}}," to the lead, which is what we used to do.
+ * - Known key, value present → substitute the value (spacing preserved).
+ * - Known key, value null/empty → substitute empty AND tidy the spacing
+ *   around the hole so we don't ship "Hei {{contact_first_name}}," as
+ *   "Hei ," — it collapses to "Hei,". The rule: an empty token that sat
+ *   between two words leaves a single space; anywhere else (next to
+ *   punctuation, line start/end) it leaves nothing.
  * - Unknown key → leave the literal {{key}} so the operator notices the typo
  *   in the template. Don't silently swallow it.
+ *
+ * Surrounding horizontal whitespace ([ \t]) is captured so we can rebalance
+ * it; newlines are deliberately NOT captured, so line breaks stay intact.
  */
 export function applyPlaceholders(
   template: string,
   vars: Record<string, string | null>
 ): string {
-  return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key: string) => {
-    if (!(key in vars)) return `{{${key}}}`;
-    const v = vars[key];
-    return v && v.trim() ? v : "";
-  });
+  return template.replace(
+    /([ \t]*)\{\{\s*([a-z_]+)\s*\}\}([ \t]*)/gi,
+    (_, lead: string, key: string, trail: string) => {
+      if (!(key in vars)) return `${lead}{{${key}}}${trail}`;
+      const v = vars[key];
+      if (v && v.trim()) return `${lead}${v}${trail}`;
+      // Empty value: keep a single space only when the token was wedged
+      // between two words (whitespace on both sides); otherwise drop it.
+      return lead && trail ? " " : "";
+    }
+  );
 }
 
 /**
