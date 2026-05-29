@@ -12,12 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getOne1881Config } from "@/lib/enrichment/one1881";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getSetting } from "@/lib/supabase/queries";
 import type { ScrapeRun, ScrapeRunStatus } from "@/lib/supabase/types";
 
 import { CronSettingsForm } from "./_cron-settings-form";
 import { EmailBatchForm } from "./_email-batch-form";
+import { Enrich1881Form } from "./_enrich-1881-form";
 import { RunNowForm } from "./_run-now-form";
 
 // Mirrors the schedule in vercel.json — kept here for display only.
@@ -60,6 +62,7 @@ export default async function QueuePage() {
   ]);
 
   const runs: ScrapeRun[] = data ?? [];
+  const one1881Configured = !!getOne1881Config();
 
   return (
     <>
@@ -99,6 +102,24 @@ export default async function QueuePage() {
           </CardHeader>
           <CardContent>
             <RunNowForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              1881-berikelse (kontaktdata)
+            </CardTitle>
+            <CardDescription>
+              Slår opp leads uten e-post mot 1881 og fyller inn e-post, telefon
+              og kontaktperson når det finnes — også for selskaper uten
+              nettside, som nettside-skraperen ikke når. Fyller kun tomme felt,
+              og re-scorer raden etterpå. Test ett oppslag først for å se hva
+              1881-abonnementet faktisk returnerer.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Enrich1881Form configured={one1881Configured} />
           </CardContent>
         </Card>
 

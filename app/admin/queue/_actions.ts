@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import {
+  getOne1881Config,
+  lookupByOrgNr,
+  type One1881Contact,
+} from "@/lib/enrichment/one1881";
 import { runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
+import { enrich1881Batch } from "@/lib/jobs/enrich-1881-batch";
 import { scrapeEmailsBatch } from "@/lib/jobs/scrape-emails-batch";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -115,4 +121,78 @@ export async function saveBrregCronSettings(
     ok: true,
     message: parsed.data.enabled ? "Cron aktivert" : "Cron pauset",
   };
+}
+
+// ─── 1881 enrichment ──────────────────────────────────────────────────────
+
+export type Test1881Result =
+  | {
+      ok: true;
+      configured: true;
+      contact: One1881Contact;
+      topLevelKeys: string[];
+      foundIn: string[];
+      status: number;
+    }
+  | { ok: false; configured: boolean; error: string };
+
+/**
+ * One-off lookup so the operator can see exactly what 1881 returns for
+ * a real org.nr before running a batch — and so we can calibrate the
+ * field mapping to the actual response shape.
+ */
+export async function testEnrich1881Lookup(
+  formData: FormData
+): Promise<Test1881Result> {
+  const orgNr = String(formData.get("orgnr") ?? "").trim();
+  if (!/^\d{9}$/.test(orgNr)) {
+    return { ok: false, configured: !!getOne1881Config(), error: "Org.nr må være 9 siffer" };
+  }
+  if (!getOne1881Config()) {
+    return {
+      ok: false,
+      configured: false,
+      error: "1881 ikke konfigurert — sett ONE1881_API_KEY i Vercel",
+    };
+  }
+
+  const result = await lookupByOrgNr(orgNr);
+  if (!result.ok) {
+    return { ok: false, configured: true, error: result.error };
+  }
+  return {
+    ok: true,
+    configured: true,
+    contact: result.contact,
+    topLevelKeys: result.topLevelKeys,
+    foundIn: result.foundIn,
+    status: result.status,
+  };
+}
+
+export async function triggerEnrich1881Batch(formData: FormData) {
+  const daysRaw = formData.get("days");
+  const limitRaw = formData.get("limit");
+
+  const daysSince =
+    typeof daysRaw === "string" && /^\d+$/.test(daysRaw)
+      ? Math.max(1, Math.min(30, parseInt(daysRaw, 10)))
+      : 4;
+  const limit =
+    typeof limitRaw === "string" && /^\d+$/.test(limitRaw)
+      ? Math.max(1, Math.min(200, parseInt(limitRaw, 10)))
+      : 50;
+
+  try {
+    const result = await enrich1881Batch({ daysSince, limit });
+    revalidatePath("/admin/queue");
+    revalidatePath("/admin/leads");
+    revalidatePath("/admin");
+    return result;
+  } catch (err) {
+    return {
+      ok: false as const,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
