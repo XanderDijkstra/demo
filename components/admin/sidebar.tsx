@@ -18,6 +18,8 @@ import {
 
 import { cn } from "@/lib/utils";
 
+import { LogoutButton } from "./logout-button";
+
 interface NavItem {
   label: string;
   href: string;
@@ -95,8 +97,9 @@ export function Sidebar({ badges }: { badges?: SidebarBadges }) {
         </ul>
       </nav>
 
-      <div className="border-t p-3 text-[11px] text-muted-foreground">
-        v1 · {new Date().getFullYear()}
+      <div className="flex items-center justify-between gap-2 border-t p-3 text-[11px] text-muted-foreground">
+        <span>v1 · {new Date().getFullYear()}</span>
+        <LogoutButton />
       </div>
     </aside>
   );
