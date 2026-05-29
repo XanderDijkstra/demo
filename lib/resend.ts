@@ -179,16 +179,24 @@ export async function getOutreachReplyTo(): Promise<string> {
 }
 
 /**
- * Replace {{placeholders}} in a string. Unknown keys are left as-is so
- * the operator notices and fixes the template.
+ * Replace {{placeholders}} in a string.
+ *
+ * - Known key, value present → substitute the value.
+ * - Known key, value null/empty → substitute an empty string. This is the
+ *   common case (e.g. {{contact_first_name}} when we never found a contact
+ *   on file). Leaving the literal token in place would ship "Hei
+ *   {{contact_first_name}}," to the lead, which is what we used to do.
+ * - Unknown key → leave the literal {{key}} so the operator notices the typo
+ *   in the template. Don't silently swallow it.
  */
 export function applyPlaceholders(
   template: string,
   vars: Record<string, string | null>
 ): string {
   return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key: string) => {
+    if (!(key in vars)) return `{{${key}}}`;
     const v = vars[key];
-    return v ?? `{{${key}}}`;
+    return v && v.trim() ? v : "";
   });
 }
 
