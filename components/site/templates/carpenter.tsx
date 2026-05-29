@@ -69,7 +69,7 @@ const PILLARS = [
   {
     icon: Wrench,
     title: "Kompromissløst håndverk",
-    body: "Hvert prosjekt holdes til høyeste standard for konstruksjon og arkitektonisk finesse — ingen snarveier, ingen kompromisser.",
+    body: "Hvert prosjekt holdes til høyeste standard for konstruksjon og arkitektonisk finesse, ingen snarveier, ingen kompromisser.",
   },
   {
     icon: ShieldCheck,
@@ -79,7 +79,7 @@ const PILLARS = [
   {
     icon: MessageSquare,
     title: "Åpen kommunikasjon",
-    body: "Du holdes informert og involvert i hvert ledd — fra første befaring til siste sjekk, ingenting forblir usagt.",
+    body: "Du holdes informert og involvert i hvert ledd, fra første befaring til siste sjekk, ingenting forblir usagt.",
   },
 ];
 
@@ -94,7 +94,7 @@ const PROCESS = [
   {
     num: "01",
     title: "Innledende konsultasjon",
-    body: "Vi setter oss ned med deg og forstår behovene, drømmene og budsjettet — uten forpliktelser.",
+    body: "Vi setter oss ned med deg og forstår behovene, drømmene og budsjettet, uten forpliktelser.",
     image: 0,
   },
   {
@@ -112,7 +112,7 @@ const PROCESS = [
   {
     num: "04",
     title: "Ferdigstillelse",
-    body: "Vi går nøye gjennom alt før overlevering — og er der etterpå hvis noe trenger justering.",
+    body: "Vi går nøye gjennom alt før overlevering, og er der etterpå hvis noe trenger justering.",
     image: 3,
   },
 ];
@@ -127,11 +127,11 @@ const PROJECTS = [
 const FAQS = [
   {
     q: "Hvilke områder dekker dere?",
-    a: "Vi tar oppdrag i hele regionen — boliger, hytter og næringsbygg. Ta kontakt så avklarer vi raskt om vi når frem til deg.",
+    a: "Vi tar oppdrag i hele regionen, boliger, hytter og næringsbygg. Ta kontakt så avklarer vi raskt om vi når frem til deg.",
   },
   {
     q: "Hvor lang tid tar et typisk hjemmebygg eller renovering?",
-    a: "Det avhenger av omfang — et bad kan ta 4-6 uker, mens en totalrenovering tar 3-6 måneder. Du får alltid en realistisk tidsplan før vi starter.",
+    a: "Det avhenger av omfang, et bad kan ta 4-6 uker, mens en totalrenovering tar 3-6 måneder. Du får alltid en realistisk tidsplan før vi starter.",
   },
   {
     q: "Kan dere lage endringer underveis i et oppdrag?",
@@ -143,7 +143,7 @@ const FAQS = [
   },
   {
     q: "Jobber dere sammen med eksterne arkitekter eller designere?",
-    a: "Absolutt — vi samarbeider gjerne med din arkitekt eller interiørdesigner, eller leverer egen prosjektering hvis du foretrekker det.",
+    a: "Absolutt, vi samarbeider gjerne med din arkitekt eller interiørdesigner, eller leverer egen prosjektering hvis du foretrekker det.",
   },
 ];
 
@@ -177,7 +177,7 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
   const headline = content.hero_headline ?? `Bygger din visjon, skaper varige rom`;
   const subheadline =
     content.hero_subheadline ??
-    `Fra skreddersydde nybygg til kjøkken- og badrenoveringer — ${company.name} kombinerer 20+ år med pålitelig håndverk og ærlig prosjektledelse i hvert eneste hjem vi tar i.`;
+    `Fra skreddersydde nybygg til kjøkken- og badrenoveringer, ${company.name} kombinerer 20+ år med pålitelig håndverk og ærlig prosjektledelse i hvert eneste hjem vi tar i.`;
   const about =
     content.about_paragraph ??
     `${company.name} er en familieeid snekkerbedrift med over 20 års erfaring i regionen. Vi tar personlig hånd om hvert prosjekt, med ærlige priser, nitid fokus på detaljer og en stødig prosess fra første konsultasjon til siste finish.`;
@@ -356,7 +356,7 @@ function Hero({
       </div>
 
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:gap-14 lg:py-32">
-        {/* Left — copy */}
+        {/* Left, copy */}
         <div className="space-y-7 text-white">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
@@ -428,7 +428,7 @@ function Hero({
           </div>
         </div>
 
-        {/* Right — embedded contact panel */}
+        {/* Right, embedded contact panel */}
         <div className="lg:pl-2">
           <HeroForm />
         </div>
@@ -470,7 +470,7 @@ function HeroForm() {
       <Field label="Kort melding om prosjektet *">
         <textarea
           rows={4}
-          placeholder="Fortell oss litt om planene dine — så kommer vi tilbake til deg samme dag."
+          placeholder="Fortell oss litt om planene dine, så kommer vi tilbake til deg samme dag."
           className="w-full resize-none rounded-md border border-black/10 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-700 focus:outline-none"
         />
       </Field>
@@ -589,7 +589,7 @@ function About({
           <div className="mt-8 space-y-6">
             <Subblock
               title={`Tillit fra ${company.kommune ?? "lokale"} huseiere`}
-              body="Vårt omdømme er bygget på tiår med ærlig, pålitelig service og den typen tillit som bare kommer av å levere det vi lover — gang etter gang."
+              body="Vårt omdømme er bygget på tiår med ærlig, pålitelig service og den typen tillit som bare kommer av å levere det vi lover, gang etter gang."
             />
             <Subblock
               title="Visjonen din, ekspertgjennomført"
@@ -699,7 +699,7 @@ function DreamHome() {
   return (
     <section className="relative" style={{ background: CREAM }}>
       {/* Split: photo left, dark panel right. The centered headline + stats
-          banner that used to sit above this was dropped — stats already
+          banner that used to sit above this was dropped, stats already
           live in the hero, and the headline repeated below in the dark
           panel. */}
       <div className="grid lg:grid-cols-2">
@@ -769,12 +769,12 @@ function Process() {
       <div className="mx-auto max-w-6xl px-6">
         <div className="mb-12">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Innledende{" "}
+            Vår{" "}
             <span
               style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
               className="font-medium"
             >
-              konsultasjon
+              prosess
             </span>
           </h2>
         </div>
@@ -835,7 +835,7 @@ function Testimonials({ company }: { company: Props["company"] }) {
           </div>
           <p className="mt-4 text-[15px] leading-relaxed text-slate-800">
             «{company.name} leverte langt over forventning. Hele teamet var
-            ordentlige, presise og åpne om priser hele veien — en av få
+            ordentlige, presise og åpne om priser hele veien, en av få
             entreprenører jeg faktisk ville anbefale videre.»
           </p>
           <div className="mt-5 flex items-center gap-3">
@@ -1026,7 +1026,7 @@ function FinalCta({
           </h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80">
             La oss ta praten. Vi gir deg et åpent prisestimat, en realistisk
-            tidsplan og en stødig prosess fra første dag — uten forpliktelser.
+            tidsplan og en stødig prosess fra første dag, uten forpliktelser.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <a
