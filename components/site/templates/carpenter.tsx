@@ -189,8 +189,11 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
         background: CREAM,
         // Editorial italic serif on every "swash" headline. Loaded
         // self-contained so the template doesn't need next/font wiring.
+        // Fraunces italic for the editorial swash accent — more
+        // character than Cormorant, variable optical sizing scales
+        // beautifully at hero/headline size.
         ["--site-serif" as string]:
-          '"Cormorant Garamond", "Playfair Display", Georgia, serif',
+          'Fraunces, "Cormorant Garamond", "Playfair Display", Georgia, serif',
         ["--site-sans" as string]:
           'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
         ["--site-navy" as string]: NAVY,
@@ -210,7 +213,7 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
         crossOrigin="anonymous"
       />
       <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600;1,9..144,700&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
 
@@ -324,8 +327,10 @@ function Hero({
   subheadline: string;
 }) {
   const splitWords = headline.trim().split(/\s+/);
-  // Italicise the middle ~third of the headline for the editorial mix.
-  // Falls back gracefully on short headlines.
+  // Italicise a chunk of the headline for the editorial mix. Long
+  // headlines get a middle-third italic; short 2–3-word headlines get
+  // just the LAST word italicised (which still lands the swash accent
+  // without leaving the sentence flat).
   let leading = headline;
   let italic = "";
   let trailing = "";
@@ -335,6 +340,10 @@ function Hero({
     leading = splitWords.slice(0, start).join(" ") + " ";
     italic = splitWords.slice(start, end).join(" ");
     trailing = " " + splitWords.slice(end).join(" ");
+  } else if (splitWords.length >= 2) {
+    leading = splitWords.slice(0, -1).join(" ") + " ";
+    italic = splitWords[splitWords.length - 1] ?? "";
+    trailing = "";
   }
 
   return (
