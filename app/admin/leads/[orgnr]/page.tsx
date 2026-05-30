@@ -46,6 +46,7 @@ import { formatCompanyName } from "@/lib/utils";
 import { ContactNameEditor } from "./_contact-name-editor";
 import { DealSection } from "./_deal-section";
 import { EmailEditor } from "./_email-editor";
+import { LeadThreads } from "./_lead-threads";
 import { ProposalButton } from "./_proposal-button";
 import { ReplyToggle } from "./_reply-toggle";
 import { SendEmailButton } from "./_send-email-button";
@@ -418,7 +419,16 @@ export default async function LeadDetailPage({
           </CardContent>
         </Card>
 
-        {/* Outreach history */}
+        {/* Email threads — full message timeline + inline reply.
+            Replaces the need to jump to /admin/inbox for this lead. */}
+        <LeadThreads
+          orgNr={lead.org_nr}
+          email={lead.email}
+          hasDemoSite={!!siteRes.data}
+        />
+
+        {/* Outreach history — short log of every send (status + delivery
+            metadata). The full message bodies live in <LeadThreads> above. */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Email sent</CardTitle>
