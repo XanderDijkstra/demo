@@ -259,7 +259,7 @@ function TopBar({
   phoneDisplay: string | null;
 }) {
   return (
-    <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6 sm:pt-4">
+    <div className="fixed left-0 right-0 top-0 z-30 px-4 pt-3 sm:px-6 sm:pt-4">
       <header className="mx-auto flex max-w-6xl items-center gap-4 rounded-xl border border-black/5 bg-white/95 px-5 py-3 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] backdrop-blur">
         <a href="#hjem" className="flex items-center gap-2.5 shrink-0">
           <span
@@ -519,10 +519,10 @@ function Field({
 function Pillars() {
   return (
     <section
-      className="py-14 sm:py-16"
+      className="py-9 sm:py-11"
       style={{ background: SAND }}
     >
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 sm:grid-cols-3 sm:gap-12">
+      <div className="mx-auto grid max-w-6xl gap-7 px-6 sm:grid-cols-3 sm:gap-10">
         {PILLARS.map((p, i) => (
           <div
             key={p.title}
@@ -531,16 +531,16 @@ function Pillars() {
               (i > 0 ? " sm:border-l sm:border-black/15" : "")
             }
           >
-            <div className="mx-auto mb-4 inline-flex h-11 w-11 items-center justify-center rounded-md text-white">
+            <div className="mx-auto mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-md text-white">
               <span
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md"
                 style={{ background: NAVY_DARK }}
               >
-                <p.icon className="h-5 w-5" />
+                <p.icon className="h-4 w-4" />
               </span>
             </div>
-            <h3 className="text-base font-semibold text-slate-900">{p.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-700">
+            <h3 className="text-[15px] font-semibold text-slate-900">{p.title}</h3>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-700">
               {p.body}
             </p>
           </div>
