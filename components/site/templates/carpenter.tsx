@@ -260,7 +260,7 @@ function TopBar({
 }) {
   return (
     <div className="fixed left-0 right-0 top-0 z-30 px-4 pt-3 sm:px-6 sm:pt-4">
-      <header className="mx-auto flex max-w-6xl items-center gap-4 rounded-xl border border-black/5 bg-white/95 px-5 py-3 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] backdrop-blur">
+      <header className="mx-auto flex max-w-7xl items-center gap-4 rounded-xl border border-black/5 bg-white/95 px-5 py-3 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] backdrop-blur">
         <a href="#hjem" className="flex items-center gap-2.5 shrink-0">
           <span
             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-white font-bold text-sm shadow-sm"
@@ -355,7 +355,7 @@ function Hero({
         />
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:gap-14 lg:py-32">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:gap-14 lg:py-32">
         {/* Left, copy */}
         <div className="space-y-7 text-white">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur">
@@ -522,7 +522,7 @@ function Pillars() {
       className="py-9 sm:py-11"
       style={{ background: SAND }}
     >
-      <div className="mx-auto grid max-w-6xl gap-7 px-6 sm:grid-cols-3 sm:gap-10">
+      <div className="mx-auto grid max-w-7xl gap-7 px-6 sm:grid-cols-3 sm:gap-10">
         {PILLARS.map((p, i) => (
           <div
             key={p.title}
@@ -561,7 +561,7 @@ function About({
 }) {
   return (
     <section id="om-oss" className="py-20 sm:py-24" style={{ background: CREAM }}>
-      <div className="mx-auto grid max-w-6xl items-start gap-10 px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
+      <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
         <div className="overflow-hidden rounded-xl shadow-[0_24px_60px_-30px_rgba(0,0,0,0.45)]">
           <img
             src={CARPENTER_IMAGES.about}
@@ -631,7 +631,7 @@ function Services({ niche }: { niche: NicheConfig }) {
 
   return (
     <section id="tjenester" className="py-20 sm:py-24" style={{ background: CREAM }}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6">
         <h2 className="text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
           Slik{" "}
           <span
@@ -766,7 +766,7 @@ function DreamHome() {
 function Process() {
   return (
     <section className="py-20 sm:py-24" style={{ background: CREAM }}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             Vår{" "}
@@ -868,7 +868,7 @@ function Testimonials({ company }: { company: Props["company"] }) {
 function Projects() {
   return (
     <section id="prosjekter" className="py-20 sm:py-24" style={{ background: CREAM }}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             Våre bygge{" "}
@@ -919,7 +919,7 @@ function Projects() {
 function FAQ() {
   return (
     <section className="py-20 sm:py-24" style={{ background: CREAM }}>
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6">
         <h2 className="text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Ofte stilte{" "}
           <span
@@ -1086,7 +1086,7 @@ function Footer({
 
   return (
     <footer className="py-12" style={{ background: "#1a1b1f", color: "white" }}>
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl gap-8 px-6 sm:grid-cols-3">
         <div>
           <div className="flex items-center gap-2.5">
             <span
@@ -1155,7 +1155,7 @@ function Footer({
         </div>
       </div>
 
-      <div className="mx-auto mt-10 max-w-6xl border-t border-white/10 px-6 pt-6 text-[11px] text-white/45 flex flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 px-6 pt-6 text-[11px] text-white/45 flex flex-wrap items-center justify-between gap-3">
         <span>
           © {new Date().getFullYear()} {company.name}. Alle rettigheter
           reservert.
