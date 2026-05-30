@@ -42,9 +42,11 @@ const TEMPLATES: Array<{
     body: [
       "Hei{{contact_first_name}},",
       "",
-      "Topp at du vil ta en titt. Jeg har bygget en demoside spesifikt for {{company_name}} — den finner du her: {{site_url}}",
+      "Topp at du vil ta en titt. Jeg har bygget en demoside spesifikt for {{company_name}}, den finner du her: {{site_url}}",
       "",
-      "Si gjerne ifra om det er noe jeg bør justere (farger, bilder, tekst, alt er fleksibelt). Hvis du synes den treffer, kan vi sette den live på eget domene etterpå.",
+      "Dette er kun en kjapp demo med én side, så du får se hvordan stilen kan fungere. Hvis det treffer, fullfører vi resten av nettsiden og setter den live på eget domene.",
+      "",
+      "Si gjerne ifra hva du tenker, og om det er noe jeg bør justere (farger, bilder, tekst, alt er fleksibelt).",
       "",
       "Mvh,",
       "Xander",
