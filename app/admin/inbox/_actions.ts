@@ -9,6 +9,7 @@ import {
   touchThread,
 } from "@/lib/email/threads";
 import { sendEmail } from "@/lib/email/provider";
+import { publicSiteUrl } from "@/lib/jobs/generate-site";
 import {
   applyPlaceholders,
   getOutreachFromAddress,
@@ -134,6 +135,17 @@ export async function replyToThread(
     .filter((v): v is string => !!v);
   const lastMessageId = priorIds[priorIds.length - 1] ?? null;
 
+  // Look up whether a demo site is published for this lead so
+  // {{site_url}} actually resolves in templates like "Send demoside".
+  // Before this fix the URL was hardcoded as "", which silently dropped
+  // the placeholder (and any trailing punctuation looked broken in the
+  // delivered email).
+  const { data: siteRow } = await supabase
+    .from("generated_sites")
+    .select("org_nr")
+    .eq("org_nr", lead.org_nr)
+    .maybeSingle();
+
   // Placeholders match the lead-detail send modal.
   const firstName = lead.contact_name?.trim().split(/\s+/)[0] ?? null;
   const placeholders = {
@@ -141,7 +153,7 @@ export async function replyToThread(
     kommune: lead.kommune,
     region: fylkeFromKommuneNr(lead.kommune_nr),
     org_nr: lead.org_nr,
-    site_url: "",
+    site_url: siteRow ? publicSiteUrl(lead.org_nr) : "",
     contact_name: lead.contact_name,
     contact_first_name: firstName,
   };
