@@ -2,6 +2,7 @@ import "server-only";
 
 import { ensureDealForReply } from "@/lib/deals";
 import { cancelPendingEnrollments } from "@/lib/flows-enroll";
+import { notifyInboundReply } from "@/lib/notifications/telegram";
 import {
   parseThreadAddress,
   resolveInboundThread,
@@ -9,6 +10,7 @@ import {
 import { fetchEmailBody } from "@/lib/resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { EmailAttachment } from "@/lib/supabase/types";
+import { formatCompanyName } from "@/lib/utils";
 
 /**
  * Resend inbound email payload (the subset we actually consume).
@@ -297,6 +299,7 @@ export async function handleInboundEmail(
   // the lead's status so they show up as engaged in the leads list /
   // dashboard. We never DEMOTE — already qualified / rejected leads
   // keep their status unchanged.
+  let companyName: string | null = null;
   if (orgNr) {
     // Reply = hard stop: pull this lead out of any pending automated
     // follow-ups so a flow nudge can't land in a live conversation.
@@ -304,9 +307,10 @@ export async function handleInboundEmail(
     await ensureDealForReply(orgNr);
     const { data: company } = await supabase
       .from("companies")
-      .select("status")
+      .select("name, status")
       .eq("org_nr", orgNr)
       .maybeSingle();
+    companyName = company?.name ? formatCompanyName(company.name) : null;
     if (company?.status === "new" || company?.status === "reviewed") {
       await supabase
         .from("companies")
@@ -324,6 +328,17 @@ export async function handleInboundEmail(
       });
     }
   }
+
+  // Telegram ping (fire-and-forget). Only fires when the bot is
+  // configured; otherwise this is a no-op and won't slow anything down.
+  await notifyInboundReply({
+    fromName: from.name ?? null,
+    fromEmail: from.email,
+    companyName,
+    orgNr,
+    subject,
+    preview: (text ?? "").split(/\n\s*\n/)[0]?.trim() ?? null,
+  });
 
   await supabase.from("audit_log").insert({
     actor: "system",
