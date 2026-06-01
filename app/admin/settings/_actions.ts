@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { notifyInboundReply } from "@/lib/notifications/telegram";
 import { scoreCompanyInsert } from "@/lib/scoring";
 import { getFreepikConfig, searchStock } from "@/lib/stock/freepik";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -432,4 +433,40 @@ export async function rescoreAllLeads(): Promise<
   revalidatePath("/admin");
 
   return { ok: true, count: updated, message: `${updated} leads rescoret` };
+}
+
+// ─── Telegram smoke-test ─────────────────────────────────────────────────────
+
+/**
+ * Fires a test Telegram DM using the SAME notifyInboundReply path the
+ * inbound webhook uses, so a successful ping here means a real lead
+ * reply would arrive identically. Fail-soft inside notifyInboundReply,
+ * so we explicitly verify env presence here for the toast.
+ */
+export async function sendTelegramTest(): Promise<ActionResult> {
+  const tokenOk = !!process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const chatOk = !!process.env.TELEGRAM_CHAT_ID?.trim();
+  if (!tokenOk || !chatOk) {
+    return {
+      ok: false,
+      error: `Mangler env: ${[
+        !tokenOk && "TELEGRAM_BOT_TOKEN",
+        !chatOk && "TELEGRAM_CHAT_ID",
+      ]
+        .filter(Boolean)
+        .join(" + ")}`,
+    };
+  }
+
+  await notifyInboundReply({
+    fromName: "Test Testesen",
+    fromEmail: "test@example.no",
+    companyName: "Test Bedrift AS",
+    orgNr: "999999999",
+    subject: "Telegram smoke-test",
+    preview:
+      "Hvis du leser denne meldingen i Telegram så virker varslingen. Ekte lead-svar lander identisk.",
+  });
+
+  return { ok: true, message: "Testmelding sendt — sjekk Telegram" };
 }

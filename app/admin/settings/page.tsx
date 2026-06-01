@@ -35,6 +35,7 @@ import { ModelForm } from "./_model-form";
 import { StockForm } from "./_stock-form";
 import { RescoreButton } from "./_rescore-button";
 import { SuppressionManager } from "./_suppression-form";
+import { TelegramTestButton } from "./_telegram-test-button";
 import { WeightsForm } from "./_weights-form";
 
 export const dynamic = "force-dynamic";
@@ -188,6 +189,22 @@ export default async function SettingsPage() {
               initialFrom={fromAddress}
               initialReplyTo={replyTo}
             />
+          </CardContent>
+        </Card>
+
+        {/* Telegram-varsling */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Telegram-varsling</CardTitle>
+            <CardDescription>
+              Sender en DM når en lead svarer på e-post. Token + chat-ID
+              settes i Vercel-miljøvariablene
+              (<code className="font-mono">TELEGRAM_BOT_TOKEN</code>,{" "}
+              <code className="font-mono">TELEGRAM_CHAT_ID</code>).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TelegramTestButton />
           </CardContent>
         </Card>
 
