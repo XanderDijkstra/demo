@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { fetchKanban } from "@/lib/deals";
 
+import { AddLeadDialog } from "./_add-lead-dialog";
 import { KanbanBoard } from "./_kanban-board";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function CrmPage() {
       <Topbar
         title="CRM"
         description="Active conversations — from first reply to closed deal"
+        actions={<AddLeadDialog />}
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">

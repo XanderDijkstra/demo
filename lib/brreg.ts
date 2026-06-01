@@ -135,6 +135,31 @@ export async function fetchEnheterRegisteredBetween(
   return enheter;
 }
 
+/**
+ * Fetch a single enheter by org.nr. Used by the manual "Add lead to
+ * CRM" flow, where the operator types an org.nr that isn't yet in the
+ * local DB. Returns null on 404 (org.nr not in Brreg).
+ */
+export async function fetchEnhetByOrgNr(
+  orgNr: string
+): Promise<BrregEnhet | null> {
+  const url = `${BRREG_BASE_URL}/enheter/${encodeURIComponent(orgNr)}`;
+  const res = await fetch(url, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (res.status === 404 || res.status === 410) return null;
+  if (!res.ok) {
+    throw new Error(`Brreg HTTP ${res.status} for orgnr ${orgNr}`);
+  }
+  const json = await res.json();
+  const parsed = EnhetSchema.safeParse(json);
+  if (!parsed.success) {
+    throw new Error(`Uventet Brreg-format for ${orgNr}`);
+  }
+  return parsed.data;
+}
+
 // ─── Mapping ─────────────────────────────────────────────────────────────────
 
 function pickAddressLine(addr?: BrregEnhet["forretningsadresse"]): string | null {
