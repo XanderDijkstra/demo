@@ -141,7 +141,7 @@ export async function addLeadToCrm(
     }
   } else {
     // Company already exists — fill missing email / contactName only.
-    const patch: Record<string, string> = {};
+    const patch: { email?: string; contact_name?: string } = {};
     if (email && !existingCompany.email) patch.email = email;
     if (contactName && !existingCompany.contact_name)
       patch.contact_name = contactName;
