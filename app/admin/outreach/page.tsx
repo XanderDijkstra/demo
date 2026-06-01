@@ -6,22 +6,26 @@ import { loadCampaignConfig } from "@/lib/outreach/campaign";
 import { cn } from "@/lib/utils";
 
 import { CampaignTab } from "./_campaign-tab";
+import { CandidatesTab } from "./_candidates-tab";
 import { LogTab } from "./_log-tab";
 import { parseWindow, StatsTab, WINDOW_OPTIONS } from "./_stats-tab";
 
 export const dynamic = "force-dynamic";
 
-type TabId = "campaign" | "log" | "stats";
+type TabId = "campaign" | "candidates" | "log" | "stats";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "campaign", label: "Campaign" },
+  { id: "candidates", label: "Kandidater" },
   { id: "log", label: "Log" },
   { id: "stats", label: "Stats" },
 ];
 
 function parseTab(value: string | string[] | undefined): TabId {
   const v = Array.isArray(value) ? value[0] : value;
-  return v === "log" || v === "stats" || v === "campaign" ? v : "campaign";
+  return v === "log" || v === "stats" || v === "candidates" || v === "campaign"
+    ? v
+    : "campaign";
 }
 
 interface RouteProps {
@@ -41,9 +45,11 @@ export default async function OutreachPage({ searchParams }: RouteProps) {
         description={
           tab === "campaign"
             ? "Daily campaign — filter who gets emailed and tweak the template"
-            : tab === "log"
-              ? "See exactly which leads got an email today, yesterday, all of it"
-              : "Send / delivery / open / click / reply analytics"
+            : tab === "candidates"
+              ? "Hvem cron-en vil sende til ved neste run, og hvilke filtre kutter resten"
+              : tab === "log"
+                ? "See exactly which leads got an email today, yesterday, all of it"
+                : "Send / delivery / open / click / reply analytics"
         }
         actions={
           <div className="flex items-center gap-2">
@@ -108,6 +114,12 @@ export default async function OutreachPage({ searchParams }: RouteProps) {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-7xl">
             <CampaignTab initial={config} />
+          </div>
+        </div>
+      ) : tab === "candidates" ? (
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mx-auto max-w-7xl">
+            <CandidatesTab />
           </div>
         </div>
       ) : tab === "log" ? (

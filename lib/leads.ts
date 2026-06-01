@@ -14,6 +14,10 @@ export interface LeadsQuery {
   minScore?: number;
   hasEmail?: PresenceFilter;
   hasPhone?: PresenceFilter;
+  /** ISO yyyy-MM-dd — filters companies.registered_at ≥ this date. */
+  dateFrom?: string;
+  /** ISO yyyy-MM-dd — filters companies.registered_at ≤ this date. */
+  dateTo?: string;
   sort: LeadsSort;
   page: number;
   pageSize: number;
@@ -64,6 +68,12 @@ export function parseLeadsQuery(
     return v === "yes" || v === "no" ? v : undefined;
   }
 
+  function pickDate(key: string): string | undefined {
+    const v = pickString(key);
+    if (!v) return undefined;
+    return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined;
+  }
+
   return {
     tab,
     q,
@@ -71,6 +81,8 @@ export function parseLeadsQuery(
     minScore,
     hasEmail: pickPresence("hasEmail"),
     hasPhone: pickPresence("hasPhone"),
+    dateFrom: pickDate("dateFrom"),
+    dateTo: pickDate("dateTo"),
     sort,
     page,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -113,6 +125,16 @@ export async function fetchLeads(query: LeadsQuery): Promise<LeadsResult> {
     req = req.or("phone.not.is.null,mobile.not.is.null");
   } else if (query.hasPhone === "no") {
     req = req.is("phone", null).is("mobile", null);
+  }
+
+  // Explicit registered-at date range (overrides the "week" tab default
+  // when present so the operator can scope to e.g. "last 30 days" or a
+  // single calendar day).
+  if (query.dateFrom) {
+    req = req.gte("registered_at", query.dateFrom);
+  }
+  if (query.dateTo) {
+    req = req.lte("registered_at", query.dateTo);
   }
 
   if (query.q) {

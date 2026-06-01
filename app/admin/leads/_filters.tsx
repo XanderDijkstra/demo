@@ -145,6 +145,32 @@ export function LeadsFilters() {
       </div>
 
       <div className="space-y-1.5">
+        <Label htmlFor="leads-date-from" className="text-xs">
+          Registrert fra
+        </Label>
+        <Input
+          id="leads-date-from"
+          type="date"
+          value={params.get("dateFrom") ?? ""}
+          onChange={(e) => update({ dateFrom: e.target.value || undefined })}
+          className="w-40 tabular-nums"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="leads-date-to" className="text-xs">
+          Registrert til
+        </Label>
+        <Input
+          id="leads-date-to"
+          type="date"
+          value={params.get("dateTo") ?? ""}
+          onChange={(e) => update({ dateTo: e.target.value || undefined })}
+          className="w-40 tabular-nums"
+        />
+      </div>
+
+      <div className="space-y-1.5">
         <Label className="text-xs">Sortering</Label>
         <select
           value={params.get("sort") ?? "score"}
