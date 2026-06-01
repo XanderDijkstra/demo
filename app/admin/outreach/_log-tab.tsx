@@ -111,15 +111,23 @@ export async function LogTab() {
                         <StatusCell row={row} />
                       </td>
                       <td className="px-4 py-2.5 align-middle">
-                        <Link
-                          href={`/admin/leads/${row.org_nr}` as never}
-                          className="font-medium hover:underline"
-                        >
-                          {nameByOrg.get(row.org_nr) ?? row.org_nr}
-                        </Link>
-                        <div className="font-mono text-[11px] text-muted-foreground">
-                          {row.org_nr}
-                        </div>
+                        {row.org_nr ? (
+                          <>
+                            <Link
+                              href={`/admin/leads/${row.org_nr}` as never}
+                              className="font-medium hover:underline"
+                            >
+                              {nameByOrg.get(row.org_nr) ?? row.org_nr}
+                            </Link>
+                            <div className="font-mono text-[11px] text-muted-foreground">
+                              {row.org_nr}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground italic">
+                            Ulinket tråd
+                          </span>
+                        )}
                       </td>
                       <td
                         className="max-w-md truncate px-4 py-2.5 align-middle"

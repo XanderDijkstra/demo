@@ -138,7 +138,7 @@ export async function POST(request: Request) {
 
   // Find the matching row by Postmark's MessageID (we store it in
   // resend_id since that column is the provider-id catch-all).
-  let row: { id: string; org_nr: string; to_email: string } | null = null;
+  let row: { id: string; org_nr: string | null; to_email: string } | null = null;
   if (messageId) {
     const { data } = await supabase
       .from("outreach_emails")

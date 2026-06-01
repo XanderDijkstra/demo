@@ -189,6 +189,9 @@ async function processNoReplyFlow(
       continue;
     }
 
+    // Orphaned outbound with no company link — nothing to follow up on,
+    // skip silently (logRun also no-ops on null org_nr).
+    if (!original.org_nr) continue;
     const lead = await loadLead(supabase, original.org_nr);
     if (!lead?.email) {
       await logRun(supabase, flow.id, original, "skipped_no_email");
@@ -225,12 +228,18 @@ async function processNoReplyFlow(
 async function logRun(
   supabase: Supa,
   flowId: string,
-  original: { org_nr: string; thread_id: string | null; id: string },
+  original: { org_nr: string | null; thread_id: string | null; id: string },
   status: string,
   followUpEmailId: string | null = null,
   errorMessage: string | null = null
 ): Promise<void> {
   if (!original.thread_id) return;
+  // flow_runs.org_nr is NOT NULL by design (every flow run targets a
+  // specific company). Skip logging when an upstream candidate has no
+  // org_nr — this can only happen for orphaned threads, which no_reply
+  // candidates can't be anyway (they're filtered to outbound rows tied
+  // to a company).
+  if (!original.org_nr) return;
   await supabase.from("flow_runs").upsert(
     {
       flow_id: flowId,

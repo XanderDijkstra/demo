@@ -163,7 +163,7 @@ export async function POST(request: Request) {
 
   // Find the matching outreach row by Resend's id. Test events or
   // domain/contact events have no email_id → just no-op gracefully.
-  let row: { id: string; org_nr: string; to_email: string } | null = null;
+  let row: { id: string; org_nr: string | null; to_email: string } | null = null;
   if (emailId) {
     const { data } = await supabase
       .from("outreach_emails")

@@ -177,6 +177,9 @@ export async function fetchOutreachStats(
     { sent: number; opened: number; clicked: number; replied: number }
   >();
   for (const r of rows) {
+    // Skip orphaned rows (unlinked threads) — they have no lead to
+    // aggregate stats against.
+    if (!r.org_nr) continue;
     const slot = perLead.get(r.org_nr) ?? {
       sent: 0,
       opened: 0,
