@@ -129,12 +129,15 @@ export async function fetchLeads(query: LeadsQuery): Promise<LeadsResult> {
 
   // Explicit registered-at date range (overrides the "week" tab default
   // when present so the operator can scope to e.g. "last 30 days" or a
-  // single calendar day).
+  // single calendar day). dateTo is treated as inclusive — bumped to
+  // exclusive-next-midnight so timestamp columns include the full day.
   if (query.dateFrom) {
     req = req.gte("registered_at", query.dateFrom);
   }
   if (query.dateTo) {
-    req = req.lte("registered_at", query.dateTo);
+    const next = new Date(`${query.dateTo}T00:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    req = req.lt("registered_at", next.toISOString().slice(0, 10));
   }
 
   if (query.q) {

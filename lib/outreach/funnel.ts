@@ -46,30 +46,32 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
     .eq("status", "new");
   const newCount = newRes.count ?? 0;
 
-  // Stage 2: + has email.
-  const withEmailRes = await supabase
-    .from("companies")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new")
-    .not("email", "is", null);
-  const withEmailCount = withEmailRes.count ?? 0;
-
-  // Stage 3: + score ≥ minScore.
+  // Stage 2: + score ≥ minScore. Score before email so the operator
+  // sees "there are X high-score leads → BUT only Y have an email"
+  // instead of the misleading reverse.
   const scoredRes = await supabase
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
-    .not("email", "is", null)
     .gte("score", config.minScore);
   const scoredCount = scoredRes.count ?? 0;
+
+  // Stage 3: + has email.
+  const withEmailRes = await supabase
+    .from("companies")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "new")
+    .gte("score", config.minScore)
+    .not("email", "is", null);
+  const withEmailCount = withEmailRes.count ?? 0;
 
   // Stage 4: + allowed org form.
   let formReq = supabase
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
-    .not("email", "is", null)
-    .gte("score", config.minScore);
+    .gte("score", config.minScore)
+    .not("email", "is", null);
   if (config.allowedOrgForms.length > 0) {
     formReq = formReq.in("org_form", config.allowedOrgForms);
   }
@@ -82,8 +84,8 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
     .from("companies")
     .select("*")
     .eq("status", "new")
-    .not("email", "is", null)
     .gte("score", config.minScore)
+    .not("email", "is", null)
     .order("score", { ascending: false })
     .order("registered_at", { ascending: false, nullsFirst: false });
   if (config.allowedOrgForms.length > 0) {
@@ -116,12 +118,12 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
     stages: [
       { key: "total", label: "Alle leads i DB", count: totalLeads },
       { key: "new", label: "Status «ny»", count: newCount },
-      { key: "email", label: "Med e-post", count: withEmailCount },
       {
         key: "score",
         label: `Score ≥ ${config.minScore}`,
         count: scoredCount,
       },
+      { key: "email", label: "Med e-post", count: withEmailCount },
       {
         key: "orgform",
         label:
