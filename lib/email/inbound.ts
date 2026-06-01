@@ -231,7 +231,10 @@ export async function handleInboundEmail(
   const now = new Date().toISOString();
 
   const { error: insertError } = await supabase.from("outreach_emails").insert({
-    org_nr: orgNr ?? "",
+    // null when the inbound can't be tied to a company (orphaned
+    // thread, manual test, or company row was deleted after the
+    // outbound). Used to be "" which fired the FK constraint.
+    org_nr: orgNr ?? null,
     direction: "in",
     thread_id: finalThreadId,
     to_email: toAddresses[0] ?? "",

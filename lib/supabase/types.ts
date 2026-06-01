@@ -444,7 +444,10 @@ export type Database = {
       outreach_emails: {
         Row: {
           id: string;
-          org_nr: string;
+          // Nullable: inbound replies on threads without a matching
+          // company row (orphaned / unlinked threads) land here with
+          // org_nr = null.
+          org_nr: string | null;
           to_email: string;
           from_email: string;
           subject: string;
@@ -478,7 +481,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          org_nr: string;
+          org_nr?: string | null;
           to_email: string;
           from_email: string;
           subject: string;
@@ -512,7 +515,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          org_nr?: string;
+          org_nr?: string | null;
           to_email?: string;
           from_email?: string;
           subject?: string;
