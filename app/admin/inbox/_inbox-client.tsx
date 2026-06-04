@@ -348,12 +348,6 @@ function ThreadView({
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-6">
-        {messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No messages yet.</p>
-        ) : (
-          messages.map((m) => <MessageCard key={m.id} message={m} />)
-        )}
-
         {lead?.email ? (
           <ReplyComposer
             threadId={thread.id}
@@ -371,6 +365,12 @@ function ThreadView({
               ? "Add an email address on the lead to reply from here."
               : "Link this thread to a lead to reply."}
           </div>
+        )}
+
+        {messages.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No messages yet.</p>
+        ) : (
+          messages.map((m) => <MessageCard key={m.id} message={m} />)
         )}
       </div>
 
