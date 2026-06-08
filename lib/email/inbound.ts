@@ -203,11 +203,13 @@ export async function handleInboundEmail(
     orgNr = company?.org_nr ?? null;
   }
 
-  // If we have a lead but no thread, open one now so future replies
-  // group under it. Without a lead → save anyway with thread_id=null
-  // so the message lands in the "Unknown" bucket.
+  // If we have no matching thread, open one now — even when no lead
+  // could be matched. Without this the message gets thread_id=null,
+  // and the inbox (which queries email_threads) never shows it. An
+  // unlinked thread (org_nr=null) still surfaces in the inbox as
+  // "Unknown sender" so the operator can read it and link manually.
   let finalThreadId = threadId;
-  if (!finalThreadId && orgNr) {
+  if (!finalThreadId) {
     const { data: newThread } = await supabase
       .from("email_threads")
       .insert({
