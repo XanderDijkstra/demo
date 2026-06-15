@@ -348,24 +348,31 @@ function ThreadView({
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-6">
-        {lead?.email ? (
-          <ReplyComposer
-            threadId={thread.id}
-            orgNr={lead.org_nr}
-            to={lead.email}
-            lastMessageId={messages[messages.length - 1]?.message_id ?? null}
-            referencesChain={messages
-              .map((m) => m.message_id)
-              .filter((v): v is string => !!v)}
-            subject={thread.subject ?? ""}
-          />
-        ) : (
-          <div className="rounded-lg border border-dashed bg-card p-4 text-sm text-muted-foreground">
-            {lead
-              ? "Add an email address on the lead to reply from here."
-              : "Link this thread to a lead to reply."}
-          </div>
-        )}
+        {(() => {
+          // Pick the recipient: lead's email when linked, otherwise the
+          // most recent inbound sender so unlinked threads can still be
+          // answered. The server action re-derives this for safety.
+          const lastInboundFrom = [...messages]
+            .reverse()
+            .find((m) => m.direction === "in")?.from_email;
+          const to = lead?.email ?? lastInboundFrom ?? null;
+          return to ? (
+            <ReplyComposer
+              threadId={thread.id}
+              orgNr={lead?.org_nr ?? ""}
+              to={to}
+              lastMessageId={messages[messages.length - 1]?.message_id ?? null}
+              referencesChain={messages
+                .map((m) => m.message_id)
+                .filter((v): v is string => !!v)}
+              subject={thread.subject ?? ""}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed bg-card p-4 text-sm text-muted-foreground">
+              Ingen avsender funnet å svare til.
+            </div>
+          );
+        })()}
 
         {messages.length === 0 ? (
           <p className="text-sm text-muted-foreground">No messages yet.</p>

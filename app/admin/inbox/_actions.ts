@@ -80,7 +80,7 @@ export async function replyToThread(
 
   const supabase = getSupabaseAdmin();
 
-  // Load thread + lead.
+  // Load thread.
   const { data: thread, error: threadError } = await supabase
     .from("email_threads")
     .select("id, org_nr")
@@ -88,13 +88,103 @@ export async function replyToThread(
     .maybeSingle();
   if (threadError) return { ok: false, error: threadError.message };
   if (!thread) return { ok: false, error: "Thread not found" };
+
+  // Build send config first — common to linked + unlinked replies.
+  const [fromAddress, replyTo, inboundDomain, priorRes] = await Promise.all([
+    getOutreachFromAddress(),
+    getOutreachReplyTo(),
+    getInboundDomain(),
+    supabase
+      .from("outreach_emails")
+      .select("message_id, from_email, direction, created_at")
+      .eq("thread_id", threadId)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const priorMessages = priorRes.data ?? [];
+  const priorIds = priorMessages
+    .map((m) => m.message_id)
+    .filter((v): v is string => !!v);
+  const lastMessageId = priorIds[priorIds.length - 1] ?? null;
+  const messageId = makeMessageId(inboundDomain);
+
+  // ── Unlinked thread: send straight to the most recent inbound sender,
+  //    skip lead/placeholder logic entirely. ──────────────────────────
   if (!thread.org_nr) {
-    return {
-      ok: false,
-      error: "Thread is unlinked — link it to a lead to reply",
-    };
+    const lastInbound = [...priorMessages]
+      .reverse()
+      .find((m) => m.direction === "in" && m.from_email);
+    if (!lastInbound?.from_email) {
+      return {
+        ok: false,
+        error: "Ingen avsender å svare til på denne tråden",
+      };
+    }
+    const toAddr = lastInbound.from_email;
+
+    const sup = await isSuppressed(toAddr);
+    if (sup.suppressed) {
+      return { ok: false, error: `Adressen er suppressed (${sup.reason})` };
+    }
+
+    // Placeholders resolve to empty for unlinked replies — lead context
+    // isn't available. Raw subject + body get sent as-is.
+    const subject = applyPlaceholders(parsed.data.subject, {});
+    const body = applyPlaceholders(parsed.data.body, {});
+
+    const { data: row, error: insertError } = await supabase
+      .from("outreach_emails")
+      .insert({
+        org_nr: null,
+        to_email: toAddr,
+        from_email: fromAddress,
+        subject,
+        body,
+        status: "queued",
+        direction: "out",
+        thread_id: threadId,
+        message_id: messageId,
+        in_reply_to: lastMessageId,
+        references_chain: priorIds.length > 0 ? priorIds : null,
+      })
+      .select()
+      .single();
+    if (insertError || !row) {
+      return { ok: false, error: insertError?.message ?? "Could not log send" };
+    }
+
+    const result = await sendEmail({
+      to: toAddr,
+      from: fromAddress,
+      subject,
+      body,
+      replyTo,
+      messageId,
+      inReplyTo: lastMessageId ?? undefined,
+      references: priorIds.length > 0 ? priorIds : undefined,
+    });
+
+    if (result.ok) {
+      await supabase
+        .from("outreach_emails")
+        .update({
+          status: "sent",
+          resend_id: result.resendId ?? null,
+          sent_at: new Date().toISOString(),
+        })
+        .eq("id", row.id);
+      await touchThread({ threadId });
+      revalidatePath("/admin/inbox");
+      return { ok: true, id: row.id };
+    }
+    await supabase
+      .from("outreach_emails")
+      .update({ status: "failed", error_message: result.error ?? null })
+      .eq("id", row.id);
+    return { ok: false, error: result.error ?? "Send failed" };
   }
 
+  // ── Linked thread: full lead-aware path. ────────────────────────────
   const { data: lead, error: leadError } = await supabase
     .from("companies")
     .select("org_nr, name, email, kommune, kommune_nr, contact_name")
@@ -113,27 +203,6 @@ export async function replyToThread(
       error: `Address is suppressed (${sup.reason})`,
     };
   }
-
-  // Build send config. Reply-To is the operator-configured address;
-  // threading rides on the RFC 5322 Message-ID + In-Reply-To +
-  // References headers, with a sender-email fallback on the inbound
-  // side. `inboundDomain` is only used to fingerprint Message-IDs.
-  const [fromAddress, replyTo, inboundDomain, priorRes] = await Promise.all([
-    getOutreachFromAddress(),
-    getOutreachReplyTo(),
-    getInboundDomain(),
-    supabase
-      .from("outreach_emails")
-      .select("message_id, created_at")
-      .eq("thread_id", threadId)
-      .order("created_at", { ascending: true }),
-  ]);
-
-  const messageId = makeMessageId(inboundDomain);
-  const priorIds = (priorRes.data ?? [])
-    .map((m) => m.message_id)
-    .filter((v): v is string => !!v);
-  const lastMessageId = priorIds[priorIds.length - 1] ?? null;
 
   // Look up whether a demo site is published for this lead so
   // {{site_url}} actually resolves in templates like "Send demoside".
