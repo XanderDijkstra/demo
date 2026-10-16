@@ -26,7 +26,7 @@ const FlowSchema = z
     (v) =>
       v.trigger_type !== "stage_entered" ||
       (v.trigger_stage && VALID_STAGES.includes(v.trigger_stage)),
-    { message: "Velg en gyldig CRM-stage for trigger", path: ["trigger_stage"] }
+    { message: "Velg en gyldig CRM-fase som utløser", path: ["trigger_stage"] }
   );
 
 function parseForm(formData: FormData) {
@@ -67,7 +67,7 @@ export async function createFlow(formData: FormData): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/flows");
-  return { ok: true, message: "Flow opprettet" };
+  return { ok: true, message: "Flyt opprettet" };
 }
 
 export async function updateFlow(
@@ -100,7 +100,7 @@ export async function updateFlow(
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/flows");
-  return { ok: true, message: "Flow lagret" };
+  return { ok: true, message: "Flyt lagret" };
 }
 
 export async function toggleFlow(
@@ -117,7 +117,7 @@ export async function toggleFlow(
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/flows");
-  return { ok: true, message: enabled ? "Flow aktivert" : "Flow pauset" };
+  return { ok: true, message: enabled ? "Flyt aktivert" : "Flyt pauset" };
 }
 
 export async function deleteFlow(id: string): Promise<ActionResult> {
@@ -128,7 +128,7 @@ export async function deleteFlow(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/flows");
-  return { ok: true, message: "Flow slettet" };
+  return { ok: true, message: "Flyt slettet" };
 }
 
 export async function runFlowsNow(): Promise<

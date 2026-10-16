@@ -21,7 +21,7 @@ function delayLabel(hours: number): string {
 }
 
 function stageLabel(value: string | null): string {
-  return DEAL_STAGES.find((s) => s.value === value)?.label ?? value ?? "stage";
+  return DEAL_STAGES.find((s) => s.value === value)?.label ?? value ?? "fase";
 }
 
 /** Strip placeholders + collapse whitespace so the preview reads cleanly. */
@@ -72,7 +72,7 @@ export function FlowCanvas({ flow }: FlowCanvasProps) {
                   )}
                 </span>
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Trigger
+                  Utløser
                 </span>
               </div>
               {isStage ? (
@@ -98,7 +98,7 @@ export function FlowCanvas({ flow }: FlowCanvasProps) {
                     <span className="font-medium text-foreground">
                       {delayLabel(flow.delay_hours)}
                     </span>{" "}
-                    uten reply
+                    uten svar
                   </div>
                 </div>
               )}

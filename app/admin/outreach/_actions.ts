@@ -48,7 +48,7 @@ export async function saveCampaignConfig(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Invalid input",
+      error: parsed.error.issues[0]?.message ?? "Ugyldig input",
     };
   }
 
@@ -92,7 +92,7 @@ export async function saveCampaignConfig(
   });
 
   revalidatePath("/admin/outreach");
-  return { ok: true, message: "Campaign saved" };
+  return { ok: true, message: "Kampanjen er lagret" };
 }
 
 export async function runCampaignNow(): Promise<
@@ -108,7 +108,7 @@ export async function runCampaignNow(): Promise<
   revalidatePath("/admin/outreach");
   return {
     ok: true,
-    message: `Sent ${result.sent} of ${result.candidates} candidates`,
+    message: `Sendte ${result.sent} av ${result.candidates} kandidater`,
     data: {
       candidates: result.candidates,
       sent: result.sent,

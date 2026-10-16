@@ -55,7 +55,7 @@ export async function StatsTab({
 
   const funnel = [
     {
-      label: "Sent",
+      label: "Sendt",
       count: kpis.sent,
       pct: 100,
       color: "bg-primary",
@@ -79,7 +79,7 @@ export async function StatsTab({
       color: "bg-primary/55",
     },
     {
-      label: "Replied",
+      label: "Svart",
       count: kpis.replied,
       pct: pct(kpis.replied, kpis.sent),
       color: "bg-emerald-500",
@@ -93,7 +93,7 @@ export async function StatsTab({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={Send}
-            label="Sent"
+            label="Sendt"
             value={kpis.sent}
             hint={`Siste ${windowDays} dager`}
             trend={sentTrend}
@@ -102,21 +102,21 @@ export async function StatsTab({
             icon={Mail}
             label="Leveringsrate"
             value={`${pct(kpis.delivered, kpis.sent)}%`}
-            hint={`${kpis.delivered} av ${kpis.sent} delivered`}
+            hint={`${kpis.delivered} av ${kpis.sent} levert`}
             trend={deliveredTrend}
           />
           <StatCard
             icon={Eye}
             label="Åpnings­rate"
             value={`${pct(kpis.opened, kpis.delivered)}%`}
-            hint={`${kpis.opened} av ${kpis.delivered} opened`}
+            hint={`${kpis.opened} av ${kpis.delivered} åpnet`}
             trend={openedTrend}
           />
           <StatCard
             icon={Reply}
-            label="Reply rate"
+            label="Svarrate"
             value={`${pct(kpis.replied, kpis.sent)}%`}
-            hint={`${kpis.replied} replied`}
+            hint={`${kpis.replied} svart`}
             trend={repliedTrend}
           />
         </div>
@@ -136,8 +136,8 @@ export async function StatsTab({
               {stats.daily.every((d) => d.sent === 0 && d.replied === 0) ? (
                 <EmptyState
                   icon={Inbox}
-                  title="No emails sent in this period"
-                  description="Send from a lead detail page to see activity here."
+                  title="Ingen e-poster sendt i perioden"
+                  description="Send fra en lead-side for å se aktivitet her."
                 />
               ) : (
                 <OutreachDailyChart data={stats.daily} />
@@ -152,7 +152,7 @@ export async function StatsTab({
                 Konverterings­trakt
               </CardTitle>
               <CardDescription>
-                From utsent til svar — {windowDays} dager
+                Fra sendt til svar — {windowDays} dager
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -199,7 +199,7 @@ export async function StatsTab({
               />
               <HealthRow
                 icon={ShieldOff}
-                label="Spam-complaint"
+                label="Spamklage"
                 count={kpis.complained}
                 ofTotal={kpis.sent}
                 tone={kpis.complained > 0 ? "warn" : "ok"}
@@ -213,7 +213,7 @@ export async function StatsTab({
               />
               <HealthRow
                 icon={Inbox}
-                label="Failed (ikke sent)"
+                label="Feilet (ikke sendt)"
                 count={kpis.failed}
                 ofTotal={kpis.sent + kpis.failed}
                 tone={kpis.failed > 0 ? "warn" : "ok"}
@@ -223,9 +223,9 @@ export async function StatsTab({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Suppression list</CardTitle>
+              <CardTitle className="text-base">Sperreliste</CardTitle>
               <CardDescription>
-                Addressr som ikke kan kontaktes
+                Adresser som ikke kan kontaktes
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -239,12 +239,12 @@ export async function StatsTab({
                   tone="destructive"
                 />
                 <SuppressionPill
-                  label="complaint"
+                  label="klage"
                   count={stats.suppressions.byReason.complained}
                   tone="destructive"
                 />
                 <SuppressionPill
-                  label="manual"
+                  label="manuell"
                   count={stats.suppressions.byReason.manual}
                 />
                 <SuppressionPill
@@ -256,7 +256,7 @@ export async function StatsTab({
                 href="/admin/settings"
                 className="mt-4 inline-flex text-xs text-primary hover:underline"
               >
-                Administrer i Settings →
+                Administrer i Innstillinger →
               </Link>
             </CardContent>
           </Card>
@@ -267,7 +267,7 @@ export async function StatsTab({
           <CardHeader>
             <CardTitle className="text-base">Mest engasjerte leads</CardTitle>
             <CardDescription>
-              Top 8 — ranked by reply × 5 + click × 2 + open
+              Topp 8 — rangert etter svar × 5 + klikk × 2 + åpning
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -275,8 +275,8 @@ export async function StatsTab({
               <div className="p-6">
                 <EmptyState
                   icon={Inbox}
-                  title="No activity yet"
-                  description="When leads open or reply, they show up here."
+                  title="Ingen aktivitet enda"
+                  description="Når leads åpner eller svarer, dukker de opp her."
                 />
               </div>
             ) : (
@@ -284,14 +284,14 @@ export async function StatsTab({
                 <table className="w-full text-sm">
                   <thead className="bg-muted/40 text-muted-foreground">
                     <tr className="text-left">
-                      <th className="px-4 py-2 font-medium">Company</th>
-                      <th className="px-4 py-2 font-medium text-right">Sent</th>
+                      <th className="px-4 py-2 font-medium">Bedrift</th>
+                      <th className="px-4 py-2 font-medium text-right">Sendt</th>
                       <th className="px-4 py-2 font-medium text-right">Åpnet</th>
                       <th className="px-4 py-2 font-medium text-right">
                         Klikket
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Replied
+                        Svart
                       </th>
                     </tr>
                   </thead>
@@ -343,15 +343,15 @@ export async function StatsTab({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Siste 20 utsendelser</CardTitle>
-            <CardDescription>All perioder</CardDescription>
+            <CardDescription>Alle perioder</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {stats.recent.length === 0 ? (
               <div className="p-6">
                 <EmptyState
                   icon={Mail}
-                  title="No emails sent yet"
-                  description="Send from a lead detail page to get started."
+                  title="Ingen e-poster sendt enda"
+                  description="Send fra en lead-side for å komme i gang."
                 />
               </div>
             ) : (
@@ -391,7 +391,7 @@ export async function StatsTab({
                               : "outline"
                       }
                     >
-                      {entry.replied_at ? "replied" : entry.status}
+                      {entry.replied_at ? "svart" : entry.status}
                     </Badge>
                   </li>
                 ))}

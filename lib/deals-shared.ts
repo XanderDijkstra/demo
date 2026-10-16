@@ -14,35 +14,35 @@ export const DEAL_STAGES: ReadonlyArray<{
 }> = [
   {
     value: "replied",
-    label: "Lead",
-    description: "Lead har svart — automatisk inn i CRM",
+    label: "Svart",
+    description: "Leadet har svart — lagt inn i CRM automatisk",
     toneClass:
       "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
   },
   {
     value: "in_conversation",
-    label: "In conversation",
-    description: "Active dialog pågyears",
+    label: "I dialog",
+    description: "Samtale pågår",
     toneClass: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-300",
   },
   {
     value: "proposal_sent",
-    label: "Proposal sent",
-    description: "Proposal delivered, awaiting response",
+    label: "Tilbud sendt",
+    description: "Tilbud levert, venter på svar",
     toneClass:
       "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-300",
   },
   {
     value: "won",
-    label: "Won",
-    description: "Deal closed",
+    label: "Vunnet",
+    description: "Avtale inngått",
     toneClass:
       "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
   },
   {
     value: "lost",
-    label: "Lost",
-    description: "Deal lost",
+    label: "Tapt",
+    description: "Avtalen ble ikke noe av",
     toneClass: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-300",
   },
 ];

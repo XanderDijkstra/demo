@@ -43,7 +43,7 @@ export function StockForm({ configured }: { configured: boolean }) {
       {!configured ? (
         <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
           <code className="font-mono">FREEPIK_API_KEY</code> er ikke satt. Legg
-          inn API-nøkkelen fra Freepik/Magnific i Vercel-miljøvariablene.
+          inn API-nøkkelen fra Freepik/Magnific som Cloudflare-secret (npx wrangler secret put).
           (Valgfritt: <code className="font-mono">FREEPIK_BASE_URL</code>,{" "}
           <code className="font-mono">FREEPIK_API_HEADER</code> — Magnific bruker{" "}
           <code className="font-mono">x-magnific-api-key</code>.)

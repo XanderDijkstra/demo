@@ -127,7 +127,7 @@ export function ProposalButton({
           <DialogHeader>
             <DialogTitle>Generer tilbud for {companyName}</DialogTitle>
             <DialogDescription>
-              Select tjeneste og pris — leveranser fylles fra mal og kan
+              Velg tjeneste og pris — leveranser fylles fra mal og kan
               redigeres i en neste runde.
             </DialogDescription>
           </DialogHeader>
@@ -169,13 +169,13 @@ export function ProposalButton({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="contact" className="text-xs">
-                  Contact person
+                  Kontaktperson
                 </Label>
                 <Input
                   id="contact"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  placeholder="First Last"
+                  placeholder="Fornavn Etternavn"
                   disabled={pending}
                 />
               </div>
@@ -184,7 +184,7 @@ export function ProposalButton({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="date" className="text-xs">
-                  Tobudsdato
+                  Tilbudsdato
                 </Label>
                 <Input
                   id="date"
@@ -238,7 +238,7 @@ export function ProposalButton({
             {isAdsService ? (
               <div className="space-y-1.5">
                 <Label htmlFor="adbudget" className="text-xs">
-                  Anbefalt annonsebudsjett (optional)
+                  Anbefalt annonsebudsjett (valgfritt)
                 </Label>
                 <Input
                   id="adbudget"
@@ -258,7 +258,7 @@ export function ProposalButton({
               onClick={() => setOpen(false)}
               disabled={pending}
             >
-              Cancel
+              Avbryt
             </Button>
             <Button type="submit" disabled={pending}>
               {pending ? <Loader2 className="animate-spin" /> : <FileText />}

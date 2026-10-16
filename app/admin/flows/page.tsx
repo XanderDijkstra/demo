@@ -36,7 +36,7 @@ interface ActivityRow {
 const STATUS_LABEL: Record<string, string> = {
   sent: "Sendt",
   skipped_replied: "Svarte",
-  skipped_suppressed: "Suppressed",
+  skipped_suppressed: "Blokkert",
   skipped_no_email: "Ingen e-post",
   failed: "Feilet",
   pending: "Planlagt",
@@ -134,7 +134,7 @@ export default async function FlowsPage() {
   return (
     <>
       <Topbar
-        title="Flows"
+        title="Oppfølging"
         description="Automatiske oppfølginger — ved manglende svar eller når en lead flyttes i CRM"
         actions={
           <div className="flex items-center gap-2">
@@ -148,8 +148,8 @@ export default async function FlowsPage() {
         {flows.length === 0 ? (
           <EmptyState
             icon={Workflow}
-            title="Ingen flows enda"
-            description="Lag en flow som sender en påminnelse til leads som ikke har svart."
+            title="Ingen flyter enda"
+            description="Lag en flyt som sender en påminnelse til leads som ikke har svart."
           />
         ) : (
           <div className="grid gap-4">
@@ -197,7 +197,7 @@ export default async function FlowsPage() {
           <CardHeader>
             <CardTitle className="text-base">Aktivitet</CardTitle>
             <CardDescription>
-              {runRows.length} siste hendelser fra alle flows
+              {runRows.length} siste hendelser fra alle flyter
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -206,7 +206,7 @@ export default async function FlowsPage() {
                 <EmptyState
                   icon={Mail}
                   title="Ingen aktivitet enda"
-                  description="Når en flow sender eller hopper over en lead, vises det her."
+                  description="Når en flyt sender eller hopper over en lead, vises det her."
                 />
               </div>
             ) : (
@@ -216,7 +216,7 @@ export default async function FlowsPage() {
                     <tr className="text-left">
                       <th className="px-4 py-2 font-medium">Status</th>
                       <th className="px-4 py-2 font-medium">Bedrift</th>
-                      <th className="px-4 py-2 font-medium">Flow</th>
+                      <th className="px-4 py-2 font-medium">Flyt</th>
                       <th className="px-4 py-2 font-medium">Når</th>
                     </tr>
                   </thead>

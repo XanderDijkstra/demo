@@ -42,7 +42,7 @@ export function FlowToggle({
 export function DeleteFlowButton({ id }: { id: string }) {
   const [pending, startTransition] = useTransition();
   function onClick() {
-    if (!confirm("Slette denne flowen? Loggen beholdes ikke.")) return;
+    if (!confirm("Slette denne flyten? Loggen beholdes ikke.")) return;
     startTransition(async () => {
       const r = await deleteFlow(id);
       if (r.ok) toast.success(r.message ?? "Slettet");

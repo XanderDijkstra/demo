@@ -62,7 +62,7 @@ export interface ProposalData {
   client_name: string;
   client_contact: string;
   proposal_date: string; // Norwegian-formatted, e.g. "12. mai 2026"
-  proposal_title: string; // e.g. "Nettside Tobud"
+  proposal_title: string; // e.g. "Nettside Tilbud"
   eyebrow: string;
   /** Hero supports inline orange word via {{accent}}…{{/accent}} markers. */
   hero: string;

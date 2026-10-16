@@ -39,13 +39,13 @@ function lintSubject(value: string): string[] {
   const w: string[] = [];
   // Mobile mail apps truncate around 40-50 chars; >78 starts to get spam-scored.
   if (value.length > 50) {
-    w.push(`${value.length} characters — gets truncated on mobile around 50`);
+    w.push(`${value.length} tegn — kuttes på mobil rundt 50`);
   }
   if (value.length > 78) {
-    w.push("Very long subjects get spam-scored — aim for under 60");
+    w.push("Veldig lange emner gir spamscore — hold deg under 60");
   }
   if (/[!?]{2,}/.test(value) || /\?{2,}/.test(value)) {
-    w.push("Repeated punctuation (??!!) reads as spammy");
+    w.push("Gjentatt tegnsetting (??!!) virker spammy");
   }
   // Words rendered ALL CAPS (excluding placeholders + acronyms ≤ 3 chars).
   const stripped = value.replace(/\{\{[^}]+\}\}/g, "");
@@ -53,7 +53,7 @@ function lintSubject(value: string): string[] {
     .split(/\s+/)
     .filter((w) => w.length >= 4 && w === w.toUpperCase() && /[A-ZÆØÅ]/.test(w));
   if (upperWords.length > 0) {
-    w.push(`ALL-CAPS word: "${upperWords[0]}" — looks shouty`);
+    w.push(`Ord i STORE BOKSTAVER: "${upperWords[0]}" — virker masete`);
   }
   return w;
 }
@@ -64,18 +64,18 @@ function lintBody(value: string): string[] {
   // unsubscribe URL doesn't count — it's added at send time.
   const links = value.match(/https?:\/\/\S+/g) ?? [];
   if (links.length > 2) {
-    w.push(`${links.length} links — 1-2 max for cold outreach`);
+    w.push(`${links.length} lenker — maks 1–2 i kalde e-poster`);
   }
   // Sentence-case the {{company_name}} placeholder if the operator
   // typed it all caps in their template (rare but possible).
   if (/\b(GUARANTEE|FREE!|CLICK HERE|ACT NOW|LIMITED TIME)\b/i.test(value)) {
-    w.push("Trigger phrase detected (FREE / GUARANTEE / CLICK HERE)");
+    w.push("Spamord funnet (FREE / GUARANTEE / CLICK HERE)");
   }
   if (value.length < 80) {
-    w.push("Very short body — recipients may flag as suspicious");
+    w.push("Veldig kort tekst — mottakere kan oppfatte den som mistenkelig");
   }
   if (value.length > 1500) {
-    w.push("Long body — cold outreach above 1500 chars rarely converts");
+    w.push("Lang tekst — kalde e-poster over 1500 tegn konverterer sjelden");
   }
   return w;
 }
@@ -106,7 +106,7 @@ export function CampaignTab({ initial }: Props) {
     const fd = new FormData(e.currentTarget);
     startSave(async () => {
       const result = await saveCampaignConfig(fd);
-      if (result.ok) toast.success(result.message ?? "Saved");
+      if (result.ok) toast.success(result.message ?? "Lagret");
       else toast.error(result.error);
     });
   }
@@ -124,14 +124,14 @@ export function CampaignTab({ initial }: Props) {
 
   function onRunNow() {
     if (!confirm(
-      `Send the campaign now to up to ${maxPerDay} matching leads?`
+      `Sende kampanjen nå til opptil ${maxPerDay} leads som matcher?`
     )) {
       return;
     }
     startRun(async () => {
       const result = await runCampaignNow();
       if (result.ok) {
-        toast.success(result.message ?? "Sent");
+        toast.success(result.message ?? "Sendt");
       } else {
         toast.error(result.error);
       }
@@ -144,10 +144,10 @@ export function CampaignTab({ initial }: Props) {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-base">Daily outreach</CardTitle>
+              <CardTitle className="text-base">Daglig utsendelse</CardTitle>
               <CardDescription>
-                Runs automatically at 08:00 UTC. Set the filters + email below,
-                save, then preview the count before turning it on.
+                Kjører automatisk kl. 08:00 UTC. Sett filtre og e-post under,
+                lagre, og sjekk antall treff før du slår den på.
               </CardDescription>
             </div>
             <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
@@ -159,7 +159,7 @@ export function CampaignTab({ initial }: Props) {
                 className="h-4 w-4 cursor-pointer rounded border-input"
               />
               <span className="font-medium">
-                {enabled ? "Enabled" : "Disabled"}
+                {enabled ? "På" : "Av"}
               </span>
             </label>
           </div>
@@ -169,17 +169,17 @@ export function CampaignTab({ initial }: Props) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Who gets emailed</CardTitle>
+            <CardTitle className="text-base">Hvem får e-post</CardTitle>
             <CardDescription>
-              Filters applied on top of status = &apos;new&apos;. Already-emailed
-              leads are skipped automatically.
+              Filtrene gjelder i tillegg til status = &apos;new&apos;. Leads som
+              allerede har fått e-post hoppes over automatisk.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="min_score" className="text-xs">
-                  Min score
+                  Min. score
                 </Label>
                 <Input
                   id="min_score"
@@ -193,7 +193,7 @@ export function CampaignTab({ initial }: Props) {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="max_per_day" className="text-xs">
-                  Max sends / day
+                  Maks utsendelser / dag
                 </Label>
                 <Input
                   id="max_per_day"
@@ -208,7 +208,7 @@ export function CampaignTab({ initial }: Props) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="allowed_org_forms" className="text-xs">
-                Allowed org forms
+                Tillatte org.former
               </Label>
               <textarea
                 id="allowed_org_forms"
@@ -220,7 +220,7 @@ export function CampaignTab({ initial }: Props) {
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none font-mono"
               />
               <p className="text-[11px] text-muted-foreground">
-                One code per line. Leave empty to allow all org forms.
+                Én kode per linje. La stå tomt for å tillate alle org.former.
               </p>
             </div>
             <div className="space-y-1.5">
@@ -228,7 +228,7 @@ export function CampaignTab({ initial }: Props) {
                 htmlFor="excluded_nace_prefixes"
                 className="text-xs"
               >
-                Excluded NACE prefixes
+                Ekskluderte NACE-prefikser
               </Label>
               <textarea
                 id="excluded_nace_prefixes"
@@ -240,8 +240,8 @@ export function CampaignTab({ initial }: Props) {
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none font-mono"
               />
               <p className="text-[11px] text-muted-foreground">
-                Skip any lead whose NACE code starts with these. Useful for
-                agriculture (01.), forestry (02.), public admin (84.) etc.
+                Hopper over leads der NACE-koden starter med disse. Nyttig for
+                jordbruk (01.), skogbruk (02.), offentlig forvaltning (84.) osv.
               </p>
             </div>
           </CardContent>
@@ -249,15 +249,15 @@ export function CampaignTab({ initial }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Email content</CardTitle>
+            <CardTitle className="text-base">E-postinnhold</CardTitle>
             <CardDescription>
-              Placeholders are replaced per lead at send time.
+              Plassholdere fylles inn per lead ved utsendelse.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="subject" className="text-xs">
-                Subject
+                Emne
               </Label>
               <Input
                 id="subject"
@@ -270,7 +270,7 @@ export function CampaignTab({ initial }: Props) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="body" className="text-xs">
-                Body
+                Innhold
               </Label>
               <textarea
                 id="body"
@@ -308,18 +308,18 @@ export function CampaignTab({ initial }: Props) {
                 disabled={previewPending}
               >
                 {previewPending ? <Loader2 className="animate-spin" /> : <Search />}
-                Preview matches
+                Forhåndsvis treff
               </Button>
               {previewCount !== null ? (
                 <span className="text-muted-foreground">
                   <span className="font-medium tabular-nums text-foreground">
                     {previewCount}
                   </span>{" "}
-                  lead{previewCount === 1 ? "" : "s"} match — capped at{" "}
+                  {previewCount === 1 ? "lead" : "leads"} matcher — maks{" "}
                   <span className="font-medium tabular-nums text-foreground">
                     {maxPerDay}
                   </span>
-                  /day
+                  /dag
                 </span>
               ) : null}
             </div>
@@ -331,11 +331,11 @@ export function CampaignTab({ initial }: Props) {
                 disabled={runPending}
               >
                 {runPending ? <Loader2 className="animate-spin" /> : <Play />}
-                Run now
+                Kjør nå
               </Button>
               <Button type="submit" disabled={savePending}>
                 {savePending ? <Loader2 className="animate-spin" /> : <Save />}
-                Save
+                Lagre
               </Button>
             </div>
           </CardContent>

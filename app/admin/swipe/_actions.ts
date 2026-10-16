@@ -19,7 +19,7 @@ async function setStatus(
   status: CompanyStatus,
   action: string
 ): Promise<ActionResult> {
-  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
+  if (!isValidOrgNr(orgNr)) return { ok: false, error: "Ugyldig org.nr" };
 
   const db = getDb();
   const { error } = await db
@@ -66,7 +66,7 @@ export async function swipeToCrm(orgNr: string): Promise<ActionResult> {
     return {
       ok: false,
       error:
-        "Qualified, men kunne ikke opprette deal (kanskje finnes en aktiv allerede)",
+        "Kvalifisert, men kunne ikke opprette avtale (kanskje finnes en aktiv allerede)",
     };
   }
 

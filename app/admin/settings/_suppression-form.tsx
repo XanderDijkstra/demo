@@ -20,8 +20,8 @@ interface Props {
 
 const REASON_LABEL: Record<OutreachSuppression["reason"], string> = {
   bounced: "bounce",
-  complained: "complaint",
-  manual: "manual",
+  complained: "klage",
+  manual: "manuell",
   unsubscribed: "avmeldt",
 };
 
@@ -49,7 +49,7 @@ export function SuppressionManager({ suppressions }: Props) {
   function handleRemove(email: string) {
     startTransition(async () => {
       const result = await removeSuppression(email);
-      if (result.ok) toast.success(result.message ?? "Removeet");
+      if (result.ok) toast.success(result.message ?? "Fjernet");
       else toast.error(result.error);
     });
   }
@@ -83,14 +83,14 @@ export function SuppressionManager({ suppressions }: Props) {
         </div>
         <Button type="submit" size="sm" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Plus />}
-          Suppress
+          Blokker
         </Button>
       </form>
 
       {suppressions.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No addresses in the suppression list. Bounces and complaints
-          from Resend are added automatically via webhook.
+          Ingen adresser i sperrelisten. Bounces og klager fra Resend
+          legges til automatisk via webhook.
         </p>
       ) : (
         <ul className="divide-y rounded-md border">
@@ -127,8 +127,8 @@ export function SuppressionManager({ suppressions }: Props) {
                 onClick={() => handleRemove(s.email)}
                 disabled={pending}
                 className="text-muted-foreground hover:text-destructive p-1"
-                aria-label="Remove"
-                title="Remove fra suppression list"
+                aria-label="Fjern"
+                title="Fjern fra sperrelisten"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

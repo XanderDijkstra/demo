@@ -22,7 +22,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
   function onSubmitFrom(formData: FormData) {
     startFromTransition(async () => {
       const result = await saveOutreachFromAddress(formData);
-      if (result.ok) toast.success(result.message ?? "Saved");
+      if (result.ok) toast.success(result.message ?? "Lagret");
       else toast.error(result.error);
     });
   }
@@ -30,7 +30,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
   function onSubmitReplyTo(formData: FormData) {
     startReplyToTransition(async () => {
       const result = await saveOutreachReplyTo(formData);
-      if (result.ok) toast.success(result.message ?? "Saved");
+      if (result.ok) toast.success(result.message ?? "Lagret");
       else toast.error(result.error);
     });
   }
@@ -57,7 +57,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
         </div>
         <Button type="submit" disabled={pendingFrom}>
           {pendingFrom ? <Loader2 className="animate-spin" /> : <Save />}
-          Save
+          Lagre
         </Button>
       </form>
 
@@ -67,7 +67,7 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
       >
         <div className="space-y-1.5 flex-1 min-w-72">
           <Label htmlFor="outreach-reply-to" className="text-xs">
-            Reply-To
+            Svar til
           </Label>
           <Input
             id="outreach-reply-to"
@@ -78,13 +78,13 @@ export function OutreachFromForm({ initialFrom, initialReplyTo }: Props) {
             disabled={pendingReplyTo}
           />
           <p className="text-[11px] text-muted-foreground">
-            Address that receives replies when a recipient responds.
+            Adressen som får svarene når en mottaker svarer.
             Should be a real, monitored inbox.
           </p>
         </div>
         <Button type="submit" disabled={pendingReplyTo}>
           {pendingReplyTo ? <Loader2 className="animate-spin" /> : <Save />}
-          Save
+          Lagre
         </Button>
       </form>
     </div>

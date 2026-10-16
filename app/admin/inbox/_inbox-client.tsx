@@ -25,6 +25,7 @@ import { cn, formatCompanyName } from "@/lib/utils";
 import { markThreadRead } from "./_actions";
 import { ReplyComposer } from "./_reply-composer";
 import { EmailHtml } from "@/components/admin/email-html";
+import { nb } from "date-fns/locale";
 
 export type ViewId = "inbox" | "sent" | "all";
 
@@ -163,16 +164,16 @@ export function InboxClient({
               </div>
               <div className="text-sm font-medium">
                 {view === "inbox"
-                  ? "Inbox is empty"
+                  ? "Innboksen er tom"
                   : view === "sent"
-                    ? "Nothing sent yet"
-                    : "No threads"}
+                    ? "Ingenting sendt enda"
+                    : "Ingen tråder"}
               </div>
               <p className="text-xs text-muted-foreground">
                 {view === "inbox"
-                  ? "Lead replies show up here."
+                  ? "Svar fra leads dukker opp her."
                   : view === "sent"
-                    ? "Outbound emails group into threads."
+                    ? "Utgående e-poster samles i tråder."
                     : null}
               </p>
             </div>
@@ -223,7 +224,7 @@ function EmptyPane() {
     <div className="flex flex-1 items-center justify-center p-12 text-center">
       <div className="space-y-2 text-muted-foreground">
         <MessageSquare className="mx-auto h-8 w-8 opacity-60" />
-        <p className="text-sm">Pick a thread on the left.</p>
+        <p className="text-sm">Velg en tråd til venstre.</p>
       </div>
     </div>
   );
@@ -269,13 +270,13 @@ function ThreadListItem({
                   : "font-medium text-foreground/90"
               )}
             >
-              {thread.company_name ?? thread.last_from ?? "Unknown sender"}
+              {thread.company_name ?? thread.last_from ?? "Ukjent avsender"}
             </span>
             <span
               className="shrink-0 text-[10px] text-muted-foreground"
               title={thread.last_activity_at}
             >
-              {formatDistanceToNow(new Date(thread.last_activity_at), {
+              {formatDistanceToNow(new Date(thread.last_activity_at), { locale: nb,
                 addSuffix: true,
               })}
             </span>
@@ -291,7 +292,7 @@ function ThreadListItem({
             ) : thread.last_direction === "out" ? (
               <Send className="h-3 w-3 shrink-0" />
             ) : null}
-            <span className="truncate">{thread.subject ?? "(no subject)"}</span>
+            <span className="truncate">{thread.subject ?? "(uten emne)"}</span>
           </div>
           {thread.preview ? (
             <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
@@ -326,7 +327,7 @@ function ThreadView({
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-lg font-semibold leading-tight">
-              {thread.subject ?? "(no subject)"}
+              {thread.subject ?? "(uten emne)"}
             </h2>
             {lead ? (
               <Link
@@ -338,12 +339,12 @@ function ThreadView({
               </Link>
             ) : (
               <span className="text-xs text-muted-foreground">
-                Unlinked thread
+                Tråd uten lead
               </span>
             )}
           </div>
           <Badge variant="outline" className="text-[10px] capitalize">
-            {messages.length} message{messages.length === 1 ? "" : "s"}
+            {messages.length} melding{messages.length === 1 ? "" : "er"}
           </Badge>
         </div>
       </header>
@@ -376,7 +377,7 @@ function ThreadView({
         })()}
 
         {messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No messages yet.</p>
+          <p className="text-sm text-muted-foreground">Ingen meldinger enda.</p>
         ) : (
           messages.map((m) => <MessageCard key={m.id} message={m} />)
         )}
@@ -414,7 +415,7 @@ function ThreadView({
               href={`/admin/leads/${lead.org_nr}` as never}
               className="ml-auto text-primary hover:underline"
             >
-              Open lead →
+              Åpne lead →
             </Link>
           </div>
         </footer>
@@ -454,7 +455,7 @@ function MessageCard({ message }: { message: OutreachEmail }) {
             <div className="text-sm font-medium leading-tight">
               {isInbound
                 ? message.from_name || message.from_email
-                : `You → ${message.to_email}`}
+                : `Du → ${message.to_email}`}
             </div>
             <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
               {format(new Date(ts), "d MMM yyyy, HH:mm")}
@@ -473,9 +474,9 @@ function MessageCard({ message }: { message: OutreachEmail }) {
         ) : message.direction === "in" && message.resend_id ? (
           <div className="space-y-2.5 rounded-md border border-dashed bg-muted/40 p-3 text-xs">
             <p className="text-muted-foreground leading-relaxed">
-              Resend doesn&apos;t expose inbound email bodies through their
-              API yet — only metadata reaches the webhook. The full message
-              is readable in their dashboard:
+              Resend gir ikke ut innholdet i innkommende e-poster via
+              API-et enda — bare metadata når webhooken. Hele meldingen
+              kan leses i Resend-dashbordet:
             </p>
             <a
               href={`https://resend.com/emails/${message.resend_id}`}
@@ -483,13 +484,13 @@ function MessageCard({ message }: { message: OutreachEmail }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
             >
-              View body in Resend
+              Se innholdet i Resend
               <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
         ) : (
           <p className="text-xs italic text-muted-foreground">
-            (No body content on this message.)
+            (Ingen innhold i denne meldingen.)
           </p>
         )}
       </div>
@@ -501,7 +502,7 @@ function MessageStatusBadge({ message }: { message: OutreachEmail }) {
   if (message.direction === "in") {
     return (
       <Badge variant="default" className="text-[10px]">
-        received
+        mottatt
       </Badge>
     );
   }

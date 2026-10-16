@@ -56,14 +56,14 @@ import { StatusActions } from "./_status-actions";
 export const dynamic = "force-dynamic";
 
 const SCORE_LABELS: Record<keyof ScoringWeights, string> = {
-  has_phone: "Has phone",
-  has_email: "Has email",
-  org_form_as: "Org form AS/ASA",
-  target_nace: "Target NACE",
-  is_handverker: "Tradesperson (construction)",
-  has_website: "Has website",
-  has_real_address: "Real business address",
-  freshly_founded: "Newstiftet (last 7 days)",
+  has_phone: "Har telefon",
+  has_email: "Har e-post",
+  org_form_as: "Org.form AS/ASA",
+  target_nace: "Mål-NACE",
+  is_handverker: "Håndverker (bygg)",
+  has_website: "Har nettside",
+  has_real_address: "Reell forretningsadresse",
+  freshly_founded: "Nystiftet (siste 7 dager)",
 };
 
 function formatDate(value: string | null): string {
@@ -173,7 +173,7 @@ export default async function LeadDetailPage({
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back
+            Tilbake
           </Link>
         }
       />
@@ -191,14 +191,14 @@ export default async function LeadDetailPage({
                   </h2>
                   <StatusBadge status={lead.status} />
                   {lead.bankrupt ? (
-                    <Badge variant="destructive">Bankrupt</Badge>
+                    <Badge variant="destructive">Konkurs</Badge>
                   ) : null}
                   {lead.under_dissolution ? (
-                    <Badge variant="warning">Under dissolution</Badge>
+                    <Badge variant="warning">Under avvikling</Badge>
                   ) : null}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Registered {formatDate(lead.registered_at)}
+                  Registrert {formatDate(lead.registered_at)}
                   {lead.founded_at && lead.founded_at !== lead.registered_at
                     ? ` · stiftet ${formatDate(lead.founded_at)}`
                     : null}
@@ -212,7 +212,7 @@ export default async function LeadDetailPage({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  View in Brreg
+                  Se i Brreg
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
@@ -242,10 +242,10 @@ export default async function LeadDetailPage({
         {/* Deal / CRM */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Deal</CardTitle>
+            <CardTitle className="text-base">Avtale</CardTitle>
             <CardDescription>
-              Sales pipeline status for this lead. Shown on the CRM
-              kanban at{" "}
+              Salgsstatus for denne leaden. Vises på CRM-tavlen
+              på{" "}
               <code className="font-mono">/admin/crm</code>.
             </CardDescription>
           </CardHeader>
@@ -257,7 +257,7 @@ export default async function LeadDetailPage({
         {/* Demo site */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Demo site</CardTitle>
+            <CardTitle className="text-base">Demoside</CardTitle>
             <CardDescription>
               Auto-generert landingsside basert på Brreg-info og Claude-skreven
               kopi. Publiseres på{" "}
@@ -278,7 +278,7 @@ export default async function LeadDetailPage({
           {/* Score breakdown */}
           <Card className="md:col-span-1">
             <CardHeader>
-              <CardTitle className="text-base">Score breakdown</CardTitle>
+              <CardTitle className="text-base">Score-fordeling</CardTitle>
               <CardDescription>
                 Hvordan {lead.score}-poeng-summen er satt sammen
               </CardDescription>
@@ -300,13 +300,13 @@ export default async function LeadDetailPage({
               />
               <ContactRow
                 icon={Phone}
-                label="Phone"
+                label="Telefon"
                 value={lead.phone}
                 href={lead.phone ? `tel:${lead.phone}` : undefined}
               />
               <ContactRow
                 icon={Smartphone}
-                label="Mobile"
+                label="Mobil"
                 value={lead.mobile}
                 href={lead.mobile ? `tel:${lead.mobile}` : undefined}
               />
@@ -333,14 +333,14 @@ export default async function LeadDetailPage({
           {/* Address + firmographics */}
           <Card className="md:col-span-1">
             <CardHeader>
-              <CardTitle className="text-base">Company</CardTitle>
+              <CardTitle className="text-base">Bedrift</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
                   <div className="text-xs text-muted-foreground">
-                    Org form
+                    Org.form
                   </div>
                   <div>
                     {lead.org_form ?? "–"}
@@ -356,7 +356,7 @@ export default async function LeadDetailPage({
               <div className="flex items-start gap-2">
                 <Users className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
-                  <div className="text-xs text-muted-foreground">Employees</div>
+                  <div className="text-xs text-muted-foreground">Ansatte</div>
                   <div>
                     {lead.employee_count != null
                       ? lead.employee_count
@@ -369,7 +369,7 @@ export default async function LeadDetailPage({
                 <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
                   <div className="text-xs text-muted-foreground">
-                    Business address
+                    Forretningsadresse
                   </div>
                   <div>
                     {lead.address_line ?? "–"}
@@ -394,7 +394,7 @@ export default async function LeadDetailPage({
         {/* NACE + flags */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Industry and status</CardTitle>
+            <CardTitle className="text-base">Næring og status</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -408,12 +408,12 @@ export default async function LeadDetailPage({
             </div>
             <div className="flex flex-wrap gap-2 items-start">
               {lead.vat_registered ? (
-                <Badge variant="success">VAT registered</Badge>
+                <Badge variant="success">MVA-registrert</Badge>
               ) : (
-                <Badge variant="outline">Ikke VAT registered</Badge>
+                <Badge variant="outline">Ikke MVA-registrert</Badge>
               )}
               {lead.forced_dissolution ? (
-                <Badge variant="destructive">Forced dissolution</Badge>
+                <Badge variant="destructive">Tvangsavvikling</Badge>
               ) : null}
             </div>
           </CardContent>
@@ -431,10 +431,10 @@ export default async function LeadDetailPage({
             metadata). The full message bodies live in <LeadThreads> above. */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Email sent</CardTitle>
+            <CardTitle className="text-base">Sendte e-poster</CardTitle>
             <CardDescription>
               {outreachHistory.length === 0
-                ? "No email sent yet"
+                ? "Ingen e-post sendt enda"
                 : `${outreachHistory.length} utsendelser`}
             </CardDescription>
           </CardHeader>
@@ -479,7 +479,7 @@ export default async function LeadDetailPage({
                         {entry.delivered_at ? (
                           <span className="inline-flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            delivered{" "}
+                            levert{" "}
                             {formatDistanceToNow(new Date(entry.delivered_at), {
                               addSuffix: true,
                               locale: nb,
@@ -489,7 +489,7 @@ export default async function LeadDetailPage({
                         {entry.opened_at ? (
                           <span className="inline-flex items-center gap-1">
                             <Eye className="h-3 w-3" />
-                            opened
+                            åpnet
                             {entry.open_count > 1
                               ? ` ×${entry.open_count}`
                               : ""}
@@ -498,7 +498,7 @@ export default async function LeadDetailPage({
                         {entry.clicked_at ? (
                           <span className="inline-flex items-center gap-1">
                             <MousePointerClick className="h-3 w-3" />
-                            clicked
+                            klikket
                             {entry.click_count > 1
                               ? ` ×${entry.click_count}`
                               : ""}
@@ -513,7 +513,7 @@ export default async function LeadDetailPage({
                         {entry.replied_at ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            replied{" "}
+                            svart{" "}
                             {formatDistanceToNow(new Date(entry.replied_at), {
                               addSuffix: true,
                               locale: nb,
@@ -537,15 +537,15 @@ export default async function LeadDetailPage({
         {/* Raw payload */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Raw data from Brreg</CardTitle>
+            <CardTitle className="text-base">Rådata fra Brreg</CardTitle>
             <CardDescription>
-              Full payload from the Enhetsregisteret API
+              Komplett svar fra Enhetsregisteret-API-et
             </CardDescription>
           </CardHeader>
           <CardContent>
             <details className="text-xs">
               <summary className="cursor-pointer text-muted-foreground hover:text-foreground select-none">
-                Show JSON
+                Vis JSON
               </summary>
               <pre className="mt-3 max-h-96 overflow-auto rounded-md bg-muted/50 p-3 font-mono text-[11px] leading-relaxed">
                 {JSON.stringify(lead.raw_data ?? {}, null, 2)}
@@ -567,13 +567,13 @@ function OutreachStatusBadge({
     OutreachEmail["status"],
     { variant: "success" | "destructive" | "warning" | "secondary" | "outline"; label: string }
   > = {
-    queued: { variant: "warning", label: "in queue" },
-    sent: { variant: "secondary", label: "sent" },
-    delivered: { variant: "success", label: "delivered" },
+    queued: { variant: "warning", label: "i kø" },
+    sent: { variant: "secondary", label: "sendt" },
+    delivered: { variant: "success", label: "levert" },
     bounced: { variant: "destructive", label: "bounce" },
-    complained: { variant: "destructive", label: "complaint" },
-    failed: { variant: "destructive", label: "failed" },
-    received: { variant: "outline", label: "received" },
+    complained: { variant: "destructive", label: "klage" },
+    failed: { variant: "destructive", label: "feilet" },
+    received: { variant: "outline", label: "mottatt" },
   };
   const { variant, label } = map[status];
   return <Badge variant={variant}>{label}</Badge>;

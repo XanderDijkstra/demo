@@ -271,9 +271,9 @@ export const SERVICE_PROPOSAL_TITLE: Record<
   Exclude<ServiceType, "custom">,
   string
 > = {
-  website: "Nettside Tobud",
-  meta_ads: "Meta Ads Tobud",
-  seo: "SEO Tobud",
-  google_ads: "Google Ads Tobud",
-  reviews: "Anmeldelser Tobud",
+  website: "Nettside Tilbud",
+  meta_ads: "Meta Ads Tilbud",
+  seo: "SEO Tilbud",
+  google_ads: "Google Ads Tilbud",
+  reviews: "Anmeldelser Tilbud",
 };

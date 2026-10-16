@@ -23,7 +23,7 @@ export function EmailBatchForm() {
           `Skannet ${result.scanned} leads — lagret ${result.saved} e-poster (${result.candidates_only} med usikre kandidater, ${result.failed} feilet)`
         );
       } else {
-        toast.error(`Batch failed: ${result.error}`);
+        toast.error(`Batch feilet: ${result.error}`);
       }
     });
   }
@@ -73,7 +73,7 @@ export function EmailBatchForm() {
         ) : (
           <>
             <Mails />
-            Scrape e-poster
+            Hent e-poster
           </>
         )}
       </Button>

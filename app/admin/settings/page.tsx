@@ -104,8 +104,8 @@ export default async function SettingsPage() {
   return (
     <>
       <Topbar
-        title="Settings"
-        description="Scoring weights, target NACE codes, and excluded org forms"
+        title="Innstillinger"
+        description="Scoring, målgruppe, e-postavsender, Telegram-varsler, demosider og sperreliste"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -130,7 +130,7 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-base">Målnæringer (NACE)</CardTitle>
               <CardDescription>
-                Én kode per linje. Prefix-match — &ldquo;43.22&rdquo; matcher
+                Én kode per linje. Prefiks-treff — &ldquo;43.22&rdquo; matcher
                 &ldquo;43.220&rdquo;. Brreg sin{" "}
                 <a
                   href="https://www.ssb.no/klass/klassifikasjoner/6"
@@ -158,7 +158,7 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-base">Ekskluderte former</CardTitle>
               <CardDescription>
-                Org former som filtreres bort før scoring (KBO,
+                Org.former som filtreres bort før scoring (KBO,
                 tvangsavviklinger, utenlandske filialer, offentlige
                 organer).
               </CardDescription>
@@ -167,7 +167,7 @@ export default async function SettingsPage() {
               <ListForm
                 inputName="forms"
                 initial={excludedForms ?? []}
-                description={`${excludedForms?.length ?? 0} forms excluded`}
+                description={`${excludedForms?.length ?? 0} former ekskludert`}
                 placeholder={"KBO\nUTLA\nSTAT"}
                 saveAction={saveExcludedOrgForms}
               />
@@ -178,10 +178,10 @@ export default async function SettingsPage() {
         {/* Outreach */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Email outreach</CardTitle>
+            <CardTitle className="text-base">E-postutsendelse</CardTitle>
             <CardDescription>
-              Sender address used when you send email from the lead detail
-              page via Resend.
+              Avsenderadressen som brukes når du sender e-post fra lead-siden
+              via Resend.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -198,7 +198,7 @@ export default async function SettingsPage() {
             <CardTitle className="text-base">Telegram-varsling</CardTitle>
             <CardDescription>
               Sender en DM når en lead svarer på e-post. Token + chat-ID
-              settes i Vercel-miljøvariablene
+              settes som Cloudflare-secret (npx wrangler secret put)
               (<code className="font-mono">TELEGRAM_BOT_TOKEN</code>,{" "}
               <code className="font-mono">TELEGRAM_CHAT_ID</code>).
             </CardDescription>
@@ -208,10 +208,10 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Demo siter — Claude usage summary */}
+        {/* Demosider — Claude usage summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Demo siter</CardTitle>
+            <CardTitle className="text-base">Demosider</CardTitle>
             <CardDescription>
               AI-genererte landingssider per lead. Velg hvilken Claude-modell
               som skriver teksten — bytt til Opus/Sonnet for bedre maler.
@@ -224,15 +224,15 @@ export default async function SettingsPage() {
                 Freepik stock-bilder
               </div>
               <p className="mb-3 text-[11px] text-muted-foreground">
-                Test bildesøk mot Freepik-biblioteket. Når dette funker, kan vi
-                bytte ut placeholder-bildene i malene med ekte temabilder.
+                Test bildesøk mot Freepik-biblioteket. Når dette fungerer, kan vi
+                bytte ut plassholderbildene i malene med ekte temabilder.
               </p>
               <StockForm configured={freepikConfigured} />
             </div>
             <div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
               <div>
                 <div className="text-xs text-muted-foreground">
-                  Publishede sider
+                  Publiserte sider
                 </div>
                 <div className="text-sm tabular-nums">
                   <span className="font-medium">{totalSites}</span>
@@ -241,7 +241,7 @@ export default async function SettingsPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">
-                  Total tokens used
+                  Tokens brukt totalt
                 </div>
                 <div className="text-sm tabular-nums">
                   <span className="font-medium">
@@ -261,10 +261,10 @@ export default async function SettingsPage() {
         {/* Suppression list */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Suppression list</CardTitle>
+            <CardTitle className="text-base">Sperreliste</CardTitle>
             <CardDescription>
-              Addressr som aldri skal kontaktes. Resend sender bounces og
-              spam-complaintr hit automatisk via webhook. Du kan også legge til
+              Adresser som aldri skal kontaktes. Resend sender bounces og
+              spamklager hit automatisk via webhook. Du kan også legge til
               manuelt.
             </CardDescription>
           </CardHeader>
@@ -279,7 +279,7 @@ export default async function SettingsPage() {
             <CardTitle className="text-base">Rescore eksisterende leads</CardTitle>
             <CardDescription>
               Beregn scoren på nytt for alle leads i databasen med gjeldende
-              vekter og målnæringer. Status, notater og andre manuale endringer
+              vekter og målnæringer. Status, notater og andre manuelle endringer
               beholdes.
             </CardDescription>
           </CardHeader>

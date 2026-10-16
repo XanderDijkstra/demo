@@ -48,10 +48,10 @@ export function DealSection({ orgNr, deal }: Props) {
         </div>
         <div className="flex-1">
           <p className="text-sm text-muted-foreground">
-            No active deal for this lead yet. One is created automatically
-            when you mark an email as replied — or create one manually
-            here if the conversation started elsewhere (phone, meeting,
-            etc.).
+            Ingen aktiv avtale for denne leaden enda. Den opprettes automatisk
+            når du merker en e-post som svart — eller opprett den manuelt
+            her hvis samtalen startet et annet sted (telefon, møte
+            osv.).
           </p>
           <Button
             type="button"
@@ -62,7 +62,7 @@ export function DealSection({ orgNr, deal }: Props) {
             onClick={() =>
               startCreateTransition(async () => {
                 const result = await createDealAction(orgNr);
-                if (result.ok) toast.success("Deal created");
+                if (result.ok) toast.success("Avtale opprettet");
                 else toast.error(result.error);
               })
             }
@@ -72,7 +72,7 @@ export function DealSection({ orgNr, deal }: Props) {
             ) : (
               <PlusCircle />
             )}
-            Create deal manuelt
+            Opprett avtale manuelt
           </Button>
         </div>
       </div>
@@ -87,7 +87,7 @@ export function DealSection({ orgNr, deal }: Props) {
     let lostReason: string | undefined;
     if (stage === "lost") {
       lostReason =
-        window.prompt("What's the reason the deal was lost? (optional)") ??
+        window.prompt("Hvorfor ble avtalen tapt? (valgfritt)") ??
         undefined;
     }
     startStageTransition(async () => {
@@ -98,7 +98,7 @@ export function DealSection({ orgNr, deal }: Props) {
         lostReason
       );
       if (result.ok) {
-        toast.success(`Stage endret til ${dealStageMeta(stage).label}`);
+        toast.success(`Fase endret til ${dealStageMeta(stage).label}`);
       } else {
         toast.error(result.error);
       }
@@ -114,7 +114,7 @@ export function DealSection({ orgNr, deal }: Props) {
         value_nok: value,
         notes: notes.trim() || null,
       });
-      if (result.ok) toast.success("Deal updated");
+      if (result.ok) toast.success("Avtale oppdatert");
       else toast.error(result.error);
     });
   }
@@ -158,7 +158,7 @@ export function DealSection({ orgNr, deal }: Props) {
       <div className="grid gap-3 sm:grid-cols-[1fr_180px] sm:items-end">
         <div className="space-y-1.5">
           <Label htmlFor="deal-stage" className="text-xs">
-            Stage
+            Fase
           </Label>
           <select
             id="deal-stage"
@@ -176,7 +176,7 @@ export function DealSection({ orgNr, deal }: Props) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="deal-value" className="text-xs">
-            Value (NOK)
+            Verdi (NOK)
           </Label>
           <Input
             id="deal-value"
@@ -193,7 +193,7 @@ export function DealSection({ orgNr, deal }: Props) {
 
       <div className="space-y-1.5">
         <Label htmlFor="deal-notes" className="text-xs">
-          Notes
+          Notater
         </Label>
         <textarea
           id="deal-notes"
@@ -209,7 +209,7 @@ export function DealSection({ orgNr, deal }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-[11px] text-muted-foreground">
           {isClosed && deal.stage === "lost" && deal.lost_reason ? (
-            <>Lost-grunn: {deal.lost_reason}</>
+            <>Tapt fordi: {deal.lost_reason}</>
           ) : null}
         </div>
         <Button
@@ -219,7 +219,7 @@ export function DealSection({ orgNr, deal }: Props) {
           disabled={savePending}
         >
           {savePending ? <Loader2 className="animate-spin" /> : <Save />}
-          Save
+          Lagre
         </Button>
       </div>
     </div>

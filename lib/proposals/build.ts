@@ -123,7 +123,7 @@ export function buildProposalData(input: ProposalFormInput): ProposalData {
       steps: [
         {
           num: "01",
-          title: "Tobud godkjent",
+          title: "Tilbud godkjent",
           desc: "Du svarer på e-post eller telefon at tilbudet er greit, så er avtalen i boks.",
         },
         {

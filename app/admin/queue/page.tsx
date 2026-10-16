@@ -23,7 +23,7 @@ import { EmailBatchForm } from "./_email-batch-form";
 import { Enrich1881Form } from "./_enrich-1881-form";
 import { RunNowForm } from "./_run-now-form";
 
-// Mirrors the schedule in vercel.json — kept here for display only.
+// Mirrors the cron triggers in wrangler.jsonc — kept here for display only.
 const BRREG_CRON_SCHEDULE = "0 6 * * *";
 
 export const dynamic = "force-dynamic";
@@ -38,9 +38,9 @@ const statusVariant: Record<
 };
 
 const statusLabel: Record<ScrapeRunStatus, string> = {
-  running: "running",
-  success: "done",
-  failed: "failed",
+  running: "kjører",
+  success: "fullført",
+  failed: "feilet",
 };
 
 function formatDuration(ms: number | null): string {
@@ -68,8 +68,8 @@ export default async function QueuePage() {
   return (
     <>
       <Topbar
-        title="Queue"
-        description="Daily Brreg ingestion and run history"
+        title="Jobber"
+        description="Daglig innhenting fra Brreg og kjørehistorikk"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -96,7 +96,7 @@ export default async function QueuePage() {
             <CardTitle className="text-base">Daglig cron-job</CardTitle>
             <CardDescription>
               Pause eller endre måldato uten å re-deploye. Cron-en sjekker
-              disse settingsene før den kjører.
+              disse innstillingene før den kjører.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -114,9 +114,9 @@ export default async function QueuePage() {
           <CardHeader>
             <CardTitle className="text-base">Manuell innhenting</CardTitle>
             <CardDescription>
-              Trigger Brreg-jobben for en spesifikk dato. Default er gyearssdagen
-              — samme som den daglige cron job (runs at 06:00 UTC / 07–08
-              Oslo).
+              Start Brreg-jobben for en bestemt dato. Standard er gårsdagen
+              — samme som den daglige cron-jobben (kjører kl. 06:00 UTC / 07–08
+              norsk tid).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -144,9 +144,9 @@ export default async function QueuePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Scrape e-poster fra nettsider</CardTitle>
+            <CardTitle className="text-base">Hent e-poster fra nettsider</CardTitle>
             <CardDescription>
-              Brreg gir sjelden ut e-post — denne jobben henter homepage +
+              Brreg gir sjelden ut e-post — denne jobben henter forside +
               kontaktside for hver lead uten e-post som er registrert nylig,
               ekstraherer kandidater og lagrer den beste automatisk. Re-scorer
               også raden så den får uttelling for &quot;Har e-post&quot;-vekten.
@@ -159,12 +159,12 @@ export default async function QueuePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Siste runs</CardTitle>
+            <CardTitle className="text-base">Siste kjøringer</CardTitle>
             <CardDescription>
               {error ? (
                 <span className="text-destructive">{error.message}</span>
               ) : (
-                `${runs.length} runs logget`
+                `${runs.length} kjøringer logget`
               )}
             </CardDescription>
           </CardHeader>
@@ -173,8 +173,8 @@ export default async function QueuePage() {
               <div className="p-6">
                 <EmptyState
                   icon={Activity}
-                  title="No runs yet"
-                  description="Press 'Run now' above to start the first ingestion."
+                  title="Ingen kjøringer enda"
+                  description="Trykk «Kjør nå» over for å starte første innhenting."
                 />
               </div>
             ) : (
@@ -184,18 +184,18 @@ export default async function QueuePage() {
                     <tr className="text-left">
                       <th className="px-4 py-2 font-medium">Status</th>
                       <th className="px-4 py-2 font-medium">Dato</th>
-                      <th className="px-4 py-2 font-medium text-right">Fetched</th>
+                      <th className="px-4 py-2 font-medium text-right">Hentet</th>
                       <th className="px-4 py-2 font-medium text-right">
                         Lagt til
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Skipet over
+                        Hoppet over
                       </th>
                       <th className="px-4 py-2 font-medium text-right">
-                        Duration
+                        Varighet
                       </th>
-                      <th className="px-4 py-2 font-medium">Trigger</th>
-                      <th className="px-4 py-2 font-medium">Started</th>
+                      <th className="px-4 py-2 font-medium">Startet av</th>
+                      <th className="px-4 py-2 font-medium">Startet</th>
                     </tr>
                   </thead>
                   <tbody>

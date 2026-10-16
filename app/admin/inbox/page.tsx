@@ -13,9 +13,9 @@ import { InboxClient, type ThreadRow, type ViewId } from "./_inbox-client";
 export const dynamic = "force-dynamic";
 
 const VIEWS: Array<{ id: ViewId; label: string }> = [
-  { id: "inbox", label: "Inbox" },
-  { id: "sent", label: "Sent" },
-  { id: "all", label: "All" },
+  { id: "inbox", label: "Innboks" },
+  { id: "sent", label: "Sendt" },
+  { id: "all", label: "Alle" },
 ];
 
 function parseView(value: string | string[] | undefined): ViewId {
@@ -124,13 +124,13 @@ export default async function InboxPage({ searchParams }: RouteProps) {
   return (
     <>
       <Topbar
-        title="Inbox"
-        description="Lead replies and outbound conversations"
+        title="Innboks"
+        description="Svar fra leads og utgående samtaler"
         actions={
           totalUnread > 0 ? (
             <Badge variant="default" className="gap-1 text-[10px]">
               <Mail className="h-3 w-3" />
-              {totalUnread} unread
+              {totalUnread} ulest
             </Badge>
           ) : null
         }
@@ -138,9 +138,9 @@ export default async function InboxPage({ searchParams }: RouteProps) {
 
       {!inboundDomain ? (
         <div className="border-b bg-amber-50 px-6 py-2.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-300">
-          Inbound domain not configured. Set{" "}
-          <code className="font-mono">resend_inbound_domain</code> in settings
-          so replies route back to the inbox.
+          Innkommende domene er ikke satt opp. Sett{" "}
+          <code className="font-mono">resend_inbound_domain</code> i innstillingene
+          så svar havner i innboksen.
         </div>
       ) : null}
 

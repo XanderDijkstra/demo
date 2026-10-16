@@ -18,8 +18,8 @@ export default async function TemplatesPage() {
   return (
     <>
       <Topbar
-        title="Templates"
-        description="Per-niche designs for auto-generated demo sites"
+        title="Maler"
+        description="Design per bransje for auto-genererte demosider"
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -27,7 +27,7 @@ export default async function TemplatesPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              How templates work
+              Slik fungerer malene
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -79,7 +79,7 @@ export default async function TemplatesPage() {
 
                   <div className="flex items-center justify-end text-[11px]">
                     <span className="inline-flex items-center gap-1 text-muted-foreground transition-colors group-hover:text-foreground">
-                      View template
+                      Se malen
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>

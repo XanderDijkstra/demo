@@ -67,7 +67,7 @@ export function Enrich1881Form({ configured }: { configured: boolean }) {
       {!configured ? (
         <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
           <code className="font-mono">ONE1881_API_KEY</code> er ikke satt. Legg
-          inn abonnementsnøkkelen fra api1881.no i Vercel-miljøvariablene, så
+          inn abonnementsnøkkelen fra api1881.no som Cloudflare-secret (npx wrangler secret put), så
           aktiveres oppslag og batch. (Valgfritt:{" "}
           <code className="font-mono">ONE1881_BASE_URL</code>,{" "}
           <code className="font-mono">ONE1881_LOOKUP_PATH</code> med{" "}

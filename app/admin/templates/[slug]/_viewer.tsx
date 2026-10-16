@@ -13,7 +13,7 @@ interface Props {
 
 const HERO_LAYOUT_LABEL: Record<HeroLayout, string> = {
   split: "Split",
-  centered: "Centered",
+  centered: "Sentrert",
   overlay: "Overlay",
 };
 
@@ -22,7 +22,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
   const [copied, setCopied] = useState(false);
 
   function copyChatPrompt() {
-    const prompt = `Tweak the "${niche.slug}" template (${niche.displayName}). Here are the screenshots I want it to look like:`;
+    const prompt = `Juster malen "${niche.slug}" (${niche.displayName}). Her er skjermbilder av hvordan jeg vil at den skal se ut:`;
     navigator.clipboard.writeText(prompt).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -35,7 +35,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
       <aside className="flex flex-col gap-5 overflow-y-auto border-r p-6 bg-card text-sm">
         <div>
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Template
+            Mal
           </div>
           <div className="mt-1 flex items-center gap-2.5">
             <div
@@ -53,18 +53,18 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
           </div>
         </div>
 
-        <Section title="Colors">
-          <SwatchRow label="Primary" value={niche.primaryColor} />
-          <SwatchRow label="Accent" value={niche.accentColor} />
+        <Section title="Farger">
+          <SwatchRow label="Primær" value={niche.primaryColor} />
+          <SwatchRow label="Aksent" value={niche.accentColor} />
         </Section>
 
         <Section title="Hero">
-          <KeyValue label="Layout" value={HERO_LAYOUT_LABEL[niche.heroLayout]} />
-          <KeyValue label="Image keyword" value={niche.heroImageKeyword} />
+          <KeyValue label="Oppsett" value={HERO_LAYOUT_LABEL[niche.heroLayout]} />
+          <KeyValue label="Bildesøkeord" value={niche.heroImageKeyword} />
           <KeyValue label="CTA" value={niche.ctaText} />
         </Section>
 
-        <Section title="Benefits">
+        <Section title="Fordeler">
           <ul className="space-y-1">
             {niche.benefitTags.map((tag) => (
               <li
@@ -77,7 +77,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
           </ul>
         </Section>
 
-        <Section title="Services">
+        <Section title="Tjenester">
           <ul className="space-y-2">
             {niche.services.map((s, i) => (
               <li key={i} className="rounded-md border border-input bg-background p-2">
@@ -93,13 +93,13 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
         <div className="rounded-md border border-dashed bg-muted/40 p-3 space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-medium">
             <MessageSquare className="h-3.5 w-3.5" />
-            Edit this template
+            Endre denne malen
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            Design work happens in the Claude chat — share screenshots
-            there and the code in{" "}
-            <code className="font-mono">lib/templates.ts</code> updates.
-            Changes appear here after the next deploy.
+            Designarbeid skjer i Claude-chatten — del skjermbilder der,
+            så oppdateres koden i{" "}
+            <code className="font-mono">lib/templates.ts</code>.
+            Endringene vises her etter neste deploy.
           </p>
           <button
             type="button"
@@ -110,7 +110,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
             )}
           >
             {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            {copied ? "Copied" : "Copy chat prompt"}
+            {copied ? "Kopiert" : "Kopier chat-prompt"}
           </button>
         </div>
       </aside>
@@ -119,7 +119,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
       <div className="relative flex flex-col bg-muted/30">
         <div className="flex items-center justify-between gap-2 border-b bg-card px-4 py-2 text-xs">
           <span className="text-muted-foreground">
-            Preview · sample data
+            Forhåndsvisning · eksempeldata
           </span>
           <div className="flex items-center gap-2">
             <a
@@ -128,7 +128,7 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              Open in new tab
+              Åpne i ny fane
               <ExternalLink className="h-3 w-3" />
             </a>
             <span className="text-muted-foreground/50">·</span>
@@ -138,14 +138,14 @@ export function TemplateViewer({ niche, previewUrl }: Props) {
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
               <RefreshCw className="h-3 w-3" />
-              Reload
+              Last inn på nytt
             </button>
           </div>
         </div>
         <iframe
           key={previewKey}
           src={previewUrl}
-          title="Template preview"
+          title="Forhåndsvisning av mal"
           className="flex-1 w-full bg-white"
           sandbox="allow-scripts allow-same-origin"
         />

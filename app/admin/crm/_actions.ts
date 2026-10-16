@@ -27,11 +27,11 @@ export async function moveDealStage(
   stage: DealStage
 ): Promise<ActionResult> {
   await requireOperator();
-  if (!dealId) return { ok: false, error: "Missing deal id" };
-  if (!isValidDealStage(stage)) return { ok: false, error: "Invalid stage" };
+  if (!dealId) return { ok: false, error: "Mangler avtale-ID" };
+  if (!isValidDealStage(stage)) return { ok: false, error: "Ugyldig fase" };
 
   const deal = await setDealStage(dealId, stage);
-  if (!deal) return { ok: false, error: "Could not change stage" };
+  if (!deal) return { ok: false, error: "Kunne ikke endre fase" };
 
   revalidatePath("/admin/crm");
   revalidatePath(`/admin/leads/${deal.org_nr}`);
@@ -45,7 +45,7 @@ const AddLeadSchema = z.object({
   email: z
     .string()
     .trim()
-    .email()
+    .email("Ugyldig e-postadresse")
     .max(254)
     .optional()
     .or(z.literal("").transform(() => undefined)),
@@ -158,7 +158,7 @@ export async function addLeadToCrm(
   if (!deal) {
     return {
       ok: false,
-      error: "Kunne ikke opprette deal — sjekk loggen",
+      error: "Kunne ikke opprette avtale — sjekk loggen",
     };
   }
 

@@ -55,8 +55,8 @@ export async function markThreadRead(threadId: string): Promise<void> {
 }
 
 const ReplySchema = z.object({
-  subject: z.string().trim().min(1, "Subject is required").max(998),
-  body: z.string().trim().min(1, "Body is required").max(50_000),
+  subject: z.string().trim().min(1, "Emne mangler").max(998),
+  body: z.string().trim().min(1, "Innhold mangler").max(50_000),
 });
 
 /**
@@ -69,7 +69,7 @@ export async function replyToThread(
   formData: FormData
 ): Promise<ActionResult & { id?: string }> {
   await requireOperator();
-  if (!threadId) return { ok: false, error: "Missing thread id" };
+  if (!threadId) return { ok: false, error: "Mangler tråd-ID" };
 
   const parsed = ReplySchema.safeParse({
     subject: formData.get("subject"),
@@ -78,7 +78,7 @@ export async function replyToThread(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Invalid input",
+      error: parsed.error.issues[0]?.message ?? "Ugyldig input",
     };
   }
 
@@ -91,7 +91,7 @@ export async function replyToThread(
     .eq("id", threadId)
     .maybeSingle();
   if (threadError) return { ok: false, error: threadError.message };
-  if (!thread) return { ok: false, error: "Thread not found" };
+  if (!thread) return { ok: false, error: "Fant ikke tråden" };
 
   // Build send config first — common to linked + unlinked replies.
   const [fromAddress, replyTo, inboundDomain, priorRes] = await Promise.all([
@@ -128,7 +128,7 @@ export async function replyToThread(
 
     const sup = await isSuppressed(toAddr);
     if (sup.suppressed) {
-      return { ok: false, error: `Adressen er suppressed (${sup.reason})` };
+      return { ok: false, error: `Adressen er blokkert (${sup.reason})` };
     }
 
     // Placeholders resolve to empty for unlinked replies — lead context
@@ -154,7 +154,7 @@ export async function replyToThread(
       .select()
       .single();
     if (insertError || !row) {
-      return { ok: false, error: insertError?.message ?? "Could not log send" };
+      return { ok: false, error: insertError?.message ?? "Kunne ikke logge utsendelsen" };
     }
 
     const result = await sendEmail({
@@ -185,7 +185,7 @@ export async function replyToThread(
       .from("outreach_emails")
       .update({ status: "failed", error_message: result.error ?? null })
       .eq("id", row.id);
-    return { ok: false, error: result.error ?? "Send failed" };
+    return { ok: false, error: result.error ?? "Sending feilet" };
   }
 
   // ── Linked thread: full lead-aware path. ────────────────────────────
@@ -196,7 +196,7 @@ export async function replyToThread(
     .maybeSingle();
   if (leadError) return { ok: false, error: leadError.message };
   if (!lead?.email) {
-    return { ok: false, error: "Lead has no email address" };
+    return { ok: false, error: "Leaden mangler e-postadresse" };
   }
 
   // Suppression check.
@@ -204,7 +204,7 @@ export async function replyToThread(
   if (sup.suppressed) {
     return {
       ok: false,
-      error: `Address is suppressed (${sup.reason})`,
+      error: `Adressen er blokkert (${sup.reason})`,
     };
   }
 
@@ -251,7 +251,7 @@ export async function replyToThread(
     .select()
     .single();
   if (insertError || !row) {
-    return { ok: false, error: insertError?.message ?? "Could not log send" };
+    return { ok: false, error: insertError?.message ?? "Kunne ikke logge utsendelsen" };
   }
 
   const result = await sendEmail({
@@ -292,5 +292,5 @@ export async function replyToThread(
     .from("outreach_emails")
     .update({ status: "failed", error_message: result.error ?? null })
     .eq("id", row.id);
-  return { ok: false, error: result.error ?? "Send failed" };
+  return { ok: false, error: result.error ?? "Sending feilet" };
 }

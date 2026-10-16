@@ -104,14 +104,14 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
         ) : (
           <Button>
             <Plus />
-            Ny flow
+            Ny flyt
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>{isEdit ? "Rediger flow" : "Ny flow"}</DialogTitle>
+            <DialogTitle>{isEdit ? "Rediger flyt" : "Ny flyt"}</DialogTitle>
             <DialogDescription>
               Sender en oppfølging når en lead ikke har svart innen valgt tid.
             </DialogDescription>
@@ -134,7 +134,7 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="flow-trigger" className="text-xs">
-                  Trigger
+                  Utløser
                 </Label>
                 <select
                   id="flow-trigger"
@@ -146,7 +146,7 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
                   disabled={pending}
                 >
                   <option value="no_reply">Ingen svar på e-post</option>
-                  <option value="stage_entered">Flyttet til CRM-stage</option>
+                  <option value="stage_entered">Flyttet til CRM-fase</option>
                 </select>
               </div>
 
@@ -192,7 +192,7 @@ export function FlowDialog({ flow, trigger }: FlowDialogProps) {
             {isStage ? (
               <div className="space-y-1.5">
                 <Label htmlFor="flow-delay" className="text-xs">
-                  Vent (dager etter at lead havner i stagen)
+                  Vent (dager etter at lead havner i fasen)
                 </Label>
                 <Input
                   id="flow-delay"

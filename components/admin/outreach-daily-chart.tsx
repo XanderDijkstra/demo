@@ -66,14 +66,14 @@ export function OutreachDailyChart({ data }: Props) {
           />
           <Bar
             dataKey="sent"
-            name="Sent"
+            name="Sendt"
             fill="var(--primary)"
             radius={[4, 4, 0, 0]}
             maxBarSize={20}
           />
           <Bar
             dataKey="replied"
-            name="Replied"
+            name="Svart"
             fill="oklch(0.7 0.15 145)"
             radius={[4, 4, 0, 0]}
             maxBarSize={20}

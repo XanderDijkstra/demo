@@ -21,7 +21,7 @@ export function ReplyToggle({ orgNr, emailId, replied }: Props) {
     startTransition(async () => {
       const result = await toggleEmailReplied(orgNr, emailId, !replied);
       if (result.ok) {
-        toast.success(replied ? "Marked as not replied" : "Marked as replied");
+        toast.success(replied ? "Merket som ikke svart" : "Merket som svart");
       } else {
         toast.error(result.error);
       }
@@ -40,7 +40,7 @@ export function ReplyToggle({ orgNr, emailId, replied }: Props) {
           : "border border-input text-muted-foreground hover:bg-accent",
         pending && "opacity-60"
       )}
-      title={replied ? "Click to remove reply marker" : "Mark as replied"}
+      title={replied ? "Klikk for å fjerne svar-merket" : "Merk som svart"}
     >
       {pending ? (
         <Loader2 className="h-3 w-3 animate-spin" />
@@ -49,7 +49,7 @@ export function ReplyToggle({ orgNr, emailId, replied }: Props) {
       ) : (
         <Reply className="h-3 w-3" />
       )}
-      {replied ? "Replied" : "Mark as replied"}
+      {replied ? "Svart" : "Merk som svart"}
     </button>
   );
 }

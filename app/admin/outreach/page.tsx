@@ -15,10 +15,10 @@ export const dynamic = "force-dynamic";
 type TabId = "campaign" | "candidates" | "log" | "stats";
 
 const TABS: Array<{ id: TabId; label: string }> = [
-  { id: "campaign", label: "Campaign" },
+  { id: "campaign", label: "Kampanje" },
   { id: "candidates", label: "Kandidater" },
-  { id: "log", label: "Log" },
-  { id: "stats", label: "Stats" },
+  { id: "log", label: "Logg" },
+  { id: "stats", label: "Statistikk" },
 ];
 
 function parseTab(value: string | string[] | undefined): TabId {
@@ -41,25 +41,25 @@ export default async function OutreachPage({ searchParams }: RouteProps) {
   return (
     <>
       <Topbar
-        title="Outreach"
+        title="Utsendelse"
         description={
           tab === "campaign"
-            ? "Daily campaign — filter who gets emailed and tweak the template"
+            ? "Daglig kampanje — velg hvem som får e-post og juster malen"
             : tab === "candidates"
-              ? "Hvem cron-en vil sende til ved neste run, og hvilke filtre kutter resten"
+              ? "Hvem cron-en sender til ved neste kjøring, og hvilke filtre som stopper resten"
               : tab === "log"
-                ? "See exactly which leads got an email today, yesterday, all of it"
-                : "Send / delivery / open / click / reply analytics"
+                ? "Se nøyaktig hvilke leads som fikk e-post i dag, i går og tidligere"
+                : "Statistikk for sendt / levert / åpnet / klikket / svart"
         }
         actions={
           <div className="flex items-center gap-2">
             {config.enabled ? (
               <Badge variant="success" className="text-[10px]">
-                Daily ON
+                Daglig PÅ
               </Badge>
             ) : (
               <Badge variant="outline" className="text-[10px]">
-                Daily OFF
+                Daglig AV
               </Badge>
             )}
             {tab === "stats" ? (

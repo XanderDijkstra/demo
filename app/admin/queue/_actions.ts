@@ -110,7 +110,7 @@ export async function saveBrregCronSettings(
   if (r1.error || r2.error) {
     return {
       ok: false,
-      error: r1.error?.message ?? r2.error?.message ?? "Unknown DB error",
+      error: r1.error?.message ?? r2.error?.message ?? "Ukjent databasefeil",
     };
   }
 
@@ -159,7 +159,7 @@ export async function testEnrich1881Lookup(
     return {
       ok: false,
       configured: false,
-      error: "1881 ikke konfigurert — sett ONE1881_API_KEY i Vercel",
+      error: "1881 ikke konfigurert — sett ONE1881_API_KEY som Cloudflare-secret",
     };
   }
 

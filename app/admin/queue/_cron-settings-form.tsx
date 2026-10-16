@@ -77,7 +77,7 @@ export function CronSettingsForm({
               className="h-4 w-4 rounded border-input"
             />
             <span className="text-muted-foreground">
-              Skipper daglig run hvis avhuket
+              Hopper over daglig kjøring når den ikke er avkrysset
             </span>
           </label>
         </div>
@@ -108,13 +108,13 @@ export function CronSettingsForm({
 
       <div className="flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
         <p>
-          Endringer trer i kraft umiddelbart — neste cron leser settings før
-          den kjører. Schedule (klokkeslett) styres i{" "}
-          <code className="font-mono">vercel.json</code>.
+          Endringer trer i kraft umiddelbart — neste cron leser innstillingene før
+          den kjører. Tidsplanen (klokkeslett) styres i{" "}
+          <code className="font-mono">wrangler.jsonc</code>.
         </p>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Save />}
-          Save
+          Lagre
         </Button>
       </div>
     </form>

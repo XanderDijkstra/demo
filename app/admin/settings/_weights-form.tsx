@@ -16,14 +16,14 @@ const FIELDS: Array<{
   label: string;
   hint: string;
 }> = [
-  { key: "has_phone", label: "Has phone", hint: "phone or mobile in Brreg" },
-  { key: "has_email", label: "Has email", hint: "from Brreg or scraped" },
-  { key: "org_form_as", label: "Org form AS/ASA", hint: "subscribed capital" },
-  { key: "target_nace", label: "Target NACE", hint: "matches list below" },
-  { key: "is_handverker", label: "Tradesperson", hint: "NACE 41.x / 43.x / 81.30" },
-  { key: "has_website", label: "Has website", hint: "homepage in Brreg" },
-  { key: "has_real_address", label: "Real address", hint: "not a PO box" },
-  { key: "freshly_founded", label: "Newly founded", hint: "last 7 days" },
+  { key: "has_phone", label: "Har telefon", hint: "telefon eller mobil i Brreg" },
+  { key: "has_email", label: "Har e-post", hint: "fra Brreg eller nettsiden" },
+  { key: "org_form_as", label: "Org.form AS/ASA", hint: "aksjekapital" },
+  { key: "target_nace", label: "Mål-NACE", hint: "matcher listen under" },
+  { key: "is_handverker", label: "Håndverker", hint: "NACE 41.x / 43.x / 81.30" },
+  { key: "has_website", label: "Har nettside", hint: "nettside i Brreg" },
+  { key: "has_real_address", label: "Reell adresse", hint: "ikke postboks" },
+  { key: "freshly_founded", label: "Nystiftet", hint: "siste 7 dager" },
 ];
 
 export function WeightsForm({ initial }: { initial: ScoringWeights }) {
@@ -44,7 +44,7 @@ export function WeightsForm({ initial }: { initial: ScoringWeights }) {
   function onSubmit(formData: FormData) {
     startTransition(async () => {
       const result = await saveScoringWeights(formData);
-      if (result.ok) toast.success(result.message ?? "Saved");
+      if (result.ok) toast.success(result.message ?? "Lagret");
       else toast.error(result.error);
     });
   }
@@ -84,13 +84,13 @@ export function WeightsForm({ initial }: { initial: ScoringWeights }) {
           </span>
           {total > 100 ? (
             <span className="ml-2 text-amber-700">
-              Over 100 — score capper på 100
+              Over 100 — scoren kappes ved 100
             </span>
           ) : null}
         </p>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <Save />}
-          Save vekter
+          Lagre vekter
         </Button>
       </div>
     </form>

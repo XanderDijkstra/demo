@@ -26,7 +26,7 @@ export function DealCard({ card }: Props) {
       if (result.ok) {
         toast.success(`Flyttet til ${stageLabel(stage)}`);
       } else {
-        toast.error(`Failed: ${result.error}`);
+        toast.error(`Feilet: ${result.error}`);
       }
     });
   }
@@ -64,7 +64,7 @@ export function DealCard({ card }: Props) {
         <Link
           href={`/admin/leads/${card.org_nr}` as never}
           className="opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Open lead"
+          aria-label="Åpne lead"
         >
           <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
         </Link>
@@ -75,9 +75,9 @@ export function DealCard({ card }: Props) {
         <span aria-hidden>·</span>
         <span>
           {card.days_in_stage === 0
-            ? "today"
+            ? "i dag"
             : card.days_in_stage === 1
-              ? "yesterday"
+              ? "i går"
               : `${card.days_in_stage} dager`}
         </span>
         {valueLabel ? (
@@ -96,7 +96,7 @@ export function DealCard({ card }: Props) {
 
       {card.stage === "lost" && card.lost_reason ? (
         <p className="mt-2 text-[11px] text-rose-700 dark:text-rose-300">
-          Reason: {card.lost_reason}
+          Årsak: {card.lost_reason}
         </p>
       ) : null}
 

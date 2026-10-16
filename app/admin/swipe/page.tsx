@@ -35,12 +35,12 @@ export default async function SwipePage() {
   return (
     <>
       <Topbar
-        title="Swipe"
-        description="Triage new leads — one at a time, fast"
+        title="Sorter"
+        description="Sorter nye leads — én om gangen, raskt"
         actions={
           <Badge variant="outline" className="gap-1 text-[10px]">
             <Layers className="h-3 w-3" />
-            {leads.length} in queue
+            {leads.length} i kø
           </Badge>
         }
       />
@@ -52,17 +52,17 @@ export default async function SwipePage() {
               <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <Layers className="h-5 w-5" />
               </div>
-              <h3 className="font-medium">No new leads</h3>
+              <h3 className="font-medium">Ingen nye leads</h3>
               <p className="text-sm text-muted-foreground">
-                The queue is empty. Run Brreg ingestion from{" "}
-                <strong>Queue</strong> to fetch new companies with status
+                Køen er tom. Kjør Brreg-innhenting fra{" "}
+                <strong>Jobber</strong> for å hente nye bedrifter med status
                 &quot;new&quot;.
               </p>
               <Link
                 href="/admin/queue"
                 className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
               >
-                Go to Queue →
+                Gå til Jobber →
               </Link>
             </div>
           </div>

@@ -65,10 +65,10 @@ export function SiteCard({
       const result = await generateLeadSiteAction(orgNr, override);
       if (result.ok) {
         toast.success(
-          isPublished ? "Demo siten er oppdatert" : "Demo siten er publisert"
+          isPublished ? "Demosiden er oppdatert" : "Demosiden er publisert"
         );
       } else {
-        toast.error(`Failed: ${result.error}`);
+        toast.error(`Feilet: ${result.error}`);
       }
     });
   }
@@ -77,9 +77,9 @@ export function SiteCard({
     startUnpublishTransition(async () => {
       const result = await unpublishLeadSiteAction(orgNr);
       if (result.ok) {
-        toast.success("Demo siten er avpublisert");
+        toast.success("Demosiden er avpublisert");
       } else {
-        toast.error(`Failed: ${result.error}`);
+        toast.error(`Feilet: ${result.error}`);
       }
     });
   }
@@ -105,7 +105,7 @@ export function SiteCard({
             )}
             {publishedSite?.nicheOverridden ? (
               <Badge variant="outline" className="text-[10px]">
-                manual mal
+                manuell mal
               </Badge>
             ) : null}
           </div>
@@ -121,7 +121,7 @@ export function SiteCard({
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              No demo site published yet
+              Ingen demoside publisert enda
             </p>
           )}
         </div>
@@ -132,7 +132,7 @@ export function SiteCard({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium shadow-xs hover:bg-accent"
           >
-            View site
+            Åpne siden
             <ExternalLink className="h-3 w-3" />
           </a>
         ) : null}
@@ -141,7 +141,7 @@ export function SiteCard({
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="space-y-1.5">
           <Label htmlFor="site-niche" className="text-xs">
-            Template
+            Mal
           </Label>
           <select
             id="site-niche"
@@ -179,7 +179,7 @@ export function SiteCard({
             ) : (
               <Sparkles />
             )}
-            {isPublished ? "Regenerate" : "Generate & publish"}
+            {isPublished ? "Generer på nytt" : "Generer og publiser"}
           </Button>
           {isPublished ? (
             <Button
@@ -192,7 +192,7 @@ export function SiteCard({
               ) : (
                 <EyeOff />
               )}
-              Unpublish
+              Avpubliser
             </Button>
           ) : null}
         </div>

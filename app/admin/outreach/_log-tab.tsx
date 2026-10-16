@@ -22,6 +22,7 @@ import {
 import { getDb } from "@/lib/db";
 import type { OutreachEmail } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
+import { nb } from "date-fns/locale";
 
 /**
  * Chronological send log. Pulls the most recent 100 outbound rows so
@@ -67,13 +68,13 @@ export async function LogTab() {
         <CardHeader>
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <div>
-              <CardTitle className="text-base">Recent sends</CardTitle>
+              <CardTitle className="text-base">Siste utsendelser</CardTitle>
               <CardDescription>
-                Last 100 outbound emails — including failures.
+                Siste 100 utgående e-poster — inkludert feilede.
               </CardDescription>
             </div>
             <div className="text-sm text-muted-foreground">
-              Last 24h:{" "}
+              Siste 24 t:{" "}
               <span className="font-semibold tabular-nums text-foreground">
                 {today}
               </span>
@@ -85,8 +86,8 @@ export async function LogTab() {
             <div className="p-6">
               <EmptyState
                 icon={Mail}
-                title="No emails sent yet"
-                description="Configure the campaign in the Campaign tab and run it once to see entries here."
+                title="Ingen e-poster sendt enda"
+                description="Sett opp kampanjen i Kampanje-fanen og kjør den én gang for å se oppføringer her."
               />
             </div>
           ) : (
@@ -96,9 +97,9 @@ export async function LogTab() {
                   <tr className="text-left">
                     <th className="px-4 py-2 font-medium">Status</th>
                     <th className="px-4 py-2 font-medium">Lead</th>
-                    <th className="px-4 py-2 font-medium">Subject</th>
-                    <th className="px-4 py-2 font-medium">To</th>
-                    <th className="px-4 py-2 font-medium text-right">When</th>
+                    <th className="px-4 py-2 font-medium">Emne</th>
+                    <th className="px-4 py-2 font-medium">Til</th>
+                    <th className="px-4 py-2 font-medium text-right">Når</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -125,7 +126,7 @@ export async function LogTab() {
                           </>
                         ) : (
                           <span className="text-muted-foreground italic">
-                            Ulinket tråd
+                            Tråd uten lead
                           </span>
                         )}
                       </td>
@@ -142,7 +143,7 @@ export async function LogTab() {
                         className="px-4 py-2.5 align-middle text-right text-xs text-muted-foreground"
                         title={row.created_at}
                       >
-                        {formatDistanceToNow(new Date(row.created_at), {
+                        {formatDistanceToNow(new Date(row.created_at), { locale: nb,
                           addSuffix: true,
                         })}
                       </td>
@@ -157,9 +158,9 @@ export async function LogTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Daily cron history</CardTitle>
+          <CardTitle className="text-base">Historikk for daglig cron</CardTitle>
           <CardDescription>
-            Last 10 runs of /api/cron/outreach-daily.
+            Siste 10 kjøringer av /api/cron/outreach-daily.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -167,8 +168,8 @@ export async function LogTab() {
             <div className="p-6">
               <EmptyState
                 icon={Inbox}
-                title="No cron runs yet"
-                description="The cron is scheduled for 08:00 UTC daily, or hit Run now from the Campaign tab."
+                title="Ingen cron-kjøringer enda"
+                description="Cron-en kjører daglig kl. 08:00 UTC, eller trykk Kjør nå i Kampanje-fanen."
               />
             </div>
           ) : (
@@ -192,14 +193,14 @@ export async function LogTab() {
                     </span>
                     <span className="ml-2 tabular-nums">
                       <span className="font-medium">{meta.sent ?? 0}</span>
-                      <span className="text-muted-foreground"> sent</span>
+                      <span className="text-muted-foreground"> sendt</span>
                       <span className="text-muted-foreground">
                         {" "}
-                        · {meta.skipped ?? 0} skipped · {meta.failed ?? 0} failed
+                        · {meta.skipped ?? 0} hoppet over · {meta.failed ?? 0} feilet
                       </span>
                     </span>
                     <span className="ml-auto text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(entry.created_at), {
+                      {formatDistanceToNow(new Date(entry.created_at), { locale: nb,
                         addSuffix: true,
                       })}
                     </span>
@@ -219,7 +220,7 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="success" className="gap-1">
         <Mail className="h-3 w-3" />
-        replied
+        svart
       </Badge>
     );
   }
@@ -227,7 +228,7 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="destructive" className="gap-1">
         <Ban className="h-3 w-3" />
-        bounced
+        bounce
       </Badge>
     );
   }
@@ -235,7 +236,7 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="destructive" className="gap-1" title={row.error_message ?? undefined}>
         <CircleAlert className="h-3 w-3" />
-        failed
+        feilet
       </Badge>
     );
   }
@@ -243,7 +244,7 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="secondary" className="gap-1">
         <Eye className="h-3 w-3" />
-        opened
+        åpnet
       </Badge>
     );
   }
@@ -251,7 +252,7 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="secondary" className="gap-1">
         <CheckCircle2 className="h-3 w-3" />
-        delivered
+        levert
       </Badge>
     );
   }
@@ -259,13 +260,13 @@ function StatusCell({ row }: { row: OutreachEmail }) {
     return (
       <Badge variant="outline" className="gap-1">
         <Send className="h-3 w-3" />
-        sent
+        sendt
       </Badge>
     );
   }
   return (
     <Badge variant="outline" className={cn("gap-1")}>
-      queued
+      i kø
     </Badge>
   );
 }
