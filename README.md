@@ -1,69 +1,37 @@
-# Vekst-Systemet
+# Vekst-Systemet (demo.vekst-systemet.no)
 
-Internt verktøy for **FX Media** — automatisert salgsprospektering mot norske selskaper.
+Internal FX Media sales tool: finds companies registered in Brønnøysund the day before, scores them, builds each one a demo website, emails them the link, and handles replies in an inbox + CRM. Single operator (Xander). Not the public vekst-systemet.no marketing site; that's a separate repo (`vekst-system`) that only takes inbound leads.
 
-Et admin-dashboard som hver morgen henter selskaper registrert i Brønnøysundregistrene dagen før, scorer dem, og lar deg gå gjennom ukens topp-leads for manuell oppfølging.
+## What runs when (UTC, Workers cron triggers in `wrangler.jsonc`)
 
----
+| Cron | Job | Route |
+|---|---|---|
+| 06:00 | Brreg scrape of yesterday's registrations + scoring | `/api/cron/brreg-daily` |
+| 08:00 | Daily cold email (only when enabled in Utsendelse) | `/api/cron/outreach-daily` |
+| 09:00 | Follow-up flows (no reply / CRM stage entered) | `/api/cron/flows` |
 
-## What it does (v1)
-
-1. **Daily Brreg scrape** — every morning, an Inngest cron pulls every entity registered in Brreg the previous day.
-2. **Scoring** — each lead is scored 0–100 based on phone presence, org form, NACE code, address quality, and freshness. Weights are tunable from the admin UI.
-3. **Weekly review** — `/admin/leads` defaults to a "This week" tab so you can scan the week's batch and pick interesting leads.
-4. **Lead detail** — read-only view of all Brreg fields per company.
-
-Outreach (postcards, email) and AI-generated demo sites are **not** in v1 — they layer on next.
+Daily outreach: leads with status new/qualified, an email, score ≥ min, allowed org form, non-excluded NACE, never emailed, not suppressed. Max `maxPerDay` per Oslo day (manual sends count). A lead without a demo site gets one generated first; if that fails it is skipped, so no email goes out without a working link.
 
 ## Stack
 
-- Next.js 16 (App Router) + TypeScript strict
-- Tailwind CSS v4 + shadcn/ui
-- Supabase (Postgres + Auth)
-- Inngest (background jobs)
-- Brreg public API (no key required)
+- Next.js 16 (App Router) on **Cloudflare Workers** via OpenNext (`custom-worker.js` adds the cron handler)
+- **D1** (SQLite) — schema in `migrations/`, accessed through the typed query layer in `lib/db`
+- **Cloudflare Access** (team `fx-media`, email one-time code) in front of `/admin`, `/preview`, `/api/inbox`; the app re-verifies the Access JWT in middleware and in every server action (`lib/auth.ts`)
+- Resend (email in/out), Claude (demo-site copy), Brreg API, optional 1881 + Telegram
+- Public routes: `/p/[orgnr]` (demo sites, noindex), `/api/unsubscribe`, `/api/webhooks/resend`
 
-## Getting started
+## Commands
 
 ```bash
-pnpm install
-cp .env.local.example .env.local   # fill in Supabase values once project exists
-pnpm dev
+npm install
+npm run dev                # local, with a local D1 (run db:migrate:local first); set ADMIN_DEV_EMAIL in .dev.vars
+npm run db:migrate         # apply migrations/ to the remote D1
+npm run deploy             # build + wrangler deploy (pushing to main does NOT deploy)
+npx tsc --noEmit           # typecheck before every push
 ```
 
-Open <http://localhost:3000>.
+Secrets: see `.env.example`. Worker name `vekst-demo`, D1 `vekst-demo`, Access app "Vekst-Systemet admin".
 
-## Deploy
+## History
 
-Vercel + Supabase integration auto-injects `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Add `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` manually from the Inngest dashboard.
-
-Database schema lives in `supabase/migrations/`. Paste the SQL into Supabase's SQL editor (or run with the Supabase CLI) once the project exists.
-
-## Project layout
-
-```
-app/                    Next.js App Router pages
-  (auth)/login          Login page
-  admin/                Protected admin UI
-  api/                  Server routes (incl. Inngest webhook)
-components/
-  ui/                   shadcn primitives
-  admin/                Admin-specific components
-lib/
-  brreg.ts              Brreg API client
-  scoring.ts            Lead scoring logic
-  supabase/             Supabase clients (browser/server/middleware)
-  inngest/              Background job definitions
-supabase/migrations/    SQL schema migrations
-```
-
-## Roadmap
-
-- v1 (current): scrape + score + review
-- v2: select leads → generate landing pages with Claude
-- v3: outreach (postcards via Ekopost, email via TBD)
-- v4: scan tracking + conversion analytics
-
----
-
-Made for [vekst-systemet.no](https://vekst-systemet.no). Demo at [demo.vekst-systemet.no](https://demo.vekst-systemet.no).
+Built April–June 2026 on Vercel + Supabase (`supabase/migrations/` kept for reference). Moved to Cloudflare in October 2026; `scripts/move-from-vercel.mjs` did the one-time data and secret copy.

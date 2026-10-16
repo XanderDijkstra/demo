@@ -16,6 +16,7 @@
  */
 
 import "server-only";
+import { appUrl as defaultAppUrl } from "@/lib/app-url";
 
 const API_BASE = "https://api.telegram.org";
 
@@ -80,17 +81,13 @@ export interface InboundReplyNotifyArgs {
   subject: string | null;
   /** First lines of the reply (already stripped of quoted parts). */
   preview: string | null;
-  /** Absolute base URL for deep links — read from APP_URL / VERCEL_URL. */
+  /** Absolute base URL for deep links — defaults to APP_URL. */
   appUrl?: string;
 }
 
 function publicBase(appUrl?: string): string | null {
   if (appUrl) return appUrl.replace(/\/+$/, "");
-  const explicit = process.env.NEXT_PUBLIC_APP_URL;
-  if (explicit) return explicit.replace(/\/+$/, "");
-  const vercel = process.env.VERCEL_URL;
-  if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
-  return null;
+  return defaultAppUrl();
 }
 
 /**

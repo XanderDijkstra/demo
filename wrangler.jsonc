@@ -26,11 +26,11 @@
     }
   ],
   "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://demo.vekst-systemet.no",
-    // Cloudflare Access (Zero Trust team fx-media) guards /admin, /preview, /api/inbox, /api/proposals.
+    "APP_URL": "https://demo.vekst-systemet.no",
+    // Cloudflare Access (Zero Trust team fx-media) guards /admin, /preview and /api/inbox.
     // ACCESS_AUD is the audience tag of the Access application; the app re-verifies the JWT (lib/auth.ts).
     "ACCESS_TEAM_DOMAIN": "fx-media.cloudflareaccess.com",
-    "ACCESS_AUD": "",
+    "ACCESS_AUD": "832c63353a9bbcd0b8d51f6baa16e2ac4db362878633ad4adb4a76f7d91bded7",
     "ADMIN_EMAILS": "info@fx-media.no"
   },
   "observability": { "enabled": true },

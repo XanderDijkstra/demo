@@ -16,7 +16,7 @@ const worker = {
   async scheduled(event, env, ctx) {
     const path = JOBS[event.cron];
     if (!path) return console.error('Unknown cron', event.cron);
-    const origin = (env.NEXT_PUBLIC_APP_URL || 'https://demo.vekst-systemet.no').replace(/\/$/, '');
+    const origin = (env.APP_URL || 'https://demo.vekst-systemet.no').replace(/\/$/, '');
     ctx.waitUntil(
       env.WORKER_SELF_REFERENCE.fetch(`${origin}${path}`, { headers: { authorization: `Bearer ${env.CRON_SECRET}` } }).then(async response => {
         const body = await response.text();

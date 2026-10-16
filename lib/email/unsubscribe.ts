@@ -1,6 +1,7 @@
 import "server-only";
 
 import crypto from "node:crypto";
+import { appUrl } from "@/lib/app-url";
 
 /**
  * Cold-outreach unsubscribe tokens.
@@ -54,25 +55,6 @@ export function verifyUnsubscribeToken(
   }
 }
 
-/**
- * Absolute https URL for the unsubscribe page. Same fallback chain as
- * lib/jobs/generate-site.ts so a misconfigured NEXT_PUBLIC_APP_URL on
- * Vercel doesn't produce broken links.
- */
-function appBaseUrl(): string {
-  const explicit = process.env.NEXT_PUBLIC_APP_URL;
-  if (explicit) {
-    const trimmed = explicit.trim().replace(/\/$/, "");
-    if (trimmed) {
-      return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-    }
-  }
-  const prod = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (prod) return `https://${prod.replace(/\/$/, "")}`;
-  const vercel = process.env.VERCEL_URL;
-  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
-  return "http://localhost:3000";
-}
 
 export function buildUnsubscribeUrl(email: string): string {
   const token = signUnsubscribeToken(email);
@@ -80,5 +62,5 @@ export function buildUnsubscribeUrl(email: string): string {
     email: normalizeEmail(email),
     token,
   });
-  return `${appBaseUrl()}/api/unsubscribe?${params.toString()}`;
+  return `${appUrl()}/api/unsubscribe?${params.toString()}`;
 }
