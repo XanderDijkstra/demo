@@ -38,6 +38,7 @@ const TABLES = [
   "scrape_runs",
   "audit_log",
 ];
+const ORDER_KEY = { companies: "org_nr", settings: "key", outreach_suppressions: "email", generated_sites: "org_nr" };
 const BOOLEAN = {
   companies: ["vat_registered", "bankrupt", "under_dissolution", "forced_dissolution"],
   flows: ["enabled"],
@@ -109,7 +110,8 @@ async function fetchAll(url, key, table) {
   const rows = [];
   const page = 1000;
   for (let from = 0; ; from += page) {
-    const res = await fetch(`${url}/rest/v1/${table}?select=*`, {
+    // Stable order is required: unordered pages overlap and silently skip rows.
+    const res = await fetch(`${url}/rest/v1/${table}?select=*&order=${ORDER_KEY[table] ?? "id"}.asc`, {
       headers: { apikey: key, authorization: `Bearer ${key}`, range: `${from}-${from + page - 1}`, "range-unit": "items" },
     });
     if (res.status === 404) {
@@ -144,6 +146,8 @@ async function main() {
     for (const table of TABLES) {
       const rows = await fetchAll(url, key, table);
       counts[table] = rows.length;
+      const keyOf = (r) => r[ORDER_KEY[table] ?? "id"];
+      if (new Set(rows.map(keyOf)).size !== rows.length) throw new Error(`${table}: duplicate keys in export, aborting`);
       const allowed = columns[table];
       const dropped = new Set();
       for (const row of rows) {
