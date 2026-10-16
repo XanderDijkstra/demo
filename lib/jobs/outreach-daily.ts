@@ -8,7 +8,7 @@ import {
 } from "@/lib/email/threads";
 import { publicSiteUrl, runGenerateLeadSite } from "@/lib/jobs/generate-site";
 import { sendEmail } from "@/lib/email/provider";
-import { loadCampaignConfig } from "@/lib/outreach/campaign";
+import { loadCampaignConfig, type OutreachCampaignConfig } from "@/lib/outreach/campaign";
 import { fylkeFromKommuneNr } from "@/lib/regions";
 import {
   applyPlaceholders,
@@ -61,42 +61,75 @@ async function sentToday(): Promise<number> {
   return count ?? 0;
 }
 
+export interface CandidateFilter {
+  key: string;
+  label: string;
+  sql: string;
+  params: unknown[];
+}
+
 /**
- * Eligible leads for outreach, highest score first.
+ * The gates a lead passes to get a cold email, in funnel order. Shared by
+ * selectCandidates (the cron) and the Kandidater funnel in the admin, so
+ * what the operator sees is exactly what gets sent.
  *
- *   - status 'new' or 'qualified' (rejected / reviewed leads are skipped)
- *   - has an email, not on the suppression list (case-insensitive)
- *   - score >= minScore, org_form in allowedOrgForms, NACE not excluded
- *   - never emailed before (any outbound row, queued/failed included) —
- *     checked in SQL, so it holds however many emails have gone out
+ * Never-emailed is checked in SQL against every outbound row (queued and
+ * failed included), so it holds however many emails have gone out.
  */
+export function candidateFilters(config: OutreachCampaignConfig): CandidateFilter[] {
+  const filters: CandidateFilter[] = [
+    { key: "status", label: "Status ny eller kvalifisert", sql: "c.status in ('new', 'qualified')", params: [] },
+    { key: "score", label: `Score ≥ ${config.minScore}`, sql: "c.score >= ?", params: [config.minScore] },
+    { key: "email", label: "Har e-post", sql: "c.email is not null and trim(c.email) <> ''", params: [] },
+  ];
+  if (config.allowedOrgForms.length > 0) {
+    filters.push({
+      key: "orgform",
+      label: `Selskapsform: ${config.allowedOrgForms.join(", ")}`,
+      sql: "c.org_form in (select value from json_each(?))",
+      params: [JSON.stringify(config.allowedOrgForms)],
+    });
+  }
+  const prefixes = config.excludedNacePrefixes.map((p) => p.trim()).filter(Boolean);
+  if (prefixes.length > 0) {
+    filters.push({
+      key: "nace",
+      label: `Ikke ekskludert næring (${prefixes.length} prefiks)`,
+      sql: prefixes.map(() => "(c.nace_code is null or c.nace_code not like ?)").join(" and "),
+      params: prefixes.map((p) => `${p}%`),
+    });
+  }
+  filters.push(
+    {
+      key: "dedupe",
+      label: "Ikke e-postet før",
+      sql: "not exists (select 1 from outreach_emails o where o.org_nr = c.org_nr and o.direction = 'out')",
+      params: [],
+    },
+    {
+      key: "suppressed",
+      label: "Ikke avmeldt / sperret",
+      sql: "not exists (select 1 from outreach_suppressions s where lower(s.email) = lower(trim(c.email)))",
+      params: [],
+    }
+  );
+  return filters;
+}
+
+const COMPANY_ORDER = "order by c.score desc, c.registered_at desc nulls last";
+
+/** Eligible leads for outreach, highest score first, then newest. */
 export async function selectCandidates(
-  config: Awaited<ReturnType<typeof loadCampaignConfig>>,
+  config: OutreachCampaignConfig,
   limit: number
 ): Promise<Company[]> {
   if (limit <= 0) return [];
-  const where: string[] = [
-    "c.status in ('new', 'qualified')",
-    "c.email is not null and trim(c.email) <> ''",
-    "c.score >= ?",
-    "not exists (select 1 from outreach_emails o where o.org_nr = c.org_nr and o.direction = 'out')",
-    "not exists (select 1 from outreach_suppressions s where lower(s.email) = lower(trim(c.email)))",
-  ];
-  const params: unknown[] = [config.minScore];
-  if (config.allowedOrgForms.length > 0) {
-    where.push("c.org_form in (select value from json_each(?))");
-    params.push(JSON.stringify(config.allowedOrgForms));
-  }
-  for (const prefix of config.excludedNacePrefixes.map((p) => p.trim()).filter(Boolean)) {
-    where.push("(c.nace_code is null or c.nace_code not like ?)");
-    params.push(`${prefix}%`);
-  }
+  const filters = candidateFilters(config);
   const { results } = await d1()
     .prepare(
-      `select c.* from companies c where ${where.join(" and ")}
-       order by c.score desc, c.registered_at desc nulls last limit ?`
+      `select c.* from companies c where ${filters.map((f) => f.sql).join(" and ")} ${COMPANY_ORDER} limit ?`
     )
-    .bind(...params, limit)
+    .bind(...filters.flatMap((f) => f.params), limit)
     .all<Record<string, unknown>>();
   return (results ?? []).map(
     (r) =>
@@ -110,6 +143,31 @@ export async function selectCandidates(
         raw_data: r.raw_data ? JSON.parse(String(r.raw_data)) : null,
       }) as Company
   );
+}
+
+/** How many leads are left after each gate (cumulative), for the admin funnel. */
+export async function countCandidatesPerFilter(
+  config: OutreachCampaignConfig
+): Promise<Array<{ key: string; label: string; count: number }>> {
+  const filters = candidateFilters(config);
+  const statements = [
+    d1().prepare("select count(*) as n from companies c"),
+    ...filters.map((_, i) => {
+      const upto = filters.slice(0, i + 1);
+      return d1()
+        .prepare(`select count(*) as n from companies c where ${upto.map((f) => f.sql).join(" and ")}`)
+        .bind(...upto.flatMap((f) => f.params));
+    }),
+  ];
+  const results = await d1().batch<{ n: number }>(statements);
+  const labels = [{ key: "total", label: "Alle leads" }, ...filters];
+  return labels.map((f, i) => ({ key: f.key, label: f.label, count: results[i]?.results?.[0]?.n ?? 0 }));
+}
+
+/** Sent today vs. the daily cap, for the admin. */
+export async function dailyBudget(config: OutreachCampaignConfig): Promise<{ sentToday: number; remaining: number }> {
+  const sent = await sentToday();
+  return { sentToday: sent, remaining: Math.max(0, config.maxPerDay - sent) };
 }
 
 /** Single-runner lock in the settings table, so a manual run and the cron can't double-send. */
@@ -212,7 +270,7 @@ export async function runDailyOutreach(opts: {
 
 async function sendToCandidates(
   candidates: Company[],
-  config: Awaited<ReturnType<typeof loadCampaignConfig>>,
+  config: OutreachCampaignConfig,
   result: DailyOutreachResult
 ): Promise<void> {
   const db = getDb();

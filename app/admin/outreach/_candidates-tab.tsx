@@ -21,7 +21,7 @@ import { formatCompanyName } from "@/lib/utils";
  */
 export async function CandidatesTab() {
   const funnel = await getDailyFunnel();
-  const { stages, candidates, qualifiedTotal, config } = funnel;
+  const { stages, candidates, qualifiedTotal, config, sentToday, remaining, preview } = funnel;
   const capped = qualifiedTotal > config.maxPerDay;
 
   return (
@@ -30,9 +30,8 @@ export async function CandidatesTab() {
         <CardHeader>
           <CardTitle className="text-base">Dagens funnel</CardTitle>
           <CardDescription>
-            Filter-pipelinen den daglige cron-en kjører gjennom akkurat nå.
-            Tallet til høyre er hvor mange leads som er igjen etter hvert
-            trinn.
+            Samme filtre som den daglige utsendelsen bruker. Tallet til
+            høyre er hvor mange leads som er igjen etter hvert trinn.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -76,6 +75,13 @@ export async function CandidatesTab() {
           </ul>
           <div className="border-t bg-muted/30 px-6 py-3 text-xs text-muted-foreground">
             Tak per dag: <span className="font-medium text-foreground">{config.maxPerDay}</span>
+            {" "}· sendt i dag: <span className="font-medium text-foreground">{sentToday}</span>
+            {" "}· igjen i dag: <span className="font-medium text-foreground">{remaining}</span>
+            {config.enabled ? null : (
+              <span className="ml-1 font-medium text-amber-700 dark:text-amber-400">
+                · Daglig utsendelse er AV
+              </span>
+            )}
             {capped ? (
               <>
                 {" "}· {qualifiedTotal} kvalifiserte i dag, men kun de{" "}
@@ -92,12 +98,13 @@ export async function CandidatesTab() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            I dagens sending ({candidates.length})
+            Neste i køen ({candidates.length})
           </CardTitle>
           <CardDescription>
-            Disse leadsene treffer alle kriteriene og er det cron-en vil sende
-            til ved neste run. Sortert etter score, deretter
-            registreringsdato.
+            Disse får e-post ved neste kjøring (opptil det som er igjen av
+            dagens tak), sortert etter score og deretter registreringsdato.
+            Mangler demoside, lages den rett før sending; feiler det, hoppes
+            leadet over.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -119,6 +126,7 @@ export async function CandidatesTab() {
                     <th className="px-4 py-2 font-medium">E-post</th>
                     <th className="px-4 py-2 font-medium">Næring</th>
                     <th className="px-4 py-2 font-medium">Kommune</th>
+                    <th className="px-4 py-2 font-medium">Demoside</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -156,6 +164,20 @@ export async function CandidatesTab() {
                           <span className="text-muted-foreground">–</span>
                         )}
                       </td>
+                      <td className="px-4 py-2.5 align-middle text-xs whitespace-nowrap">
+                        {c.has_site ? (
+                          <a
+                            href={`/p/${c.org_nr}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-700 hover:underline dark:text-emerald-400"
+                          >
+                            Se siden ↗
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">Lages ved sending</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -164,6 +186,27 @@ export async function CandidatesTab() {
           )}
         </CardContent>
       </Card>
+
+      {preview ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Forhåndsvisning: første e-post</CardTitle>
+            <CardDescription>
+              Nøyaktig tekst til {preview.to}. En avmeldingslenke legges til
+              nederst ved sending.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Emne: </span>
+              <span className="font-medium">{preview.subject}</span>
+            </div>
+            <pre className="whitespace-pre-wrap rounded-md border bg-muted/30 p-4 font-sans text-sm">
+              {preview.body}
+            </pre>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

@@ -350,6 +350,12 @@ export async function sendLeadEmail(
     contact_name: lead.contact_name,
     contact_first_name: firstName,
   };
+  if (!siteRow.data && /\{\{\s*site_url\s*\}\}/.test(parsed.data.subject + parsed.data.body)) {
+    return {
+      ok: false,
+      error: "E-posten lenker til demosiden, men den finnes ikke ennå. Generer demosiden først.",
+    };
+  }
   const subject = applyPlaceholders(parsed.data.subject, placeholders);
   const body = applyPlaceholders(parsed.data.body, placeholders);
 

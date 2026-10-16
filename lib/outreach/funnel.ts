@@ -1,15 +1,23 @@
 import "server-only";
 
-import { loadCampaignConfig, type OutreachCampaignConfig } from "@/lib/outreach/campaign";
 import { getDb } from "@/lib/db";
 import type { Company } from "@/lib/db/types";
+import { publicSiteUrl } from "@/lib/jobs/generate-site";
+import {
+  countCandidatesPerFilter,
+  dailyBudget,
+  selectCandidates,
+} from "@/lib/jobs/outreach-daily";
+import { loadCampaignConfig, type OutreachCampaignConfig } from "@/lib/outreach/campaign";
+import { fylkeFromKommuneNr } from "@/lib/regions";
+import { applyPlaceholders } from "@/lib/resend";
+import { formatCompanyName } from "@/lib/utils";
 
 /**
- * What the daily outreach cron actually sees when it runs. Same filter
- * pipeline as selectCandidates() in lib/jobs/outreach-daily, but here
- * exposed as a funnel breakdown + the full candidate list — so the
- * operator can see exactly who is about to get emailed (and which gate
- * is filtering everyone out when 0 are queued).
+ * What the daily outreach cron sees when it runs: the same gates and the
+ * same selection query (lib/jobs/outreach-daily), as a funnel + the exact
+ * list it would email next, whether each lead already has a demo site,
+ * and the rendered email for the first one.
  *
  * Pure read; never sends or mutates anything.
  */
@@ -20,133 +28,65 @@ export interface FunnelStage {
   count: number;
 }
 
+export interface FunnelCandidate extends Company {
+  /** A demo site exists; otherwise one is generated just before sending. */
+  has_site: boolean;
+}
+
 export interface DailyFunnelResult {
   config: OutreachCampaignConfig;
   stages: FunnelStage[];
-  /** Capped at config.maxPerDay — what the cron would actually send. */
-  candidates: Company[];
+  /** Who the next run emails, in order (capped by what's left of today's budget). */
+  candidates: FunnelCandidate[];
   /** Total that passed every gate before the per-day cap. */
   qualifiedTotal: number;
+  sentToday: number;
+  remaining: number;
+  /** The first candidate's email, exactly as it would be sent (minus the unsubscribe footer). */
+  preview: { to: string; subject: string; body: string } | null;
 }
 
 export async function getDailyFunnel(): Promise<DailyFunnelResult> {
-  const db = getDb();
   const config = await loadCampaignConfig();
+  const [stages, budget] = await Promise.all([countCandidatesPerFilter(config), dailyBudget(config)]);
+  // Show the full cap's worth even when today's budget is spent, so the
+  // operator sees who's next in line.
+  const rows = await selectCandidates(config, config.maxPerDay);
 
-  // Stage 0: total companies in the DB (sanity baseline).
-  const totalRes = await db
-    .from("companies")
-    .select("*", { count: "exact", head: true });
-  const totalLeads = totalRes.count ?? 0;
-
-  // Stage 1: status = "new".
-  const newRes = await db
-    .from("companies")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new");
-  const newCount = newRes.count ?? 0;
-
-  // Stage 2: + score ≥ minScore. Score before email so the operator
-  // sees "there are X high-score leads → BUT only Y have an email"
-  // instead of the misleading reverse.
-  const scoredRes = await db
-    .from("companies")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new")
-    .gte("score", config.minScore);
-  const scoredCount = scoredRes.count ?? 0;
-
-  // Stage 3: + has email.
-  const withEmailRes = await db
-    .from("companies")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new")
-    .gte("score", config.minScore)
-    .not("email", "is", null);
-  const withEmailCount = withEmailRes.count ?? 0;
-
-  // Stage 4: + allowed org form.
-  let formReq = db
-    .from("companies")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new")
-    .gte("score", config.minScore)
-    .not("email", "is", null);
-  if (config.allowedOrgForms.length > 0) {
-    formReq = formReq.in("org_form", config.allowedOrgForms);
-  }
-  const formRes = await formReq;
-  const formCount = formRes.count ?? 0;
-
-  // Now pull the matching rows so we can apply the in-memory filters
-  // (NACE prefix exclusion + already-emailed dedup).
-  let rowsReq = db
-    .from("companies")
-    .select("*")
-    .eq("status", "new")
-    .gte("score", config.minScore)
-    .not("email", "is", null)
-    .order("score", { ascending: false })
-    .order("registered_at", { ascending: false, nullsFirst: false });
-  if (config.allowedOrgForms.length > 0) {
-    rowsReq = rowsReq.in("org_form", config.allowedOrgForms);
-  }
-  const { data: candidateRows } = await rowsReq;
-  const rows = (candidateRows ?? []) as Company[];
-
-  // Stage 5: NACE prefix exclusion.
-  const afterNace = rows.filter((r) => {
-    if (config.excludedNacePrefixes.length === 0) return true;
-    if (!r.nace_code) return true;
-    return !config.excludedNacePrefixes.some((p) =>
-      r.nace_code!.startsWith(p.trim())
-    );
-  });
-
-  // Stage 6: not already emailed.
-  const { data: prior } = await db
-    .from("outreach_emails")
+  const { data: sites } = await getDb()
+    .from("generated_sites")
     .select("org_nr")
-    .eq("direction", "out");
-  const alreadyEmailed = new Set(
-    (prior ?? []).map((r) => r.org_nr).filter(Boolean)
-  );
-  const qualified = afterNace.filter((r) => !alreadyEmailed.has(r.org_nr));
+    .in("org_nr", rows.map((r) => r.org_nr));
+  const withSite = new Set((sites ?? []).map((s) => s.org_nr));
+  const candidates = rows.map((r) => ({ ...r, has_site: withSite.has(r.org_nr) }));
+
+  const first = candidates[0];
+  const preview = first?.email
+    ? (() => {
+        const vars = {
+          company_name: formatCompanyName(first.name),
+          kommune: first.kommune,
+          region: fylkeFromKommuneNr(first.kommune_nr),
+          org_nr: first.org_nr,
+          site_url: publicSiteUrl(first.org_nr),
+          contact_name: first.contact_name,
+          contact_first_name: first.contact_name?.trim().split(/\s+/)[0] ?? null,
+        };
+        return {
+          to: first.email,
+          subject: applyPlaceholders(config.subject, vars),
+          body: applyPlaceholders(config.body, vars),
+        };
+      })()
+    : null;
 
   return {
     config,
-    stages: [
-      { key: "total", label: "Alle leads i DB", count: totalLeads },
-      { key: "new", label: "Status «ny»", count: newCount },
-      {
-        key: "score",
-        label: `Score ≥ ${config.minScore}`,
-        count: scoredCount,
-      },
-      { key: "email", label: "Med e-post", count: withEmailCount },
-      {
-        key: "orgform",
-        label:
-          config.allowedOrgForms.length === 0
-            ? "Selskapsform (alle)"
-            : `Selskapsform ∈ {${config.allowedOrgForms.join(", ")}}`,
-        count: formCount,
-      },
-      {
-        key: "nace",
-        label:
-          config.excludedNacePrefixes.length === 0
-            ? "Ekskluderte næringer"
-            : `Ikke i ekskluderte NACE-prefiks (${config.excludedNacePrefixes.length})`,
-        count: afterNace.length,
-      },
-      {
-        key: "dedupe",
-        label: "Ikke allerede e-postet",
-        count: qualified.length,
-      },
-    ],
-    candidates: qualified.slice(0, config.maxPerDay),
-    qualifiedTotal: qualified.length,
+    stages,
+    candidates,
+    qualifiedTotal: stages[stages.length - 1]?.count ?? 0,
+    sentToday: budget.sentToday,
+    remaining: budget.remaining,
+    preview,
   };
 }

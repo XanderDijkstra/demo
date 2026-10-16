@@ -32,7 +32,7 @@ interface Props {
   siteUrl: string | null;
 }
 
-const DEFAULT_SUBJECT = "Lagde en demo til {{company_name}}";
+const DEFAULT_SUBJECT = "Lagde en demoside til {{company_name}}";
 
 const DEFAULT_BODY = `Hei!
 
@@ -116,7 +116,7 @@ export function SendEmailButton({
                 </span>
               ) : (
                 <span className="block mt-1 text-[11px] text-amber-700">
-                  site_url → empty (no demo site published)
+                  site_url → ingen demoside ennå. Generer den først, ellers stoppes sendingen.
                 </span>
               )}
             </DialogDescription>
