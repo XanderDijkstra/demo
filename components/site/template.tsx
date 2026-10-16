@@ -24,6 +24,15 @@ function bestPhone(c: SiteTemplateProps["company"]): string | null {
   return c.mobile ?? c.phone ?? null;
 }
 
+/** "en rørlegger" / "et bilverksted". null for the generic niche, whose
+ *  displayName ("Generell") is not a noun that fits in a sentence. */
+function nicheWithArticle(niche: NicheConfig): string | null {
+  if (niche.slug === "generic") return null;
+  const noun = niche.displayName.toLowerCase();
+  const article = niche.slug === "auto_repair" ? "et" : "en";
+  return `${article} ${noun}`;
+}
+
 export function SiteTemplate({
   company: companyRaw,
   niche,
@@ -32,17 +41,21 @@ export function SiteTemplate({
   // Title-case the ALL-CAPS Brreg name once; every section below reads
   // company.name / companyName from this normalized object.
   const company = { ...companyRaw, name: formatCompanyName(companyRaw.name) };
-  const heroImage = `https://source.unsplash.com/1600x900/?${encodeURIComponent(niche.heroImageKeyword)}`;
+  const heroImage = niche.heroImage;
   const phone = bestPhone(company);
   const headline = content.hero_headline ?? company.name;
+  const nicheNoun = nicheWithArticle(niche);
+  const inKommune = company.kommune ? ` i ${company.kommune}` : "";
   const subheadline =
     content.hero_subheadline ??
-    `${niche.displayName.toLowerCase()}${company.kommune ? ` i ${company.kommune}` : ""}.`;
+    (niche.slug === "generic"
+      ? `Ta kontakt med ${company.name}${inKommune}.`
+      : `${niche.displayName}${inKommune}.`);
   const about =
     content.about_paragraph ??
-    `${company.name} er en ${niche.displayName.toLowerCase()}${
-      company.kommune ? ` etablert i ${company.kommune}` : ""
-    }.`;
+    (nicheNoun
+      ? `${company.name} er ${nicheNoun}${inKommune}.`
+      : `${company.name}${company.kommune ? ` holder til i ${company.kommune}` : " tar gjerne imot henvendelser"}.`);
 
   return (
     <div
@@ -145,6 +158,7 @@ interface HeroSectionProps {
 }
 
 function BenefitChips({ tags }: { tags: readonly string[] }) {
+  if (tags.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
@@ -431,10 +445,10 @@ function ContactSection({
               Kontakt
             </p>
             <h2 className="text-3xl font-semibold tracking-tight">
-              Klar når du er.
+              Ta kontakt
             </h2>
             <p className="text-slate-600">
-              Send oss en melding eller ring direkte — vi svarer raskt.
+              Send oss en e-post eller ring direkte.
             </p>
             <div className="space-y-2 pt-3 text-sm">
               {phone ? (

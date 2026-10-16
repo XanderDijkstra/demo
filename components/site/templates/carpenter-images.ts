@@ -19,14 +19,12 @@ const EXTERIOR_WORK = `${BASE}/2149343676.webp`; // two carpenters, wooden house
 const PLANNING_TABLET = `${BASE}/2149343698.webp`; // surveying with tablet
 const FRAME_NEW_BUILD = `${BASE}/9828.webp`;     // dramatic framing-stage build
 
-// Unsplash hot-links for the process timeline (varied house shots so the
-// 4 steps don't all show carpenters at work). HTTP 200 verified at commit.
-const UNSPLASH = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?w=900&q=80&auto=format&fit=crop`;
-const HOUSE_GARDEN = UNSPLASH("1572120360610-d971b9d7767c");
-const HOUSE_INTERIOR = UNSPLASH("1600585154340-be6161a56a0c");
-const HOUSE_POOL = UNSPLASH("1568605114967-8130f3a36994");
-const HOUSE_MODERN = UNSPLASH("1605276373954-0c4a0dac5b12");
+// Finished-result shots for the example gallery, self-hosted and shared
+// with the contractor/landscaper templates (credits in
+// public/templates/CREDITS.md). Labelled "Eksempelbilde" in the template.
+const KITCHEN = "/templates/contractor/hero.webp";
+const INTERIOR = "/templates/contractor/kitchen2.webp";
+const OUTDOOR = "/templates/landscaper/deck.webp";
 
 export const CARPENTER_IMAGES = {
   /** Hero, full-bleed, gets dark overlay. Wants a bright, wide shot with
@@ -57,12 +55,6 @@ export const CARPENTER_IMAGES = {
     EXTERIOR_WORK,   // Ferdigstillelse
   ],
 
-  /** 2×2 project gallery. Unsplash house shots so this reads as a row of
-   *  finished homes rather than four more workshop close-ups. */
-  projects: [
-    HOUSE_GARDEN,
-    HOUSE_INTERIOR,
-    HOUSE_POOL,
-    HOUSE_MODERN,
-  ],
+  /** 2×2 example gallery (Kjøkken, Interiør, Uterom, Nybygg). */
+  projects: [KITCHEN, INTERIOR, OUTDOOR, FRAME_NEW_BUILD],
 };

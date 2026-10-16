@@ -62,15 +62,15 @@ Svar KUN med gyldig JSON i denne nøyaktige formen — ingen kodeblokker, ingen 
 
 Tenk slogan, ikke beskrivelse. Den skal:
 - vekke en følelse (stolthet, trygghet, presisjon, omsorg)
-- ELLER love noe konkret (resultat, fordel, kvalitet)
+- ELLER peke på noe konkret ved tjenesten (resultat, fordel) uten å love noe
 - ELLER si noe overraskende (en kontrast, en innsikt)
 
 GODE eksempler (ulike næringer, ulik tone):
 - "Tegninger som tåler norske vintre"
 - "Hver fuge en signatur"
-- "Større prosjekter, samme presisjon"
+- "Presisjon i hver planke"
 - "Snekkerverk laget for å bli"
-- "Ditt nye bad, ferdig om seks uker"
+- "Ditt nye bad, fra skisse til første dusj"
 - "Vi bygger, du flytter inn"
 
 DÅRLIGE eksempler — IKKE skriv slik:
@@ -86,28 +86,32 @@ Gi én konkret grunn til å lese videre. Spesifikt for dette selskapet eller dis
 
 ═══ OM-OSS ═══
 
-Skriv som selskapet selv forteller, ikke som markedsfører. Konkret detalj > generisk påstand. Hvis du vet kommunen, plant det her hvis ikke i subheadline.
+Skriv som selskapet selv forteller, ikke som markedsfører. Konkret detalj > generisk påstand, men bruk bare detaljer du faktisk har fått oppgitt (navn, kommune, bransje); beskriv ellers hva selskapet tilbyr og hvordan de vil jobbe, ikke hva de har gjort. Hvis du vet kommunen, plant det her hvis ikke i subheadline.
 
 ═══ HARDE REGLER ═══
 
+- Selskapet er nyregistrert i Brønnøysundregistrene. Du vet INGENTING om det utover navn, kommune og bransje. Ikke dikt opp fakta.
+- Aldri nevn eller antyd historikk, antall års erfaring, når selskapet ble startet, antall prosjekter eller kunder, kundeomtaler, vurderinger, priser, tidsfrister, garantier, sertifiseringer, godkjenninger, forsikringer, utmerkelser, ansatte, familieeierskap eller responstid.
+- Ingen superlativer som påstår rangering ("best", "ledende", "mest anbefalt", "foretrukne").
 - Aldri "X leverer Y i Z"-strukturen.
 - Aldri ord som: førstevalg, kvalitet, ekspertise, totalleverandør, profesjonell, dedikert, dynamisk, skreddersydd, helhetlig, omfattende.
-- Aldri lov priser, tidsfrister eller garantier som ikke er gitt.
 - Bruk selskapsnavnet maks én gang per felt — det er ikke nødvendig at det er i headlinen.
 - Tone: varm, selvsikker, jordnær. Norsk bokmål.`;
 
 function buildUserPrompt(args: SiteCopyArgs): string {
   const { company, niche } = args;
   return [
-    `Company: ${company.name}`,
-    `Bransje: ${niche.displayName}`,
+    `Selskap: ${company.name}`,
+    niche.slug === "generic"
+      ? "Bransje: se Brreg-beskrivelsen"
+      : `Bransje: ${niche.displayName.toLowerCase()}`,
     company.kommune ? `Kommune: ${company.kommune}` : "Kommune: ukjent",
     company.nace_description
       ? `Brreg-beskrivelse: ${company.nace_description}`
       : null,
     "",
     "Generer hero-overskrift, hero-underoverskrift og en kort om-oss-paragraf.",
-    "Svar med JSON-objektet, noneting annet.",
+    "Svar med JSON-objektet, ingenting annet.",
   ]
     .filter(Boolean)
     .join("\n");

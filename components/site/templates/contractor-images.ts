@@ -1,69 +1,53 @@
 /**
- * Image registry for the contractor / general-contractor template.
+ * Self-hosted image registry for the contractor / entreprenør template.
  *
- * Picsum seeds are placeholders that GUARANTEE images load. They're not
- * themed — replace each entry with a curated photo when you find ones you
- * like. The reference design uses warm-toned residential interiors and
- * exteriors (kitchens, living rooms, suburban houses), so look for those.
- *
- * To swap:
- *   1. Pick a photo on unsplash.com → right-click image → Copy image address
- *   2. Replace the entry with the URL plus `?w={width}&q=80&auto=format`
- *   3. Or self-host: drop JPG into /public/templates/contractor/{name}.jpg
- *      and reference as /templates/contractor/{name}.jpg
+ * Photos live under `/public/templates/contractor/` (plus a couple reused
+ * from the landscaper + carpenter folders). All are free-licence Unsplash
+ * photos, see `public/templates/CREDITS.md`. They are stock examples, never
+ * presented as the company's own work: the projects gallery labels each
+ * one "Eksempelbilde".
  */
 
-const PICSUM = "https://picsum.photos/seed";
+const BASE = "/templates/contractor";
+
+const KITCHEN_FINISHED = `${BASE}/hero.webp`; // bright finished kitchen, island
+const KITCHEN_GALLEY = `${BASE}/kitchen2.webp`; // wood + white galley kitchen
+const PLASTER_HANDS = `${BASE}/plaster.webp`; // hands with taping knives
+const ROOM_GUTTED = `${BASE}/renovation.webp`; // gutted room with props
+const KITCHEN_COVERED = `${BASE}/kitchen-reno.webp`; // kitchen under renovation
+const BLUEPRINTS = `${BASE}/blueprints.webp`; // reading drawings on site (from behind)
+const OSB_EXTENSION = `${BASE}/osb.webp`; // OSB walls, extension in progress
+const DECK_STONE = "/templates/landscaper/deck.webp"; // wooden deck + stone wall
+const TABLE_SAW = "/templates/carpenter/18913.webp"; // table saw cutting
 
 export const CONTRACTOR_IMAGES = {
-  /** Hero — full-bleed warm interior (kitchen / living room). */
-  hero: `${PICSUM}/v-contractor-hero/2000/1200`,
+  /** Hero — full-bleed warm interior. */
+  hero: KITCHEN_FINISHED,
 
-  /** About — tall portrait of construction / interior work in progress. */
-  about: `${PICSUM}/v-contractor-about/900/1100`,
+  /** About — tall crop of interior work in progress. */
+  about: PLASTER_HANDS,
 
-  /** Service cards (6 cards in a 3x2 grid below the services banner). */
+  /** Service cards (6 cards in a 3x2 grid), same order as niche.services. */
   services: [
-    `${PICSUM}/v-contractor-svc-renovation/900/600`,
-    `${PICSUM}/v-contractor-svc-kitchen/900/600`,
-    `${PICSUM}/v-contractor-svc-extension/900/600`,
-    `${PICSUM}/v-contractor-svc-bath/900/600`,
-    `${PICSUM}/v-contractor-svc-terrace/900/600`,
-    `${PICSUM}/v-contractor-svc-carpentry/900/600`,
+    ROOM_GUTTED, // Boligrenovasjon
+    KITCHEN_GALLEY, // Kjøkken og stue
+    OSB_EXTENSION, // Tilbygg og påbygg
+    KITCHEN_COVERED, // Bad og våtrom (generic interior-reno shot)
+    DECK_STONE, // Terrasse og uterom
+    TABLE_SAW, // Snekkerarbeid
   ] as const,
 
-  /** Process steps (4 cards: consultation, design, construction, completion). */
-  process: [
-    `${PICSUM}/v-contractor-step-1/640/480`,
-    `${PICSUM}/v-contractor-step-2/640/480`,
-    `${PICSUM}/v-contractor-step-3/640/480`,
-    `${PICSUM}/v-contractor-step-4/640/480`,
-  ] as const,
+  /** Process steps (consultation, planning, construction, handover). */
+  process: [BLUEPRINTS, KITCHEN_COVERED, PLASTER_HANDS, KITCHEN_FINISHED] as const,
 
-  /** Project gallery (4 cards in a 2x2 grid). */
+  /** Example gallery (2x2). Labelled "Eksempelbilde" in the template. */
   projects: [
-    {
-      src: `${PICSUM}/v-contractor-proj-1/900/600`,
-      title: "Total boligrenovasjon",
-      location: "Oslo",
-    },
-    {
-      src: `${PICSUM}/v-contractor-proj-2/900/600`,
-      title: "Kjøkken og stueoppussing",
-      location: "Bergen",
-    },
-    {
-      src: `${PICSUM}/v-contractor-proj-3/900/600`,
-      title: "Påbygg",
-      location: "Stavanger",
-    },
-    {
-      src: `${PICSUM}/v-contractor-proj-4/900/600`,
-      title: "Total uteplass",
-      location: "Trondheim",
-    },
+    { src: KITCHEN_FINISHED, title: "Kjøkken" },
+    { src: KITCHEN_GALLEY, title: "Kjøkken og stue" },
+    { src: OSB_EXTENSION, title: "Tilbygg" },
+    { src: DECK_STONE, title: "Uteplass" },
   ] as const,
 
-  /** Final CTA — subtle warm interior used as background watermark. */
-  finalCta: `${PICSUM}/v-contractor-cta/1800/900`,
+  /** Final CTA — subtle background watermark. */
+  finalCta: KITCHEN_GALLEY,
 } as const;

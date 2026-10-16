@@ -4,12 +4,17 @@
  * One source of truth for:
  *   - Each niche template + a generic fallback
  *   - NACE prefix → niche slug mapping
- *   - Per-niche brand colour, hero image keyword, services, CTA
+ *   - Per-niche brand colour, hero image, services, CTA
  *
  * Most niches render through the generic `components/site/template.tsx`.
  * Niches that need bespoke layouts (e.g. landscaper) have a dedicated
  * component under `components/site/templates/{slug}.tsx` and are
  * dispatched on slug in the public + preview routes.
+ *
+ * Copy rule: the demo sites are sent to real, newly registered companies.
+ * Nothing here may read as a factual claim about them (years, ratings,
+ * certifications, guarantees, response times). Service descriptions stay
+ * generic ("Vi tar oppdrag innen …") and benefit chips are neutral labels.
  */
 
 export type NicheSlug =
@@ -32,14 +37,18 @@ export type HeroLayout = "split" | "centered" | "overlay";
 
 export interface NicheConfig {
   slug: NicheSlug;
-  /** Norwegian display name shown to operators in the niche dropdown. */
+  /** Norwegian display name (capitalised noun, e.g. "Rørlegger"). Shown to
+   *  operators in the niche dropdown and used lowercased in sentences. */
   displayName: string;
   /** Tailwind-friendly CSS variable for the primary brand colour (oklch). */
   primaryColor: string;
   /** Lighter accent for hero gradients. */
   accentColor: string;
-  /** Unsplash query used for the hero background image. */
+  /** Short descriptive keyword for the hero image (shown in admin). */
   heroImageKeyword: string;
+  /** Self-hosted hero photo under /public/templates/<niche>/ (credits in
+   *  public/templates/CREDITS.md). Used by the generic template. */
+  heroImage: string;
   /** Hero composition variant the renderer will pick. */
   heroLayout: HeroLayout;
   /** Services rendered in the services section. Most niches list 3; some
@@ -47,64 +56,66 @@ export interface NicheConfig {
   services: NicheService[];
   /** Call-to-action label on every CTA button. */
   ctaText: string;
-  /** Short benefit chips in the hero. Most niches list 3. */
+  /** Short, neutral chips in the hero (never claims). */
   benefitTags: string[];
 }
 
 const PLUMBER: NicheConfig = {
   slug: "plumber",
-  displayName: "Plumber",
+  displayName: "Rørlegger",
   primaryColor: "oklch(0.55 0.16 245)",
   accentColor: "oklch(0.92 0.04 245)",
   heroImageKeyword: "plumber",
+  heroImage: "/templates/plumber/hero.webp",
   heroLayout: "split",
   services: [
     {
-      title: "Akutt rørleggerhjelp",
+      title: "Lekkasjer og tette avløp",
       description:
-        "Vannlekkasje, tett avløp eller frosne rør? Vi rykker ut samme dag.",
+        "Vi tar oppdrag innen feilsøking og utbedring av lekkasjer, tette avløp og andre rørproblemer.",
     },
     {
       title: "Bad og våtrom",
       description:
-        "Komplett renovering med våtromssertifikat og fagansvar fra start til slutt.",
+        "Vi tar oppdrag innen rørleggerarbeid ved oppussing av bad, vaskerom og kjøkken.",
     },
     {
-      title: "Service og vedlikehold",
+      title: "Service og utskifting",
       description:
-        "Faste serviceavtaler som forebygger lekkasjer og forlenger levetid.",
+        "Bytte av blandebatterier, varmtvannsberedere og annet utstyr i boligen.",
     },
   ],
-  ctaText: "Bestill befaring",
-  benefitTags: ["Døgnvakt", "Fastpris", "5 års garanti"],
+  ctaText: "Ta kontakt",
+  benefitTags: ["Rørleggerarbeid", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
 const ELECTRICIAN: NicheConfig = {
   slug: "electrician",
-  displayName: "Electrician",
+  displayName: "Elektriker",
   primaryColor: "oklch(0.7 0.18 90)",
   accentColor: "oklch(0.95 0.05 90)",
   heroImageKeyword: "electrician",
+  heroImage: "/templates/electrician/hero.webp",
   heroLayout: "split",
   services: [
     {
-      title: "El-sjekk for bolig",
+      title: "Elektrisk arbeid i bolig",
       description:
-        "Få oversikt over anleggets tilstand med rapport og forsikringsgyldig kontroll.",
+        "Vi tar oppdrag innen nye kurser, stikkontakter, belysning og utbedringer i hjemmet.",
     },
     {
-      title: "Smarthus og lading",
+      title: "Elbillader og smarthus",
       description:
-        "Installasjon av elbillader, smarte lyskontroller og nettverk i hele boligen.",
+        "Montering av ladeboks og styring av lys og varme.",
     },
     {
-      title: "Næring og industri",
+      title: "Næring",
       description:
-        "Prosjektering og utførelse for kontorbygg, butikker og verksteder.",
+        "Elektriske installasjoner for kontorer, butikker og verksteder.",
     },
   ],
   ctaText: "Be om tilbud",
-  benefitTags: ["NEK 400", "Sentral godkjenning", "Fast elektriker"],
+  benefitTags: ["Elektrisk arbeid", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
 const RESTAURANT: NicheConfig = {
@@ -113,173 +124,161 @@ const RESTAURANT: NicheConfig = {
   primaryColor: "oklch(0.55 0.18 30)",
   accentColor: "oklch(0.95 0.04 30)",
   heroImageKeyword: "restaurant",
+  heroImage: "/templates/restaurant/hero.webp",
   heroLayout: "overlay",
   services: [
     {
       title: "Lunsj og middag",
-      description:
-        "Fersk meny basert på sesongens råvarer fra lokale produsenter.",
+      description: "Her kan menyen og åpningstidene deres presenteres.",
     },
     {
-      title: "Selskap og catering",
+      title: "Selskap",
       description:
-        "Bryllup, runde tall, firmafest. Vi planlegger og leverer hele opplevelsen.",
+        "Ta kontakt for å høre om muligheter for selskap og større grupper.",
     },
     {
       title: "Take-away",
-      description:
-        "Bestill via nett — klart til avhentning på 20 minutter.",
+      description: "Her kan informasjon om bestilling og henting stå.",
     },
   ],
-  ctaText: "Reserver bord",
-  benefitTags: ["Lokale råvarer", "Catering", "Vegetar / vegan"],
+  ctaText: "Ta kontakt",
+  benefitTags: ["Lunsj og middag", "Selskap", "Take-away"],
 };
 
 const SALON: NicheConfig = {
   slug: "salon",
-  displayName: "Salon",
+  displayName: "Frisør",
   primaryColor: "oklch(0.6 0.16 350)",
   accentColor: "oklch(0.96 0.04 350)",
   heroImageKeyword: "hair-salon",
+  heroImage: "/templates/salon/hero.webp",
   heroLayout: "centered",
   services: [
     {
       title: "Klipp og styling",
-      description:
-        "Personlig konsultasjon, presisjonsklipp og moderne styling for alle hårtyper.",
+      description: "Klipp, vask og styling for dame, herre og barn.",
     },
     {
       title: "Farge og striper",
-      description:
-        "Balayage, highlights og fargefornying med skånsomme, profesjonelle produkter.",
+      description: "Hel farge, striper og fargefornying.",
     },
     {
-      title: "Brud og bryllup",
-      description:
-        "Hår og oppsett til den store dagen — prøvetime inkludert.",
+      title: "Oppsett og festfrisyrer",
+      description: "Hår til bryllup, konfirmasjon og andre anledninger.",
     },
   ],
-  ctaText: "Book time",
-  benefitTags: ["Online booking", "Erfarne frisører", "Plantebaserte produkter"],
+  ctaText: "Bestill time",
+  benefitTags: ["Klipp", "Farge", "Styling"],
 };
 
 const AUTO_REPAIR: NicheConfig = {
   slug: "auto_repair",
-  displayName: "Auto Repair",
+  displayName: "Bilverksted",
   primaryColor: "oklch(0.5 0.2 25)",
   accentColor: "oklch(0.95 0.04 25)",
   heroImageKeyword: "auto-repair",
+  heroImage: "/templates/auto_repair/hero.webp",
   heroLayout: "split",
   services: [
     {
-      title: "EU-kontroll",
+      title: "Service",
       description:
-        "Godkjent kontrollverksted. Vi henter og leverer bilen om du ønsker.",
+        "Vi tar oppdrag innen periodisk service og vedlikehold av bilen.",
     },
     {
-      title: "Service og reparasjon",
+      title: "Reparasjon",
       description:
-        "Fra olje­skift til motorrenovering — alle merker, fast pris på vanlige jobber.",
+        "Feilsøking og reparasjon av motor, bremser, understell og elektronikk.",
     },
     {
       title: "Dekk og hjul",
-      description:
-        "Hjulskift, oppbevaring av dekk og avansert hjulstilling i moderne lokaler.",
+      description: "Hjulskift og andre oppdrag knyttet til dekk og hjul.",
     },
   ],
   ctaText: "Bestill verkstedtime",
-  benefitTags: ["Lånebil", "Alle merker", "Fast pris"],
+  benefitTags: ["Service", "Reparasjon", "Ta kontakt for pris"],
 };
 
 const LANDSCAPER: NicheConfig = {
   slug: "landscaper",
-  displayName: "Landscaper",
+  displayName: "Anleggsgartner",
   // Dark forest green as primary; cream as accent. Lime CTA is hardcoded
   // inside components/site/templates/landscaper.tsx since it's an identity
   // signal of this template.
   primaryColor: "oklch(0.32 0.05 145)",
   accentColor: "oklch(0.94 0.03 85)",
-  heroImageKeyword: "japanese-garden",
+  heroImageKeyword: "garden",
+  heroImage: "/templates/landscaper/hero.webp",
   heroLayout: "overlay",
   services: [
     {
       title: "Plenanlegg",
-      description:
-        "Gressplen og innsådd med øye for jordkvalitet og et stramt sluttresultat.",
+      description: "Ferdigplen og såing av ny plen, med forarbeid av jorda.",
     },
     {
       title: "Steinarbeid",
-      description:
-        "Solid steinlegging, oppkjørsler og terrasser som varer i mange år.",
+      description: "Steinlegging av oppkjørsler, gangveier og uteplasser.",
     },
     {
       title: "Gjerder",
-      description:
-        "Skreddersydde gjerder og levegger for personvern og en pen utstråling.",
+      description: "Gjerder og levegger tilpasset tomten og behovet ditt.",
     },
     {
       title: "Hagerenovasjon",
-      description:
-        "Komplett forvandling av hagen, fra prosjektering til siste plante.",
+      description: "Oppgradering av hagen, fra planlegging til beplantning.",
     },
     {
       title: "Grunnarbeid",
-      description:
-        "Utgraving, planering og drenering — det stødige fundamentet for alt vi bygger.",
+      description: "Utgraving, planering og drenering.",
     },
     {
       title: "Vedlikehold",
-      description:
-        "Profesjonell beskjæring og periodisk stell som holder hagen i toppform.",
+      description: "Beskjæring, plenklipp og jevnlig stell av hagen.",
     },
   ],
   ctaText: "Be om tilbud",
-  benefitTags: ["10+ års erfaring", "Fast pris", "Personlig service"],
+  benefitTags: ["Hage og uterom", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
 const CONTRACTOR: NicheConfig = {
   slug: "contractor",
-  displayName: "General Contractor",
+  displayName: "Entreprenør",
   // Warm charcoal as primary, sand cream as accent. Bronze CTA accent
   // is hardcoded inside components/site/templates/contractor.tsx.
   primaryColor: "oklch(0.18 0.012 70)",
   accentColor: "oklch(0.91 0.04 80)",
-  heroImageKeyword: "luxury-kitchen,interior",
+  heroImageKeyword: "kitchen,renovation",
+  heroImage: "/templates/contractor/hero.webp",
   heroLayout: "split",
   services: [
     {
-      title: "Total boligrenovasjon",
+      title: "Boligrenovasjon",
       description:
-        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles nytt fra grunnen.",
+        "Vi tar oppdrag innen oppussing og renovering av boliger, store og små.",
     },
     {
-      title: "Kjøkken og stueoppussing",
-      description:
-        "Sentrum i hjemmet, fortjent. Skreddersydde kjøkkenløsninger med åpne planløsninger som varer.",
+      title: "Kjøkken og stue",
+      description: "Oppussing av kjøkken og stue, inkludert endringer i planløsning.",
     },
     {
-      title: "Bygg og tilbygg",
-      description:
-        "Påbygg, ekstraetasjer og uthus — utført med byggeledelse og fagkyndighet i hvert trinn.",
+      title: "Tilbygg og påbygg",
+      description: "Påbygg, ekstraetasjer, garasjer og uthus.",
     },
     {
       title: "Bad og våtrom",
-      description:
-        "Sertifisert våtromsarbeid med fokus på drenering, fliser og funksjonalitet for hverdagen.",
+      description: "Oppussing av bad og vaskerom, fra riving til ferdig rom.",
     },
     {
       title: "Terrasse og uterom",
-      description:
-        "Terrasser, balkonger og uteplasser bygget for norsk klima og ditt hus' karakter.",
+      description: "Terrasser, balkonger og uteplasser.",
     },
     {
-      title: "Skreddersydd snekkerarbeid",
-      description:
-        "Garderober, hyller og innebygd møblering tegnet og bygget for nøyaktig din plass.",
+      title: "Snekkerarbeid",
+      description: "Garderober, hyller og innebygde løsninger.",
     },
   ],
-  ctaText: "Få et gratis tilbud",
-  benefitTags: ["Sentral godkjenning", "Fastpris", "Egen prosjektleder"],
+  ctaText: "Be om tilbud",
+  benefitTags: ["Bygg og oppussing", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
 const CARPENTER: NicheConfig = {
@@ -291,60 +290,57 @@ const CARPENTER: NicheConfig = {
   // shared niche-color UI bits (badges, etc.).
   primaryColor: "oklch(0.22 0.04 250)",
   accentColor: "oklch(0.86 0.05 70)",
-  heroImageKeyword: "luxury-kitchen,interior,wood",
+  heroImageKeyword: "carpentry,wood",
+  heroImage: "/templates/carpenter/2149343676.webp",
   heroLayout: "split",
   services: [
     {
-      title: "Total renovasjon",
+      title: "Renovering",
       description:
-        "Fra første tegning til siste finish — vi tar hele renoveringen og leverer et hjem som føles helt nytt.",
+        "Vi tar oppdrag innen oppussing og renovering av boliger og hytter.",
     },
     {
       title: "Kjøkken og bad",
       description:
-        "Skreddersydde kjøkkenløsninger og våtromsarbeid med sertifisering, presisjon og varig kvalitet.",
+        "Montering av kjøkken, innredning og snekkerarbeid ved oppussing av bad.",
     },
     {
       title: "Tilbygg og påbygg",
-      description:
-        "Påbygg, ekstraetasjer og uthus utført med fagkyndig prosjektledelse i hvert eneste trinn.",
+      description: "Påbygg, ekstraetasjer, garasjer og uthus.",
     },
     {
       title: "Nybygg",
-      description:
-        "Vi bygger boligen din fra grunnen — med åpne priser, dokumentert kvalitet og en stødig prosess.",
+      description: "Bygging av boliger, hytter og mindre bygg.",
     },
   ],
-  ctaText: "Få et gratis tilbud",
-  benefitTags: ["20+ års erfaring", "Sentral godkjenning", "Egen prosjektleder"],
+  ctaText: "Be om tilbud",
+  benefitTags: ["Snekkerarbeid", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
 const GENERIC: NicheConfig = {
   slug: "generic",
-  displayName: "Generic",
+  displayName: "Generell",
   primaryColor: "oklch(0.6 0.118 184.704)",
   accentColor: "oklch(0.95 0.03 184)",
-  heroImageKeyword: "norwegian-business",
+  heroImageKeyword: "workspace",
+  heroImage: "/templates/generic/hero.webp",
   heroLayout: "split",
   services: [
     {
-      title: "Personlig service",
-      description:
-        "Vi tar oss tid til å forstå behovene dine og leverer løsninger som passer.",
+      title: "Hva vi tilbyr",
+      description: "Her kan dere beskrive tjenestene eller produktene deres.",
     },
     {
-      title: "Lokal forankring",
-      description:
-        "Etablert i nærområdet med kjennskap til kundene og markedet i regionen.",
+      title: "Slik jobber vi",
+      description: "Her kan dere fortelle hvordan et oppdrag eller en bestilling foregår.",
     },
     {
-      title: "Kvalitet i alle ledd",
-      description:
-        "Fra første kontakt til ferdig leveranse — kvalitet er hovedfokus.",
+      title: "Ta kontakt",
+      description: "Send en e-post eller ring, så hører vi hva du trenger.",
     },
   ],
   ctaText: "Ta kontakt",
-  benefitTags: ["Lokal", "Erfaren", "Pålitelig"],
+  benefitTags: [],
 };
 
 const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
@@ -361,23 +357,30 @@ const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
 
 /**
  * NACE prefix → niche slug. Order is significant — the first matching prefix
- * wins. Always followed by a generic fallback.
+ * wins. Always followed by a generic fallback. Covers both the old SN2007
+ * codes and the SN2025 codes Brreg uses for newer registrations.
  */
 const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   ["43.22", "plumber"],
   ["43.21", "electrician"],
-  ["56.10", "restaurant"],
-  ["96.02", "salon"],
-  ["45.20", "auto_repair"],
+  ["56.10", "restaurant"], // SN2007 Restaurantvirksomhet
+  ["56.11", "restaurant"], // SN2025 Restaurantvirksomhet
+  ["56.12", "restaurant"], // SN2025 Mobile serveringssteder
+  ["96.02", "salon"], // SN2007 Frisering og annen skjønnhetspleie
+  ["96.21", "salon"], // SN2025 Frisering og barbering
+  ["45.20", "auto_repair"], // SN2007 Vedlikehold og reparasjon av motorvogner
+  ["95.31", "auto_repair"], // SN2025 Reparasjon og vedlikehold av motorvogner
   ["81.30", "landscaper"], // Beplantning av hager og parkanlegg
   ["01.30", "landscaper"], // Planteformering — small overlap, treat as landscaper
   ["41.20", "contractor"], // Bygging av boliger og andre bygninger
-  ["41.10", "contractor"], // Outvikling av byggeprosjekter
+  ["41.10", "contractor"], // Utvikling av byggeprosjekter
   ["43.99", "contractor"], // Annen spesialisert bygge- og anleggsvirksomhet
   ["43.39", "contractor"], // Annen ferdigjøring av bygninger
   // Snekker-spesifikke koder. Mer spesifikke enn 41.xx contractor-kodene.
   ["43.32", "carpenter"], // Snekkerarbeid (innebygging av kjøkken, dører, vinduer)
   ["16.23", "carpenter"], // Produksjon av andre bygningsartikler av tre
+  // Malere (43.34) og taktekkere (43.91) faller bevisst til generic:
+  // contractor-teksten handler om renovering/tilbygg og passer ikke dem.
 ];
 
 export function pickNicheFromNace(naceCode: string | null | undefined): NicheSlug {

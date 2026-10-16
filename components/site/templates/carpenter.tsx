@@ -2,13 +2,12 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  FileCheck,
   Hammer,
   Mail,
   MapPin,
-  MessageSquare,
+  MessageSquareQuote,
   Phone,
-  ShieldCheck,
-  Star,
   Wrench,
 } from "lucide-react";
 
@@ -16,6 +15,7 @@ import type { GeneratedSiteContent } from "@/lib/db/types";
 import type { NicheConfig } from "@/lib/templates";
 
 import { CARPENTER_IMAGES } from "./carpenter-images";
+import { foundedYear, yearsSinceFounded } from "./company-facts";
 
 /**
  * Bespoke carpenter / snekker template.
@@ -61,91 +61,109 @@ const NAV = [
   { label: "Prosjekter", href: "#prosjekter" },
   { label: "Om oss", href: "#om-oss" },
   { label: "Tjenester", href: "#tjenester" },
-  { label: "Anmeldelser", href: "#anmeldelser" },
+  { label: "Kundeomtaler", href: "#anmeldelser" },
   { label: "Kontakt", href: "#kontakt" },
 ];
 
-const PILLARS = [
-  {
-    icon: Wrench,
-    title: "Kompromissløst håndverk",
-    body: "Hvert prosjekt holdes til høyeste standard for konstruksjon og arkitektonisk finesse, ingen snarveier, ingen kompromisser.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "To tiår med erfaring",
-    body: "Med over 20 år som snekker bringer vi dyp lokalkunnskap og en dokumentert merittliste til hvert prosjekt.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Åpen kommunikasjon",
-    body: "Du holdes informert og involvert i hvert ledd, fra første befaring til siste sjekk, ingenting forblir usagt.",
-  },
-];
+// Everything below is generic process copy. No years, counts, ratings,
+// guarantees or team claims: the demo goes to newly registered companies.
+function pillars(company: Props["company"]) {
+  return [
+    {
+      icon: MapPin,
+      title: company.kommune ? `Lokalt i ${company.kommune}` : "Lokal snekker",
+      body: company.kommune
+        ? `${company.name} holder til i ${company.kommune}.`
+        : `Ta kontakt med ${company.name} for å høre om oppdraget ditt.`,
+    },
+    {
+      icon: Wrench,
+      title: "Snekkerarbeid",
+      body: "Vi tar oppdrag innen renovering, kjøkken, tilbygg og nybygg.",
+    },
+    {
+      icon: FileCheck,
+      title: "Registrert i Brønnøysund",
+      body: `Org.nr ${company.org_nr}.`,
+    },
+  ];
+}
 
-const STATS = [
-  { number: "20+ år", label: "som snekker i regionen" },
-  { number: "150+", label: "prosjekter fullført med glans" },
-  { number: "100%", label: "kundefokusert prosjektgjennomføring" },
-  { number: "5-stjerner", label: "omdømme blant lokale eiere" },
-];
+/** Hero fact strip, Brreg data only. "Etablert" only shows once the company
+ *  is at least a year old. */
+function facts(company: Props["company"]) {
+  const list: { number: string; label: string }[] = [];
+  if (company.kommune) list.push({ number: company.kommune, label: "Kommune" });
+  list.push({ number: company.org_nr, label: "Org.nr" });
+  if (yearsSinceFounded(company.founded_at) !== null) {
+    list.push({
+      number: String(foundedYear(company.founded_at)),
+      label: "Etablert",
+    });
+  }
+  return list;
+}
 
 const PROCESS = [
   {
     num: "01",
-    title: "Innledende konsultasjon",
-    body: "Vi setter oss ned med deg og forstår behovene, drømmene og budsjettet, uten forpliktelser.",
+    title: "Første samtale",
+    body: "Vi går gjennom hva du ønsker å få gjort, og avtaler befaring ved behov.",
     image: 0,
   },
   {
     num: "02",
-    title: "Planlegging og design",
-    body: "Vi tegner ut løsningen, henter inn nødvendige tillatelser og leverer et åpent prisestimat.",
+    title: "Planlegging",
+    body: "Løsning, materialvalg og pris avklares før arbeidet starter.",
     image: 1,
   },
   {
     num: "03",
-    title: "Byggekvalitet",
-    body: "Vårt erfarne team bygger med presisjon, og du har én prosjektleder som rapporterer hver uke.",
+    title: "Bygging",
+    body: "Arbeidet gjøres etter det vi har avtalt, og du holdes orientert underveis.",
     image: 2,
   },
   {
     num: "04",
     title: "Ferdigstillelse",
-    body: "Vi går nøye gjennom alt før overlevering, og er der etterpå hvis noe trenger justering.",
+    body: "Vi går gjennom resultatet sammen med deg når jobben er ferdig.",
     image: 3,
   },
 ];
 
 const PROJECTS = [
-  { title: "Total boligrenovasjon", caption: "Familiebolig, full overhaling" },
-  { title: "Kjøkken og spiseplass", caption: "Skreddersydd snekkerverk" },
-  { title: "Stueombygging", caption: "Åpen planløsning og innebygd møblering" },
-  { title: "Fasade og uteplass", caption: "Utvendig renovasjon og terrasse" },
+  { title: "Kjøkken", caption: "Eksempelbilde" },
+  { title: "Interiør", caption: "Eksempelbilde" },
+  { title: "Uterom", caption: "Eksempelbilde" },
+  { title: "Nybygg", caption: "Eksempelbilde" },
 ];
 
-const FAQS = [
-  {
-    q: "Hvilke områder dekker dere?",
-    a: "Vi tar oppdrag i hele regionen, boliger, hytter og næringsbygg. Ta kontakt så avklarer vi raskt om vi når frem til deg.",
-  },
-  {
-    q: "Hvor lang tid tar et typisk hjemmebygg eller renovering?",
-    a: "Det avhenger av omfang, et bad kan ta 4-6 uker, mens en totalrenovering tar 3-6 måneder. Du får alltid en realistisk tidsplan før vi starter.",
-  },
-  {
-    q: "Kan dere lage endringer underveis i et oppdrag?",
-    a: "Ja, så lenge det er forsvarlig. Vi dokumenterer endringer skriftlig og du får oppdatert pris før vi går videre.",
-  },
-  {
-    q: "Hva inngår i et tilbud fra dere?",
-    a: "Befaring, detaljert beskrivelse av arbeidet, åpen pris med materialer og arbeid, samt tidsplan. Tilbudet er gratis og uforpliktende.",
-  },
-  {
-    q: "Jobber dere sammen med eksterne arkitekter eller designere?",
-    a: "Absolutt, vi samarbeider gjerne med din arkitekt eller interiørdesigner, eller leverer egen prosjektering hvis du foretrekker det.",
-  },
-];
+function faqs(company: Props["company"]) {
+  return [
+    {
+      q: "Hvilke områder dekker dere?",
+      a: company.kommune
+        ? `Vi holder til i ${company.kommune}. Fortell oss hvor oppdraget er, så avklarer vi om vi kan ta det.`
+        : "Fortell oss hvor oppdraget er, så avklarer vi om vi kan ta det.",
+    },
+    {
+      q: "Hvor lang tid tar en renovering?",
+      a: "Det avhenger av omfang og materialvalg. Ta kontakt, så ser vi på prosjektet ditt og gir deg et anslag.",
+    },
+    {
+      q: "Kan jeg gjøre endringer underveis?",
+      a: "Ta det opp med oss så tidlig som mulig, så avtaler vi endringen og eventuell prisjustering før vi går videre.",
+    },
+    {
+      q: "Hva bør jeg ha klart før jeg tar kontakt?",
+      a: "En kort beskrivelse av hva du ønsker, gjerne med bilder og omtrentlige mål. Det gjør det enklere å gi deg et anslag.",
+    },
+    {
+      q: "Samarbeider dere med arkitekt eller interiørarkitekt?",
+      a: "Ja, vi samarbeider gjerne med arkitekten eller designeren du allerede har valgt.",
+    },
+  ];
+}
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -177,10 +195,14 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
   const headline = content.hero_headline ?? `Bygger din visjon, skaper varige rom`;
   const subheadline =
     content.hero_subheadline ??
-    `Fra skreddersydde nybygg til kjøkken- og badrenoveringer, ${company.name} kombinerer 20+ år med pålitelig håndverk og ærlig prosjektledelse i hvert eneste hjem vi tar i.`;
+    `Fra nybygg til kjøkken og bad: ${company.name} tar oppdrag innen snekkerarbeid${
+      company.kommune ? ` i ${company.kommune}` : ""
+    }.`;
   const about =
     content.about_paragraph ??
-    `${company.name} er en familieeid snekkerbedrift med over 20 års erfaring i regionen. Vi tar personlig hånd om hvert prosjekt, med ærlige priser, nitid fokus på detaljer og en stødig prosess fra første konsultasjon til siste finish.`;
+    `${company.name} er en snekkerbedrift${
+      company.kommune ? ` i ${company.kommune}` : ""
+    }. Fortell oss hva du planlegger, så finner vi ut av resten sammen.`;
 
   return (
     <div
@@ -227,7 +249,7 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
         subheadline={subheadline}
       />
 
-      <Pillars />
+      <Pillars company={company} />
 
       <About company={company} about={about} />
 
@@ -237,11 +259,11 @@ export function CarpenterTemplate({ company, niche, content }: Props) {
 
       <Process />
 
-      <Testimonials company={company} />
+      <Testimonials />
 
       <Projects />
 
-      <FAQ />
+      <FAQ company={company} />
 
       <FinalCta company={company} phone={phone} phoneDisplay={phoneDisplay} />
 
@@ -302,7 +324,7 @@ function TopBar({
             className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: NAVY }}
           >
-            Få et gratis tilbud
+            Be om tilbud
             <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </div>
@@ -369,9 +391,7 @@ function Hero({
         <div className="space-y-7 text-white">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
-            {company.kommune
-              ? `${company.kommune}s foretrukne snekker`
-              : "Regionens foretrukne snekker"}
+            {company.kommune ? `Snekker i ${company.kommune}` : "Snekker"}
           </span>
 
           <h1
@@ -399,7 +419,7 @@ function Hero({
               href="#kontakt"
               className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-white/90"
             >
-              Få et gratis tilbud
+              Be om tilbud
               <ArrowRight className="h-4 w-4" />
             </a>
             {phone ? (
@@ -415,7 +435,7 @@ function Hero({
                 </span>
                 <span className="leading-tight">
                   <span className="block text-[10px] uppercase tracking-wider text-white/60">
-                    Snakk med en fagperson
+                    Ring oss
                   </span>
                   <span className="block font-medium">{phoneDisplay}</span>
                 </span>
@@ -423,8 +443,8 @@ function Hero({
             ) : null}
           </div>
 
-          <div className="grid grid-cols-2 gap-6 border-t border-white/15 pt-7 sm:grid-cols-4">
-            {STATS.map((s) => (
+          <div className="grid grid-cols-2 gap-6 border-t border-white/15 pt-7 sm:grid-cols-3">
+            {facts(company).map((s) => (
               <div key={s.number}>
                 <div className="text-2xl font-semibold text-white sm:text-3xl">
                   {s.number}
@@ -479,21 +499,10 @@ function HeroForm() {
       <Field label="Kort melding om prosjektet *">
         <textarea
           rows={4}
-          placeholder="Fortell oss litt om planene dine, så kommer vi tilbake til deg samme dag."
+          placeholder="Fortell oss litt om planene dine."
           className="w-full resize-none rounded-md border border-black/10 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-700 focus:outline-none"
         />
       </Field>
-
-      <label className="mt-3 flex items-start gap-2 text-[11px] leading-snug text-slate-700">
-        <input
-          type="checkbox"
-          className="mt-0.5 h-3.5 w-3.5 rounded border-slate-400"
-        />
-        <span>
-          Jeg ønsker av og til å motta nyhetsbrev og tips om
-          oppussingsprosjekter.
-        </span>
-      </label>
 
       <button
         type="button"
@@ -525,14 +534,15 @@ function Field({
 
 // ─── pillars ────────────────────────────────────────────────────────────────
 
-function Pillars() {
+function Pillars({ company }: { company: Props["company"] }) {
+  const list = pillars(company);
   return (
     <section
       className="py-9 sm:py-11"
       style={{ background: SAND }}
     >
       <div className="mx-auto grid max-w-7xl gap-7 px-6 sm:grid-cols-3 sm:gap-10">
-        {PILLARS.map((p, i) => (
+        {list.map((p, i) => (
           <div
             key={p.title}
             className={
@@ -574,20 +584,20 @@ function About({
         <div className="overflow-hidden rounded-xl shadow-[0_24px_60px_-30px_rgba(0,0,0,0.45)]">
           <img
             src={CARPENTER_IMAGES.about}
-            alt="Pågående snekkerarbeid"
+            alt="Eksempelbilde: snekkerarbeid"
             className="aspect-[4/5] h-full w-full object-cover"
           />
         </div>
 
         <div>
           <h2 className="text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-            Et navn bygget
+            Hvem
             <br />
             <span
               style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
               className="font-medium"
             >
-              på integritet
+              vi er
             </span>
           </h2>
 
@@ -597,12 +607,14 @@ function About({
 
           <div className="mt-8 space-y-6">
             <Subblock
-              title={`Tillit fra ${company.kommune ?? "lokale"} huseiere`}
-              body="Vårt omdømme er bygget på tiår med ærlig, pålitelig service og den typen tillit som bare kommer av å levere det vi lover, gang etter gang."
+              title="Hva vi tar på oss"
+              body="Renovering, kjøkken og bad, tilbygg og nybygg. Se tjenestene lenger ned."
             />
             <Subblock
-              title="Visjonen din, ekspertgjennomført"
-              body="Enten det er en kjøkkenforvandling eller en total renovering, styres hvert valg av hva som er best for hjemmet ditt og familien din."
+              title="Hvor vi holder til"
+              body={`${
+                company.kommune ? `Vi holder til i ${company.kommune}. ` : ""
+              }Ta kontakt for å høre om vi kan ta oppdraget ditt.`}
             />
           </div>
 
@@ -611,7 +623,7 @@ function About({
             className="mt-9 inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             style={{ background: NAVY }}
           >
-            Møt teamet vårt
+            Se tjenestene
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
@@ -715,7 +727,7 @@ function DreamHome() {
         <div className="relative aspect-[5/3] lg:aspect-auto lg:min-h-[480px]">
           <img
             src={CARPENTER_IMAGES.splitProject}
-            alt="Pågående byggeprosjekt"
+            alt="Eksempelbilde: byggeprosjekt"
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
@@ -736,22 +748,22 @@ function DreamHome() {
               i dag
             </h3>
             <p className="mt-5 max-w-md text-sm leading-relaxed text-white/75 sm:text-base">
-              Teamet vårt bruker profesjonell prosjektledelse og høyverdig
-              håndverk for å sikre at hjemmet ditt blir gjenfødt med finesse.
+              Fortell oss hva du ønsker å få gjort, så finner vi en løsning
+              som passer boligen din.
             </p>
 
             <ul className="mt-6 space-y-2 text-sm text-white/85">
               <li className="flex items-start gap-2">
                 <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-white/60" />
-                Gratis innledende konsultasjon
+                Renovering og tilbygg
               </li>
               <li className="flex items-start gap-2">
                 <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-white/60" />
-                Realistisk prisplanlegging og oppfølging
+                Kjøkken og bad
               </li>
               <li className="flex items-start gap-2">
                 <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-white/60" />
-                Én prosjektleder gjennom hele prosessen
+                Nybygg
               </li>
             </ul>
 
@@ -760,7 +772,7 @@ function DreamHome() {
               className="mt-8 inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium text-slate-900 transition-opacity hover:opacity-95"
               style={{ background: SAND }}
             >
-              Få et gratis tilbud
+              Be om tilbud
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
@@ -818,7 +830,9 @@ function Process() {
 
 // ─── testimonials ───────────────────────────────────────────────────────────
 
-function Testimonials({ company }: { company: Props["company"] }) {
+function Testimonials() {
+  // Placeholder only: a new company has no reviews, and invented ones
+  // would be misleading. Clearly marked as a slot for their own.
   return (
     <section
       id="anmeldelser"
@@ -827,45 +841,24 @@ function Testimonials({ company }: { company: Props["company"] }) {
     >
       <div className="mx-auto max-w-3xl px-6 text-center">
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Anbefalt av{" "}
+          Hva{" "}
           <span
             style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
             className="font-medium text-white/90"
           >
-            våre kunder
+            kundene sier
           </span>
         </h2>
 
-        <div className="mx-auto mt-10 max-w-xl rounded-xl bg-white p-7 text-left text-slate-900 shadow-lg">
-          <div className="flex items-center gap-0.5 text-amber-500">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Star key={i} className="h-4 w-4 fill-amber-500" />
-            ))}
-          </div>
-          <p className="mt-4 text-[15px] leading-relaxed text-slate-800">
-            «{company.name} leverte langt over forventning. Hele teamet var
-            ordentlige, presise og åpne om priser hele veien, en av få
-            entreprenører jeg faktisk ville anbefale videre.»
+        <div className="mx-auto mt-10 max-w-xl rounded-xl border border-dashed border-white/25 p-7 text-center">
+          <MessageSquareQuote className="mx-auto h-6 w-6 text-white/40" aria-hidden />
+          <p className="mt-4 text-[15px] text-white/80">
+            Her kommer kundeomtalene deres
           </p>
-          <div className="mt-5 flex items-center gap-3">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
-              {initials("Kari Hansen")}
-            </span>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold text-slate-900">
-                Kari Hansen
-              </div>
-              <div className="text-xs text-slate-500">
-                Privatkunde i {company.kommune ?? "regionen"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-center gap-2 text-white/50">
-          <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
-          <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
-          <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+          <p className="mt-2 text-xs text-white/50">
+            Eksempelplass. Når de første kundene har gitt tilbakemelding, kan
+            omtalene vises her.
+          </p>
         </div>
       </div>
     </section>
@@ -880,7 +873,7 @@ function Projects() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Våre bygge{" "}
+            Plass til deres{" "}
             <span
               style={{ fontFamily: "var(--site-serif)", fontStyle: "italic" }}
               className="font-medium"
@@ -888,12 +881,10 @@ function Projects() {
               prosjekter
             </span>
           </h2>
-          <a
-            href="#kontakt"
-            className="text-sm font-medium text-slate-700 underline underline-offset-4 hover:text-slate-900"
-          >
-            Se alle prosjekter →
-          </a>
+          <p className="max-w-sm text-sm text-slate-600">
+            Bildene under er eksempelbilder og byttes ut med bilder fra egne
+            oppdrag.
+          </p>
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -925,7 +916,7 @@ function Projects() {
 
 // ─── FAQ ────────────────────────────────────────────────────────────────────
 
-function FAQ() {
+function FAQ({ company }: { company: Props["company"] }) {
   return (
     <section className="py-20 sm:py-24" style={{ background: CREAM }}>
       <div className="mx-auto max-w-7xl px-6">
@@ -973,7 +964,7 @@ function FAQ() {
           </div>
 
           <div className="space-y-3">
-            {FAQS.map((f) => (
+            {faqs(company).map((f) => (
               <details
                 key={f.q}
                 className="group rounded-lg border border-slate-200 bg-white px-5 py-4 open:shadow-sm"
@@ -1031,18 +1022,17 @@ function FinalCta({
             >
               visjon
             </span>{" "}
-            med eksperter
+            sammen med deg
           </h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80">
-            La oss ta praten. Vi gir deg et åpent prisestimat, en realistisk
-            tidsplan og en stødig prosess fra første dag, uten forpliktelser.
+            Ta kontakt for å snakke om hva du ønsker å få gjort.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <a
               href="#kontakt"
               className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white/95"
             >
-              Få et gratis tilbud
+              Be om tilbud
               <ArrowRight className="h-4 w-4" />
             </a>
             {phone ? (
@@ -1058,7 +1048,7 @@ function FinalCta({
                 </span>
                 <span className="leading-tight">
                   <span className="block text-[10px] uppercase tracking-wider text-white/60">
-                    Snakk med en fagperson
+                    Ring oss
                   </span>
                   <span className="block font-medium">{phoneDisplay}</span>
                 </span>
@@ -1109,8 +1099,7 @@ function Footer({
             </span>
           </div>
           <p className="mt-4 text-xs leading-relaxed text-white/55">
-            Snekkerbedrift med ærlige priser, dokumentert kvalitet og en stødig
-            prosess.
+            Snekkerarbeid{company.kommune ? ` i ${company.kommune}` : ""}.
           </p>
         </div>
 

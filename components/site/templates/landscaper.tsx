@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  Award,
   Check,
   ChevronDown,
   Leaf,
   Mail,
   MapPin,
   MessageCircle,
+  MessageSquareQuote,
   Minus,
   Phone,
   Plus,
-  Sparkles,
+  Users,
 } from "lucide-react";
 
 import type { GeneratedSiteContent } from "@/lib/db/types";
@@ -49,7 +49,36 @@ const LIME = "#beDd25";
 const FOREST = "#274839";
 const CREAM = "#f5f1e3";
 
-const PICSUM = "https://picsum.photos/seed";
+// Self-hosted, free-licence Unsplash photos (credits in
+// public/templates/CREDITS.md). Work/result shots only, no staff faces.
+const IMG = {
+  hero: "/templates/landscaper/hero.webp", // brick path + planted border
+  sod: "/templates/landscaper/sod.webp", // hands laying turf
+  bricks: "/templates/landscaper/bricks.webp", // laying paving stones
+  deck: "/templates/landscaper/deck.webp", // deck + dry-stone wall
+  path: "/templates/landscaper/path.webp", // gravel path, border, lawn
+  lawn: "/templates/landscaper/lawn.webp", // landscaped lawn + paths
+  mower: "/templates/landscaper/mower.webp", // mower on grass
+} as const;
+
+/** One image per niche service, same order as LANDSCAPER.services. */
+const SERVICE_IMAGES = [
+  IMG.sod, // Plenanlegg
+  IMG.bricks, // Steinarbeid
+  IMG.deck, // Gjerder (closest match: built boundary/wall)
+  IMG.path, // Hagerenovasjon
+  IMG.lawn, // Grunnarbeid
+  IMG.mower, // Vedlikehold
+];
+
+const GALLERY_IMAGES = [
+  IMG.hero,
+  IMG.lawn,
+  IMG.deck,
+  IMG.path,
+  IMG.sod,
+  IMG.bricks,
+];
 
 function bestPhone(c: Props["company"]): string | null {
   return c.mobile?.trim() || c.phone?.trim() || null;
@@ -84,53 +113,48 @@ function fullAddress(c: Props["company"]): string | null {
   return parts.length ? parts.join(", ") : null;
 }
 
-const STATS = [
-  { value: "10+", label: "Års erfaring" },
-  { value: "150+", label: "Fullførte prosjekter" },
-  { value: "100%", label: "Fornøyde kunder" },
-  { value: "10/10", label: "Vurdert av kundene" },
-];
-
+// Generic process + FAQ copy. No years, counts, ratings, guarantees or
+// response-time promises: the demo goes to newly registered companies.
 const HOW_IT_WORKS = [
   {
     n: "01",
     title: "Befaring",
-    body: "Vi kommer på et uforpliktende besøk, kartlegger uterommet og lytter til ønskene dine.",
+    body: "Vi ser på uterommet sammen med deg og hører hva du ønsker deg.",
   },
   {
     n: "02",
     title: "Tilbud",
-    body: "Du får et tydelig, detaljert tilbud — ingen skjulte kostnader eller overraskelser.",
+    body: "Du får et skriftlig tilbud med beskrivelse av arbeidet.",
   },
   {
     n: "03",
-    title: "Levering",
-    body: "Vi utfører arbeidet med presisjon og rydder pent etter oss. Du nyter resultatet.",
+    title: "Utførelse",
+    body: "Arbeidet gjøres etter det vi har avtalt.",
   },
 ];
 
-const FAQ = [
-  {
-    q: "Hvor raskt kan jeg vente et tilbud?",
-    a: "Vi tar kontakt innen 24 timer etter forespørsel. Som regel avtaler vi befaring i samme uke og leverer skriftlig tilbud kort tid etter.",
-  },
-  {
-    q: "Hvilke områder dekker dere?",
-    a: "Vi jobber i og rundt nærområdet — ta kontakt med adresse, så bekrefter vi om det er innenfor vanlig kjøreradius.",
-  },
-  {
-    q: "Tar dere hånd om bortkjøring av hageavfall?",
-    a: "Ja. Vi rydder, frakter bort og leverer på godkjent mottak. Det inngår i tilbudet med mindre annet er avtalt.",
-  },
-  {
-    q: "Gir dere garanti på steinarbeid?",
-    a: "Ja, vi gir 5 års garanti på fagmessig utført steinlegging og terrassearbeid, forutsatt normal bruk og vedlikehold.",
-  },
-  {
-    q: "Når er det best å anlegge ny plen?",
-    a: "April–juni og august–september gir best resultat. Vi planlegger gjerne i god tid for å treffe optimal sesong.",
-  },
-];
+function faqItems(company: Props["company"]) {
+  return [
+    {
+      q: "Hvordan får jeg et tilbud?",
+      a: "Send en kort beskrivelse av hva du ønsker, gjerne med bilder, eller ring oss. Så avtaler vi videre derfra.",
+    },
+    {
+      q: "Hvilke områder dekker dere?",
+      a: company.kommune
+        ? `Vi holder til i ${company.kommune}. Ta kontakt med adressen, så avklarer vi om vi kan ta oppdraget.`
+        : "Ta kontakt med adressen, så avklarer vi om vi kan ta oppdraget.",
+    },
+    {
+      q: "Tar dere hånd om hageavfall?",
+      a: "Spør oss om dette når du ber om tilbud, så avtaler vi hva som skal være med.",
+    },
+    {
+      q: "Når er det best å anlegge ny plen?",
+      a: "Vår og tidlig høst er vanligvis gode tidspunkter, når det er fuktig og ikke for varmt.",
+    },
+  ];
+}
 
 export function LandscaperTemplate({ company, niche, content }: Props) {
   const phone = bestPhone(company);
@@ -141,9 +165,11 @@ export function LandscaperTemplate({ company, niche, content }: Props) {
   const subheadline = content.hero_subheadline ?? "Håndverk i hver meter";
   const about =
     content.about_paragraph ??
-    `Vi forvandler uterommet ditt med stilren brostein, frodig plen og førsteklasses anlegg. Kvalitet du gleder deg over i mange år.`;
+    `${company.name} tar oppdrag innen plen, beplantning, steinarbeid og gjerder${
+      company.kommune ? ` i ${company.kommune}` : ""
+    }.`;
   const address = fullAddress(company);
-  const heroBg = `${PICSUM}/v-ezra-hero-${company.org_nr}/1800/1200`;
+  const heroBg = IMG.hero;
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900 antialiased">
@@ -159,14 +185,13 @@ export function LandscaperTemplate({ company, niche, content }: Props) {
           about={about}
           heroBg={heroBg}
         />
-        <WhyChoose />
+        <WhyChoose company={company} />
         <About company={company} about={about} />
-        <Services niche={niche} company={company} />
-        <Stats company={company} />
-        <Outdoor company={company} phone={phone} />
+        <Services niche={niche} />
+        <Outdoor phone={phone} />
         <HowItWorks />
-        <Review company={company} />
-        <Gallery orgNr={company.org_nr} />
+        <Review />
+        <Gallery />
         <Faq company={company} phone={phone} />
       </main>
 
@@ -237,7 +262,7 @@ function Header({
             className="inline-flex h-9 items-center rounded-full px-4 text-sm font-semibold text-zinc-900 transition-opacity hover:opacity-90"
             style={{ backgroundColor: LIME }}
           >
-            Gratis befaring
+            Be om tilbud
           </a>
         </div>
       </div>
@@ -325,13 +350,20 @@ function Hero({
             </div>
           ) : null}
 
+          {/* Fact strip — Brreg data only. */}
           <div
-            className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl p-6 sm:grid-cols-4"
+            className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl p-6 sm:grid-cols-3"
             style={{ backgroundColor: CREAM, color: FOREST }}
           >
-            {STATS.map((s) => (
+            {[
+              { value: "Anleggsgartner", label: "Bransje" },
+              ...(company.kommune
+                ? [{ value: company.kommune, label: "Kommune" }]
+                : []),
+              { value: company.org_nr, label: "Org.nr" },
+            ].map((s) => (
               <div key={s.label}>
-                <div className="text-2xl font-semibold sm:text-3xl">
+                <div className="text-lg font-semibold sm:text-xl">
                   {s.value}
                 </div>
                 <div className="mt-1 text-xs text-zinc-600 sm:text-[13px]">
@@ -388,7 +420,8 @@ function ContactForm({ company }: { company: Props["company"] }) {
         Send forespørsel
       </button>
       <p className="mt-3 text-center text-[11px] text-zinc-500">
-        {company.name} svarer normalt innen 24 timer
+        Demo-skjema. Ta direkte kontakt med {company.name} på telefon eller
+        e-post.
       </p>
     </form>
   );
@@ -422,46 +455,49 @@ function Field({
 
 // ─── WhyChoose ───────────────────────────────────────────────────────────────
 
-const WHY = [
-  {
-    icon: Award,
-    title: "Erfaring og kvalitet",
-    body: "Bredt fagmiljø og solide referanser fra både private og næring.",
-  },
-  {
-    icon: Sparkles,
-    title: "Tydelig leveranse",
-    body: "Du vet hva som skjer når, og hva det koster — fra dag én.",
-  },
-  {
-    icon: Leaf,
-    title: "Bærekraftig materialvalg",
-    body: "Vi prioriterer holdbare materialer og planter tilpasset klimaet.",
-  },
-];
+function whyItems(company: Props["company"]) {
+  return [
+    {
+      icon: Leaf,
+      title: "Hage og uterom",
+      body: "Plen, beplantning, steinarbeid, gjerder og vedlikehold.",
+    },
+    {
+      icon: Users,
+      title: "Privat og bedrift",
+      body: "Vi tar oppdrag for både privatpersoner, borettslag og bedrifter.",
+    },
+    {
+      icon: MapPin,
+      title: company.kommune ? `Lokalt i ${company.kommune}` : "Lokalt firma",
+      body: company.kommune
+        ? `${company.name} holder til i ${company.kommune}.`
+        : `Ta kontakt med ${company.name} for å høre om oppdraget ditt.`,
+    },
+  ];
+}
 
-function WhyChoose() {
+function WhyChoose({ company }: { company: Props["company"] }) {
   return (
     <section className="py-20 sm:py-24" style={{ backgroundColor: CREAM }}>
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            Hvorfor velge oss
+            Hva vi gjør
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Lidenskap for et{" "}
+            Uterom med{" "}
             <em className="font-medium" style={{ fontStyle: "italic" }}>
               naturlig glød
             </em>
           </h2>
           <p className="mt-4 text-zinc-600">
-            Kundene våre stoler på oss for hagestell og anlegg med øye for
-            detaljer. Fra jevnt vedlikehold til komplette forvandlinger.
+            Fra jevnlig vedlikehold til større hageprosjekter.
           </p>
         </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {WHY.map((w) => {
+          {whyItems(company).map((w) => {
             const Icon = w.icon;
             return (
               <div
@@ -498,14 +534,14 @@ function About({
   company: Props["company"];
   about: string;
 }) {
-  const aboutImg = `${PICSUM}/v-ezra-about-${company.org_nr}/900/700`;
+  const aboutImg = IMG.lawn;
   return (
     <section id="about" className="bg-white py-20 sm:py-24">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:gap-14">
         <div>
           <img
             src={aboutImg}
-            alt=""
+            alt="Eksempelbilde: hageanlegg"
             className="aspect-[5/4] w-full rounded-2xl object-cover"
           />
         </div>
@@ -514,16 +550,16 @@ function About({
             Om {company.name}
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Kvalitet du kan stole på
+            Hagen er vårt fag
           </h2>
           <p className="mt-4 text-zinc-600 sm:text-lg sm:leading-relaxed">
             {about}
           </p>
           <ul className="mt-6 space-y-2.5 text-sm text-zinc-700">
             {[
-              "Pålitelig service og tydelig kommunikasjon",
-              "Erfarne fagfolk i alle ledd",
-              "Bærekraftige materialer og metoder",
+              "Plenanlegg og beplantning",
+              "Steinlegging, gjerder og levegger",
+              "Grunnarbeid og vedlikehold",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2.5">
                 <span
@@ -544,13 +580,7 @@ function About({
 
 // ─── Services ────────────────────────────────────────────────────────────────
 
-function Services({
-  niche,
-  company,
-}: {
-  niche: NicheConfig;
-  company: Props["company"];
-}) {
+function Services({ niche }: { niche: NicheConfig }) {
   return (
     <section id="services" className="bg-white pb-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -574,7 +604,7 @@ function Services({
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {niche.services.map((s, i) => {
-            const img = `${PICSUM}/v-ezra-svc-${company.org_nr}-${i}/700/500`;
+            const img = SERVICE_IMAGES[i % SERVICE_IMAGES.length]!;
             return (
               <article
                 key={s.title}
@@ -602,55 +632,10 @@ function Services({
   );
 }
 
-// ─── Stats ───────────────────────────────────────────────────────────────────
-
-function Stats({ company }: { company: Props["company"] }) {
-  return (
-    <section className="py-20" style={{ backgroundColor: CREAM }}>
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            Vurdert 10/10 av kundene
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Tall som taler for seg selv
-          </h2>
-          <p className="mt-4 text-zinc-600">
-            Kundene våre stoler på {company.name} for hagestell og anlegg
-            med lidenskap og sans for detaljer.
-          </p>
-        </div>
-
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
-          {STATS.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-stone-200 bg-white p-6 text-center"
-            >
-              <div className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                {s.value}
-              </div>
-              <div className="mt-2 text-xs uppercase tracking-wider text-zinc-500 sm:text-sm">
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ─── Outdoor (dark CTA) ──────────────────────────────────────────────────────
 
-function Outdoor({
-  company,
-  phone,
-}: {
-  company: Props["company"];
-  phone: string | null;
-}) {
-  const bg = `${PICSUM}/v-ezra-outdoor-${company.org_nr}/1800/900`;
+function Outdoor({ phone }: { phone: string | null }) {
+  const bg = IMG.path;
   return (
     <section className="relative isolate overflow-hidden py-24 text-white sm:py-28">
       <img
@@ -670,14 +655,14 @@ function Outdoor({
           className="text-xs font-semibold uppercase tracking-[0.18em]"
           style={{ color: LIME }}
         >
-          Gratis hagebefaring
+          Ta kontakt
         </p>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
           Naturlig glød
         </h2>
         <p className="mt-5 text-base text-white/85 sm:text-lg">
-          Vi bruker bærekraftige materialer og solide teknikker for å skape
-          en hage som lever. Din visjon, vårt håndverk.
+          Fortell oss hva du ønsker deg av uterommet, så tar vi en prat om
+          muligheter og pris.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -686,7 +671,7 @@ function Outdoor({
             className="inline-flex h-12 items-center rounded-full px-6 text-sm font-semibold text-zinc-900 transition-opacity hover:opacity-90"
             style={{ backgroundColor: LIME }}
           >
-            Be om gratis befaring
+            Be om tilbud
           </a>
           {phone ? (
             <a
@@ -714,7 +699,7 @@ function HowItWorks() {
             Slik fungerer det
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Forvandle uterommet med ekspertråd
+            Fra idé til ferdig uterom
           </h2>
         </div>
 
@@ -742,33 +727,23 @@ function HowItWorks() {
 
 // ─── Review ──────────────────────────────────────────────────────────────────
 
-function Review({ company }: { company: Props["company"] }) {
+function Review() {
+  // Placeholder only: a new company has no reviews, and invented ones
+  // would be misleading. Clearly marked as a slot for their own.
   return (
     <section className="bg-white pb-24">
       <div className="mx-auto max-w-4xl px-5 sm:px-8">
-        <figure
-          className="rounded-2xl p-10 sm:p-14"
-          style={{ backgroundColor: CREAM }}
-        >
-          <blockquote className="text-balance text-2xl font-medium leading-snug tracking-tight sm:text-3xl">
-            &ldquo;Helt fantastisk tjeneste. Plenen min har aldri sett så
-            grønn og frisk ut. Teamet var profesjonelt, presist og hadde
-            øye for hver minste detalj. Hagen min er nå et levende,
-            fargerikt paradis.&rdquo;
-          </blockquote>
-          <figcaption className="mt-8 flex items-center gap-3 text-sm">
-            <span
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full font-semibold text-zinc-900"
-              style={{ backgroundColor: LIME }}
-            >
-              D
-            </span>
-            <span>
-              <span className="block font-semibold">Daniel K.</span>
-              <span className="block text-zinc-500">
-                Eiendomsforvalter — Kunde hos {company.name}
-              </span>
-            </span>
+        <figure className="rounded-2xl border border-dashed border-stone-300 p-10 text-center sm:p-14">
+          <MessageSquareQuote
+            className="mx-auto h-8 w-8 text-zinc-400"
+            aria-hidden
+          />
+          <p className="mt-5 text-xl font-medium tracking-tight text-zinc-700 sm:text-2xl">
+            Plass til deres første kundeomtale
+          </p>
+          <figcaption className="mt-3 text-sm text-zinc-500">
+            Eksempelplass. Når de første kundene har gitt tilbakemelding, kan
+            omtalene vises her.
           </figcaption>
         </figure>
       </div>
@@ -778,11 +753,8 @@ function Review({ company }: { company: Props["company"] }) {
 
 // ─── Gallery ─────────────────────────────────────────────────────────────────
 
-function Gallery({ orgNr }: { orgNr: string }) {
-  const imgs = Array.from(
-    { length: 6 },
-    (_, i) => `${PICSUM}/v-ezra-gal-${orgNr}-${i}/800/800`
-  );
+function Gallery() {
+  const imgs = GALLERY_IMAGES;
   return (
     <section id="gallery" className="bg-white pb-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -792,9 +764,14 @@ function Gallery({ orgNr }: { orgNr: string }) {
               Galleri
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Våre <em style={{ fontStyle: "italic" }}>prosjekter</em>
+              Plass til deres{" "}
+              <em style={{ fontStyle: "italic" }}>prosjekter</em>
             </h2>
           </div>
+          <p className="max-w-sm text-sm text-zinc-500">
+            Bildene er eksempelbilder og byttes ut med bilder fra egne
+            oppdrag.
+          </p>
         </div>
 
         <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
@@ -835,12 +812,11 @@ function Faq({
               Spørsmål
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-              Forvandle hagen din i dag
+              Har du et hageprosjekt?
             </h2>
             <p className="mt-3 text-sm text-zinc-600">
-              Bring hagen til live med fagkyndig vedlikehold og stilrent
-              anlegg. {company.name} tar seg av prosjektet ditt — stort
-              eller lite, med omhu.
+              Fortell oss hva du planlegger, så tar {company.name} en prat
+              med deg om muligheter og pris.
             </p>
             <a
               href={phone ? telLink(phone) : "#contact"}
@@ -863,7 +839,7 @@ function Faq({
               jobber.
             </p>
             <div className="mt-8 divide-y divide-stone-200 border-y border-stone-200">
-              {FAQ.map((item, i) => (
+              {faqItems(company).map((item, i) => (
                 <details
                   key={item.q}
                   className="group py-5"
@@ -919,8 +895,7 @@ function Footer({
             </span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-white/70">
-            Anleggsgartner med fokus på kvalitet, kommunikasjon og
-            bærekraftige løsninger for uterommet ditt.
+            Anleggsgartner{company.kommune ? ` i ${company.kommune}` : ""}.
           </p>
         </div>
 

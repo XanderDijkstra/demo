@@ -1,20 +1,20 @@
 import {
-  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Check,
   ChevronDown,
+  FileCheck,
   Mail,
   MapPin,
+  MessageSquareQuote,
   Phone,
-  ShieldCheck,
-  Star,
   Wrench,
 } from "lucide-react";
 
 import type { GeneratedSiteContent } from "@/lib/db/types";
 import type { NicheConfig } from "@/lib/templates";
 
+import { foundedYear, yearsSinceFounded } from "./company-facts";
 import { CONTRACTOR_IMAGES } from "./contractor-images";
 
 /**
@@ -54,65 +54,54 @@ interface Props {
   content: GeneratedSiteContent;
 }
 
+// Process + FAQ copy describes how a job typically runs, without promising
+// timelines, team size, guarantees or anything else we can't know about a
+// newly registered company.
 const PROCESS_STEPS = [
   {
-    num: "0001",
-    title: "Innledende konsultasjon",
-    body: "Vi diskuterer prosjektet med deg og setter et åpent prisestimat basert på omfang og kvalitetskrav.",
+    num: "01",
+    title: "Første samtale",
+    body: "Vi går gjennom hva du ønsker å få gjort, og avtaler befaring ved behov.",
   },
   {
-    num: "0002",
-    title: "Planlegging og design",
-    body: "Vi samarbeider med interiørarkitekten din eller leverer eget design — alltid med byggetegninger som holder.",
+    num: "02",
+    title: "Planlegging",
+    body: "Løsninger, materialvalg og pris avklares før arbeidet starter.",
   },
   {
-    num: "0003",
-    title: "Førsteklasses utførelse",
-    body: "Det erfarne teamet vårt bygger med presisjon, og du har én prosjektleder som rapporterer hver uke.",
+    num: "03",
+    title: "Utførelse",
+    body: "Arbeidet gjøres etter det vi har avtalt, og du holdes orientert underveis.",
   },
   {
-    num: "0004",
-    title: "Ferdigstilling og overlevering",
-    body: "Vi går gjennom hver detalj med deg ved overlevering — og er der etterpå hvis noe trenger justering.",
+    num: "04",
+    title: "Overlevering",
+    body: "Vi går gjennom resultatet sammen med deg når jobben er ferdig.",
   },
 ];
 
-const PILLARS = [
-  {
-    icon: ShieldCheck,
-    title: "Sentral godkjenning",
-    body: "Tiltaksklasse for større boligprosjekter, registrert i Brreg og dekket av ansvarsforsikring.",
-  },
-  {
-    icon: Wrench,
-    title: "Fagfolk i alle ledd",
-    body: "Tømrere, rørleggere og elektrikere innomhus — ikke underleverandører på underleverandører.",
-  },
-  {
-    icon: Star,
-    title: "Anbefalt av kundene",
-    body: "5★ snittscore på Google og Mittanbud, og prosjekter som blir referanser for nye kunder.",
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    q: "Hvor lang tid tar en typisk renovasjon?",
-    a: "Et større baderomsprosjekt tar normalt 4–6 uker, en kjøkken- og stueoppussing 6–10 uker, og en total boligrenovasjon 4–8 måneder avhengig av omfang. Vi gir deg en konkret tidsplan før oppstart.",
-  },
-  {
-    q: "Kan jeg gjøre endringer underveis?",
-    a: "Ja — vi planlegger for det. Mindre endringer dekkes innenfor avtalt budsjett, større endringer prises åpent før vi går videre, og du godkjenner alltid skriftlig før vi starter på dem.",
-  },
-  {
-    q: "Hvilke områder dekker dere?",
-    a: "Vi tar primært prosjekter i kommunen og nabokommunene, men strekker oss lenger for prosjekter over en viss størrelse. Si fra hvor du holder til, så bekrefter vi raskt.",
-  },
-  {
-    q: "Jobber dere med arkitekter og designere?",
-    a: "Absolutt. Vi har et nettverk av arkitekter og interiørarkitekter vi anbefaler hvis du trenger det — og vi jobber selvsagt sømløst med dem du allerede har valgt selv.",
-  },
-];
+function faqItems(company: Props["company"]) {
+  return [
+    {
+      q: "Hvor lang tid tar en renovering?",
+      a: "Det avhenger av omfang og materialvalg. Ta kontakt, så ser vi på prosjektet ditt og gir deg et anslag.",
+    },
+    {
+      q: "Kan jeg gjøre endringer underveis?",
+      a: "Ta det opp med oss så tidlig som mulig, så avtaler vi endringen og eventuell prisjustering før vi går videre.",
+    },
+    {
+      q: "Hvilke områder dekker dere?",
+      a: company.kommune
+        ? `Vi holder til i ${company.kommune}. Fortell oss hvor prosjektet er, så avklarer vi om vi kan ta oppdraget.`
+        : "Fortell oss hvor prosjektet er, så avklarer vi om vi kan ta oppdraget.",
+    },
+    {
+      q: "Kan dere samarbeide med arkitekt eller interiørarkitekt?",
+      a: "Ja, vi samarbeider gjerne med arkitekten eller designeren du allerede har valgt.",
+    },
+  ];
+}
 
 const PILLAR_TAGS = [
   "Bolig",
@@ -129,33 +118,27 @@ function bestPhone(c: Props["company"]): string | null {
   return c.mobile ?? c.phone ?? null;
 }
 
-function yearsExperience(foundedAt: string | null): string {
-  if (!foundedAt) return "20+";
-  const year = Number(foundedAt.slice(0, 4));
-  if (!Number.isFinite(year)) return "20+";
-  const yrs = new Date().getFullYear() - year;
-  if (yrs < 1) return "Nytt selskap";
-  return `${yrs}+`;
-}
-
-function foundedYear(foundedAt: string | null): string {
-  if (!foundedAt) return "2003";
-  return foundedAt.slice(0, 4) || "2003";
+/** "Etablert 2019" only when Brreg's founding date is at least a year back;
+ *  brand-new companies get nothing rather than a misleading number. */
+function establishedLabel(foundedAt: string | null): string | null {
+  return yearsSinceFounded(foundedAt) !== null
+    ? `Etablert ${foundedYear(foundedAt)}`
+    : null;
 }
 
 export function ContractorTemplate({ company, niche, content }: Props) {
   const phone = bestPhone(company);
   const headline =
     content.hero_headline ??
-    `Førsteklasses entreprise${
-      company.kommune ? ` i ${company.kommune}` : ""
-    }`;
+    `Bygg og oppussing${company.kommune ? ` i ${company.kommune}` : ""}`;
   const subheadline =
     content.hero_subheadline ??
-    `Vi tar hele renoveringen — fra første tegning til siste finish — med en prosjektleder som er din kontakt hele veien.`;
+    `Renovering, tilbygg, kjøkken og bad. Ta kontakt for en prat om prosjektet ditt.`;
   const aboutBody =
     content.about_paragraph ??
-    `${company.name} er totalentreprenør for hjem som skal vare. Vi bygger med faste team, åpne priser og dokumentert kvalitet. Visjonen din er rammen vi jobber innenfor.`;
+    `${company.name} tar oppdrag innen bygg og oppussing${
+      company.kommune ? ` i ${company.kommune}` : ""
+    }. Fortell oss hva du planlegger, så finner vi ut av resten sammen.`;
 
   return (
     <div
@@ -178,7 +161,7 @@ export function ContractorTemplate({ company, niche, content }: Props) {
         headline={headline}
         subheadline={subheadline}
       />
-      <Pillars />
+      <Pillars company={company} />
       <About company={company} body={aboutBody} />
       <ServicesBanner niche={niche} />
       <Services niche={niche} />
@@ -230,9 +213,6 @@ function Header({
             <div className="text-[10px] uppercase tracking-[0.22em] text-[color:var(--ink)]/60">
               {company.name}
             </div>
-            <div className="font-medium text-[11px] italic text-[color:var(--ink)]/50">
-              & Associates
-            </div>
           </div>
         </div>
 
@@ -241,7 +221,7 @@ function Header({
           <a href="#prosjekter" className="hover:text-[color:var(--ink)]">Prosjekter</a>
           <a href="#om" className="hover:text-[color:var(--ink)]">Om oss</a>
           <a href="#tjenester" className="hover:text-[color:var(--ink)]">Tjenester</a>
-          <a href="#anbefalinger" className="hover:text-[color:var(--ink)]">Anbefalinger</a>
+          <a href="#anbefalinger" className="hover:text-[color:var(--ink)]">Kundeomtaler</a>
           <a href="#kontakt" className="hover:text-[color:var(--ink)]">Kontakt</a>
         </nav>
 
@@ -258,7 +238,7 @@ function Header({
             href="#kontakt"
             className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--ink)] px-4 py-2 text-sm font-medium text-[color:var(--cream-light)] hover:bg-[color:var(--ink-soft)]"
           >
-            Få et gratis tilbud
+            Be om tilbud
           </a>
         </div>
       </div>
@@ -287,7 +267,8 @@ function Hero({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={CONTRACTOR_IMAGES.hero}
-          alt="Førsteklasses interiør"
+          alt=""
+          aria-hidden
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/10" />
@@ -298,8 +279,8 @@ function Hero({
         <div className="space-y-6 text-[color:var(--cream-light)] md:space-y-7">
           <div className="inline-flex items-center gap-2 rounded-full bg-black/35 px-3 py-1.5 text-[11px] uppercase tracking-[0.22em] text-[color:var(--cream-light)]/85 ring-1 ring-white/15 backdrop-blur">
             <Check className="h-3 w-3" style={{ color: BRONZE }} />
-            Tjener boligeiere siden {foundedYear(company.founded_at)} ·{" "}
-            {yearsExperience(company.founded_at)} års tillit
+            Bygg og oppussing
+            {company.kommune ? ` · ${company.kommune}` : ""}
           </div>
           <h1 className="font-medium text-5xl font-medium leading-[0.98] tracking-tight md:text-7xl lg:text-[5.5rem]">
             {headline.split(" ").map((word, i, arr) => {
@@ -323,7 +304,7 @@ function Hero({
               href="#kontakt"
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--cream-light)] px-5 py-2.5 text-sm font-semibold text-[color:var(--ink)] hover:bg-white"
             >
-              Få et gratis tilbud
+              Be om tilbud
               <ArrowRight className="h-4 w-4" />
             </a>
             {phone ? (
@@ -338,7 +319,7 @@ function Hero({
                 </span>
                 <span className="leading-tight">
                   <span className="block text-[10px] uppercase tracking-[0.2em] text-[color:var(--cream-light)]/65">
-                    Snakk med ekspert
+                    Ring oss
                   </span>
                   <span className="block tabular-nums">{phone}</span>
                 </span>
@@ -346,12 +327,18 @@ function Hero({
             ) : null}
           </div>
 
-          {/* Stats inline below CTAs */}
-          <div className="grid grid-cols-2 gap-y-4 pt-6 sm:grid-cols-4">
-            <Stat value={`${yearsExperience(company.founded_at)}`} label="års erfaring" />
-            <Stat value="100+" label="store prosjekter" />
-            <Stat value="100%" label="kundefokusert" />
-            <Stat value="5★" label="verifiserte anbefalinger" />
+          {/* Fact strip — Brreg data only. */}
+          <div className="grid grid-cols-2 gap-y-4 pt-6 sm:grid-cols-3">
+            {company.kommune ? (
+              <Stat value={company.kommune} label="Kommune" />
+            ) : null}
+            <Stat value={company.org_nr} label="Org.nr" />
+            {establishedLabel(company.founded_at) ? (
+              <Stat
+                value={String(foundedYear(company.founded_at))}
+                label="Etablert"
+              />
+            ) : null}
           </div>
         </div>
 
@@ -381,7 +368,7 @@ function HeroForm() {
     >
       <div className="flex items-center gap-3 pb-5 text-[11px] uppercase tracking-[0.22em] text-[color:var(--cream-light)]/60">
         <span aria-hidden className="h-px w-6 bg-[color:var(--cream-light)]/30" />
-        Få et gratis tilbud
+        Be om tilbud
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label="Navn">
@@ -405,15 +392,6 @@ function HeroForm() {
           </select>
         </FormField>
       </div>
-      <label className="mt-5 flex items-start gap-2.5 text-[11px] leading-relaxed text-[color:var(--cream-light)]/70">
-        <input
-          type="checkbox"
-          disabled
-          className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border border-white/30 bg-transparent"
-        />
-        Jeg samtykker i å motta SMS-bekreftelse, og forstår at vi aldri sender
-        markedsføring uten skriftlig samtykke. Avgift kan tilkomme.
-      </label>
       <button
         type="button"
         disabled
@@ -465,20 +443,39 @@ function FakeInput({
 
 // ─── Pillars (3-col strip with hairlines) ────────────────────────────────────
 
-function Pillars() {
+function Pillars({ company }: { company: Props["company"] }) {
+  const pillars = [
+    {
+      icon: MapPin,
+      title: company.kommune ? `Lokalt i ${company.kommune}` : "Lokalt firma",
+      body: company.kommune
+        ? `${company.name} holder til i ${company.kommune}.`
+        : `Ta kontakt med ${company.name} for å høre om oppdraget ditt.`,
+    },
+    {
+      icon: Wrench,
+      title: "Bygg og oppussing",
+      body: "Vi tar oppdrag innen renovering, tilbygg, kjøkken, bad og uterom.",
+    },
+    {
+      icon: FileCheck,
+      title: "Registrert i Brønnøysund",
+      body: `Org.nr ${company.org_nr}.`,
+    },
+  ];
   return (
     <section
       className="border-y border-[color:var(--ink)]/10 px-6 py-10 md:px-10"
       style={{ background: BRONZE_DEEP }}
     >
       <div className="mx-auto grid max-w-6xl gap-6 text-[color:var(--cream-light)] md:grid-cols-3 md:divide-x md:divide-white/15 md:gap-0">
-        {PILLARS.map((p, i) => {
+        {pillars.map((p, i) => {
           const Icon = p.icon;
           return (
             <div
               key={p.title}
               className={
-                i === 0 ? "md:pr-8" : i === PILLARS.length - 1 ? "md:pl-8" : "md:px-8"
+                i === 0 ? "md:pr-8" : i === pillars.length - 1 ? "md:pl-8" : "md:px-8"
               }
             >
               <div className="flex items-center gap-2.5">
@@ -515,15 +512,17 @@ function About({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={CONTRACTOR_IMAGES.about}
-              alt={`${company.name} på arbeid`}
+              alt="Eksempelbilde: sparkling av vegg"
               className="h-full w-full object-cover"
             />
           </div>
-          <div
-            className="absolute -bottom-6 -right-6 hidden rounded-full bg-[color:var(--ink)] px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[color:var(--cream-light)] sm:inline-flex md:-bottom-8 md:-right-8 md:px-5 md:py-2.5"
-          >
-            Etablert {foundedYear(company.founded_at)}
-          </div>
+          {establishedLabel(company.founded_at) ? (
+            <div
+              className="absolute -bottom-6 -right-6 hidden rounded-full bg-[color:var(--ink)] px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[color:var(--cream-light)] sm:inline-flex md:-bottom-8 md:-right-8 md:px-5 md:py-2.5"
+            >
+              {establishedLabel(company.founded_at)}
+            </div>
+          ) : null}
         </div>
 
         <div>
@@ -542,29 +541,31 @@ function About({
           <div className="mt-9 grid gap-7 sm:grid-cols-2">
             <div>
               <h3 className="text-sm font-semibold tracking-tight">
-                Pålitelig og stødig
+                Hva vi tar på oss
               </h3>
               <p className="mt-2 text-[13px] leading-relaxed text-[color:var(--ink)]/65">
-                Avtaler holdes, fremdrift dokumenteres ukentlig, og kostnader
-                forblir transparente fra start til slutt.
+                Renovering, tilbygg, kjøkken, bad og uterom. Se tjenestene
+                lenger ned.
               </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold tracking-tight">
-                Sømløs gjennomføring
+                Hvor vi holder til
               </h3>
               <p className="mt-2 text-[13px] leading-relaxed text-[color:var(--ink)]/65">
-                Én prosjektleder, ett team, én kontaktperson. Du forholder deg
-                aldri til underleverandører eller skifter spørsmål.
+                {company.kommune
+                  ? `Vi holder til i ${company.kommune}. `
+                  : ""}
+                Ta kontakt for å høre om vi kan ta oppdraget ditt.
               </p>
             </div>
           </div>
 
           <a
-            href="#prosjekter"
+            href="#tjenester"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-[color:var(--ink)] px-5 py-2.5 text-sm font-medium text-[color:var(--cream-light)] hover:bg-[color:var(--ink-soft)]"
           >
-            Se prosjektene våre
+            Se tjenestene
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
@@ -593,8 +594,7 @@ function ServicesBanner({ niche: _niche }: { niche: NicheConfig }) {
           <em className="font-medium italic">i dag</em>.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-sm text-[color:var(--cream-light)]/65 md:text-base">
-          Tar du på deg et stort prosjekt? Disse er kjernen i det vi leverer —
-          og samtidig de mest etterspurte.
+          Et utvalg av oppdragene vi tar på oss.
         </p>
       </div>
 
@@ -677,8 +677,8 @@ function Process() {
             </h2>
           </div>
           <p className="hidden max-w-sm text-sm text-[color:var(--ink)]/65 md:block">
-            Fire steg fra første samtale til ferdig prosjekt — ingen overraskelser
-            underveis.
+            Slik foregår et typisk oppdrag, fra første samtale til ferdig
+            resultat.
           </p>
         </div>
 
@@ -713,7 +713,9 @@ function Process() {
   );
 }
 
-// ─── Testimonials (dark) ────────────────────────────────────────────────────
+// ─── Testimonials placeholder (dark) ────────────────────────────────────────
+// No reviews are shown: the company is new and anything here would be
+// invented. The slot is visibly marked as a place for their own reviews.
 
 function Testimonials() {
   return (
@@ -725,62 +727,27 @@ function Testimonials() {
       <div className="mx-auto max-w-3xl text-center">
         <div className="flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.22em] text-[color:var(--cream-light)]/55">
           <span aria-hidden className="h-px w-8 bg-[color:var(--cream-light)]/30" />
-          Anbefalinger
+          Kundeomtaler
           <span aria-hidden className="h-px w-8 bg-[color:var(--cream-light)]/30" />
         </div>
         <h2 className="mt-5 font-medium text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
-          Anbefalt av{" "}
-          <em className="font-medium italic">våre verdsatte kunder</em>.
+          Hva kundene{" "}
+          <em className="font-medium italic">sier</em>.
         </h2>
       </div>
 
-      <div className="mx-auto mt-12 max-w-3xl rounded-[10px] bg-[color:var(--cream-light)] p-8 text-[color:var(--ink)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)] md:p-12">
-        <div className="flex gap-1" style={{ color: BRONZE }}>
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Star key={i} className="h-4 w-4 fill-current" />
-          ))}
-        </div>
-        <p className="mt-6 text-lg leading-relaxed md:text-xl">
-          &ldquo;Hagen og hjemmet vårt er helt forvandlet. Teamet var på jobb hver
-          dag, ryddet etter seg, og holdt seg innenfor avtalen — både budsjett
-          og tidsplan. En familie på fire som er stolte av huset igjen.&rdquo;
+      <div className="mx-auto mt-12 max-w-3xl rounded-[10px] border border-dashed border-[color:var(--cream-light)]/25 p-8 text-center md:p-12">
+        <MessageSquareQuote
+          className="mx-auto h-7 w-7 text-[color:var(--cream-light)]/40"
+          aria-hidden
+        />
+        <p className="mt-5 text-lg text-[color:var(--cream-light)]/80 md:text-xl">
+          Her kommer kundeomtalene deres
         </p>
-        <p className="mt-8 text-[11px] uppercase tracking-[0.22em] text-[color:var(--ink)]/60">
-          — Kjersti Goodman, A.I.A.
+        <p className="mt-3 text-sm text-[color:var(--cream-light)]/50">
+          Eksempelplass. Når de første kundene har gitt tilbakemelding, kan
+          omtalene vises her.
         </p>
-      </div>
-
-      <div className="mx-auto mt-10 flex max-w-3xl items-center justify-center gap-3">
-        <button
-          type="button"
-          disabled
-          aria-label="Forrige"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-[color:var(--cream-light)] text-[color:var(--ink)] shadow disabled:opacity-70"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="font-medium rounded-md bg-[color:var(--cream-light)] px-7 py-2.5 text-sm italic text-[color:var(--ink)]">
-          (01 / 03)
-        </div>
-        <button
-          type="button"
-          disabled
-          aria-label="Neste"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md text-[color:var(--ink)] disabled:opacity-90"
-          style={{ background: BRONZE }}
-        >
-          <ArrowRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="mt-10 text-center">
-        <a
-          href="#kontakt"
-          className="inline-flex items-center gap-2 text-sm text-[color:var(--cream-light)]/85 hover:text-[color:var(--cream-light)]"
-        >
-          Se flere anbefalinger
-          <ArrowRight className="h-4 w-4" />
-        </a>
       </div>
     </section>
   );
@@ -799,17 +766,14 @@ function Projects() {
               Prosjekter
             </div>
             <h2 className="mt-5 font-medium text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl">
-              Våre bygg{" "}
+              Plass til deres{" "}
               <em className="font-medium italic">prosjekter</em>.
             </h2>
           </div>
-          <a
-            href="#kontakt"
-            className="inline-flex items-center gap-2 rounded-full bg-[color:var(--cream-light)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] ring-1 ring-[color:var(--ink)]/10 hover:bg-white"
-          >
-            Se flere prosjekter
-            <ArrowRight className="h-4 w-4" />
-          </a>
+          <p className="max-w-sm text-sm text-[color:var(--ink)]/60">
+            Bildene under er eksempelbilder og byttes ut med bilder fra egne
+            oppdrag.
+          </p>
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:gap-7">
@@ -832,10 +796,9 @@ function Projects() {
                     {p.title}
                   </h3>
                   <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink)]/55">
-                    {p.location}
+                    Eksempelbilde
                   </div>
                 </div>
-                <ArrowUpRight className="h-5 w-5 text-[color:var(--ink)]/45 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </div>
             </article>
           ))}
@@ -864,13 +827,12 @@ function FaqAndCta({ company }: { company: Props["company"] }) {
               La oss snakkes
             </div>
             <h3 className="mt-4 font-medium text-3xl font-medium leading-[1.05] tracking-tight md:text-4xl">
-              Forvandle{" "}
-              <em className="font-medium italic">boligen din</em> i dag
+              Har du et{" "}
+              <em className="font-medium italic">prosjekt</em> på gang?
             </h3>
             <p className="mt-5 text-sm leading-relaxed text-[color:var(--cream-light)]/70">
-              Bring hjemmet ditt til live med fagkyndig oppussing og en stram,
-              åpen prosess. Teamet vårt er klart for prosjektet ditt — stort
-              eller lite.
+              Fortell oss hva du planlegger, så tar vi en prat om muligheter
+              og pris.
             </p>
           </div>
           <a
@@ -886,7 +848,7 @@ function FaqAndCta({ company }: { company: Props["company"] }) {
 
         {/* FAQ accordion */}
         <div className="space-y-3">
-          {FAQ_ITEMS.map((item, i) => (
+          {faqItems(company).map((item, i) => (
             <details
               key={item.q}
               className="group rounded-[10px] bg-[color:var(--ink-soft)] p-5 ring-1 ring-white/10 open:bg-[color:var(--ink-soft)]"
@@ -936,19 +898,18 @@ function FinalCta({
           <span aria-hidden className="h-px w-8 bg-[color:var(--ink)]/30" />
         </div>
         <h2 className="mt-6 font-medium text-5xl font-medium leading-[1.02] tracking-tight md:text-7xl">
-          Bygg din visjon{" "}
-          <em className="font-medium italic">med fagfolk</em>.
+          Klar for neste{" "}
+          <em className="font-medium italic">prosjekt</em>?
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[color:var(--ink)]/70">
-          Slapp av og nyt en stødig, ærlig prosess — gjennomført av et team som
-          tar visjonen din på alvor.
+          Ta kontakt for å snakke om hva du ønsker å få gjort.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
             href="#kontakt"
             className="inline-flex items-center gap-2 rounded-full bg-[color:var(--ink)] px-6 py-3 text-sm font-medium text-[color:var(--cream-light)] hover:bg-[color:var(--ink-soft)]"
           >
-            Få et gratis tilbud
+            Be om tilbud
             <ArrowRight className="h-4 w-4" />
           </a>
           {phone ? (
@@ -996,20 +957,17 @@ function Footer({
               <div className="text-[11px] uppercase tracking-[0.22em]">
                 {company.name}
               </div>
-              <div className="font-medium text-xs italic text-[color:var(--cream-light)]/60">
-                & Associates
-              </div>
             </div>
           </div>
           <p className="mt-5 max-w-md text-sm text-[color:var(--cream-light)]/65">
-            Generalentreprenør for hjem som skal vare. Stødig prosess, åpne
-            priser og dokumentert kvalitet i hvert trinn.
+            Bygg og oppussing
+            {company.kommune ? ` i ${company.kommune}` : ""}.
           </p>
           <a
             href="#kontakt"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--cream-light)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] hover:bg-white"
           >
-            Bestill et møte
+            Ta kontakt
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
@@ -1019,7 +977,7 @@ function Footer({
           <FooterLink href="#prosjekter">Prosjekter</FooterLink>
           <FooterLink href="#om">Om oss</FooterLink>
           <FooterLink href="#tjenester">Tjenester</FooterLink>
-          <FooterLink href="#anbefalinger">Anbefalinger</FooterLink>
+          <FooterLink href="#anbefalinger">Kundeomtaler</FooterLink>
         </FooterColumn>
 
         <FooterColumn title="Tjenester">
