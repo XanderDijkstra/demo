@@ -1,7 +1,7 @@
 import "server-only";
 
 import { generateSiteCopy } from "@/lib/claude";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import { loadNicheConfig } from "@/lib/template-store";
 import {
   isNicheSlug,
@@ -61,9 +61,9 @@ export async function runGenerateLeadSite(params: {
     return { ok: false, error: "Invalid niche" };
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
-  const { data: company, error: companyError } = await supabase
+  const { data: company, error: companyError } = await db
     .from("companies")
     .select("org_nr, name, kommune, nace_code, nace_description")
     .eq("org_nr", params.orgNr)
@@ -86,7 +86,7 @@ export async function runGenerateLeadSite(params: {
   });
 
   if (!result.ok) {
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "manual",
       action: "site.generate.failed",
       entity_type: "company",
@@ -96,7 +96,7 @@ export async function runGenerateLeadSite(params: {
     return { ok: false, error: result.error };
   }
 
-  const { error: upsertError } = await supabase.from("generated_sites").upsert(
+  const { error: upsertError } = await db.from("generated_sites").upsert(
     {
       org_nr: company.org_nr,
       niche_slug: niche,
@@ -112,7 +112,7 @@ export async function runGenerateLeadSite(params: {
 
   if (upsertError) return { ok: false, error: upsertError.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "site.generate.success",
     entity_type: "company",
@@ -139,15 +139,15 @@ export async function unpublishLeadSite(
   if (!/^\d{9}$/.test(orgNr)) {
     return { ok: false, error: "Invalid org.nr" };
   }
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("generated_sites")
     .delete()
     .eq("org_nr", orgNr);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "site.unpublished",
     entity_type: "company",

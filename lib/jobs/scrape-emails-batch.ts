@@ -20,12 +20,12 @@
 import "server-only";
 
 import { scoreCompanyInsert } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
-import type { Company } from "@/lib/supabase/types";
+} from "@/lib/db/queries";
+import type { Company } from "@/lib/db/types";
 
 import { scrapeWebsiteEmail } from "./scrape-website-email";
 
@@ -59,18 +59,20 @@ export async function scrapeEmailsBatch(
   const delayMs = params.delayMs ?? 250;
 
   const startedAt = Date.now();
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const since = new Date(
     Date.now() - daysSince * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  const { data: leads, error } = await supabase
+  const { data: leads, error } = await db
     .from("companies")
     .select("*")
-    .gte("registered_at", since)
+    .gte("registered_at", since.slice(0, 10))
     .is("email", null)
     .not("website", "is", null)
+    // Each site is tried once; failures don't block older leads forever.
+    .is("email_scrape_attempted_at", null)
     .order("registered_at", { ascending: false })
     .limit(limit);
 
@@ -90,11 +92,15 @@ export async function scrapeEmailsBatch(
   let failed = 0;
 
   for (const lead of all) {
+    await db
+      .from("companies")
+      .update({ email_scrape_attempted_at: new Date().toISOString() })
+      .eq("org_nr", lead.org_nr);
     try {
       const result = await scrapeWebsiteEmail(lead.website);
       if (!result.ok) {
         failed += 1;
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.email.scrape.failed",
           entity_type: "company",
@@ -115,7 +121,7 @@ export async function scrapeEmailsBatch(
 
       if (!isClearWinner) {
         candidates_only += 1;
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.email.scrape.candidates",
           entity_type: "company",
@@ -143,14 +149,14 @@ export async function scrapeEmailsBatch(
         updates.score_breakdown = rescored.breakdown;
       }
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from("companies")
         .update(updates)
         .eq("org_nr", lead.org_nr);
 
       if (updateError) {
         failed += 1;
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.email.scrape.update_failed",
           entity_type: "company",
@@ -165,7 +171,7 @@ export async function scrapeEmailsBatch(
       }
 
       saved += 1;
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "manual.batch",
         action: "lead.email.scrape.auto_saved",
         entity_type: "company",
@@ -180,7 +186,7 @@ export async function scrapeEmailsBatch(
     } catch (err) {
       failed += 1;
       const msg = err instanceof Error ? err.message : String(err);
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "manual.batch",
         action: "lead.email.scrape.exception",
         entity_type: "company",
@@ -194,7 +200,7 @@ export async function scrapeEmailsBatch(
 
   const durationMs = Date.now() - startedAt;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual.batch",
     action: "lead.email.scrape.batch_completed",
     entity_type: "settings",

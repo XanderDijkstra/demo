@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
-  Boxes,
+  Layers,
   Handshake,
   Inbox,
   LayoutDashboard,
@@ -18,7 +18,6 @@ import {
 
 import { cn } from "@/lib/utils";
 
-import { LogoutButton } from "./logout-button";
 
 interface NavItem {
   label: string;
@@ -29,16 +28,16 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Oversikt", href: "/admin", icon: LayoutDashboard },
   { label: "Leads", href: "/admin/leads", icon: Users },
-  { label: "Inbox", href: "/admin/inbox", icon: Inbox, badgeKey: "inbox" },
+  { label: "Sorter", href: "/admin/swipe", icon: Layers },
+  { label: "Innboks", href: "/admin/inbox", icon: Inbox, badgeKey: "inbox" },
   { label: "CRM", href: "/admin/crm", icon: Handshake },
-  { label: "Templates", href: "/admin/templates", icon: Palette },
-  { label: "Outreach", href: "/admin/outreach", icon: Mail },
-  { label: "Flows", href: "/admin/flows", icon: Workflow },
-  { label: "Queue", href: "/admin/queue", icon: Activity },
-  { label: "Other", href: "/admin/other", icon: Boxes },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Utsendelse", href: "/admin/outreach", icon: Mail },
+  { label: "Oppfølging", href: "/admin/flows", icon: Workflow },
+  { label: "Maler", href: "/admin/templates", icon: Palette },
+  { label: "Jobber", href: "/admin/queue", icon: Activity },
+  { label: "Innstillinger", href: "/admin/settings", icon: Settings },
 ];
 
 export interface SidebarBadges {
@@ -98,8 +97,11 @@ export function Sidebar({ badges }: { badges?: SidebarBadges }) {
       </nav>
 
       <div className="flex items-center justify-between gap-2 border-t p-3 text-[11px] text-muted-foreground">
-        <span>v1 · {new Date().getFullYear()}</span>
-        <LogoutButton />
+        <span>FX Media</span>
+        {/* Cloudflare Access ends the session here (no app-side login). */}
+        <a href="/cdn-cgi/access/logout" className="hover:text-foreground">
+          Logg ut
+        </a>
       </div>
     </aside>
   );

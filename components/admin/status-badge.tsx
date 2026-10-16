@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { CompanyStatus } from "@/lib/supabase/types";
+import type { CompanyStatus } from "@/lib/db/types";
 
 const variant: Record<
   CompanyStatus,

@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Company, CompanyStatus } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Company, CompanyStatus } from "@/lib/db/types";
 
 export type LeadsTab = "week" | "all";
 export type LeadsSort = "score" | "registered" | "name";
@@ -95,9 +95,9 @@ export interface LeadsResult {
 }
 
 export async function fetchLeads(query: LeadsQuery): Promise<LeadsResult> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
-  let req = supabase.from("companies").select("*", { count: "exact" });
+  let req = db.from("companies").select("*", { count: "exact" });
 
   if (query.tab === "week") {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -183,17 +183,17 @@ export async function fetchLeads(query: LeadsQuery): Promise<LeadsResult> {
  * Counts used to populate the tab labels.
  */
 export async function fetchLeadsTotals(): Promise<{ week: number; all: number }> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
 
   const [weekRes, allRes] = await Promise.all([
-    supabase
+    db
       .from("companies")
       .select("*", { count: "exact", head: true })
       .gte("registered_at", since),
-    supabase.from("companies").select("*", { count: "exact", head: true }),
+    db.from("companies").select("*", { count: "exact", head: true }),
   ]);
 
   return {
@@ -203,8 +203,8 @@ export async function fetchLeadsTotals(): Promise<{ week: number; all: number }>
 }
 
 export async function fetchLeadByOrgNr(orgNr: string): Promise<Company | null> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("companies")
     .select("*")
     .eq("org_nr", orgNr)
@@ -228,15 +228,15 @@ export async function checkOutreachReadiness(
   email: string | null
 ): Promise<OutreachReadiness> {
   if (!email) return { suppressed: null, previousSendCount: 0 };
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [supRes, prevRes] = await Promise.all([
-    supabase
+    db
       .from("outreach_suppressions")
       .select("email, reason")
       .eq("email", email.trim().toLowerCase())
       .maybeSingle(),
-    supabase
+    db
       .from("outreach_emails")
       .select("*", { count: "exact", head: true })
       .eq("org_nr", orgNr)

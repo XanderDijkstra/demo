@@ -13,46 +13,41 @@ import crypto from "node:crypto";
  *   - It stays valid forever — there's no expiry, since "unsubscribe
  *     me" should still work months after the original send.
  *
- * Falls back to RESEND_WEBHOOK_SECRET if UNSUBSCRIBE_SECRET isn't set,
- * so we don't add yet another env var the operator has to remember.
+ * New links are signed with UNSUBSCRIBE_SECRET. Links already sent were
+ * signed with RESEND_WEBHOOK_SECRET (the old fallback), so verification
+ * accepts either: rotating the webhook secret must never break an
+ * unsubscribe link that's already in someone's inbox.
  */
 
-function getSecret(): string {
-  const s =
-    process.env.UNSUBSCRIBE_SECRET || process.env.RESEND_WEBHOOK_SECRET;
-  if (!s) {
-    throw new Error(
-      "UNSUBSCRIBE_SECRET (or RESEND_WEBHOOK_SECRET as fallback) is not set"
-    );
-  }
-  return s;
+function secrets(): string[] {
+  const list = [process.env.UNSUBSCRIBE_SECRET, process.env.RESEND_WEBHOOK_SECRET].filter(
+    (s): s is string => Boolean(s)
+  );
+  if (!list.length) throw new Error("UNSUBSCRIBE_SECRET is not set");
+  return list;
 }
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+function hmac(secret: string, email: string): string {
+  return crypto.createHmac("sha256", secret).update(normalizeEmail(email)).digest("hex").slice(0, 32);
+}
+
 export function signUnsubscribeToken(email: string): string {
-  const secret = getSecret();
-  return crypto
-    .createHmac("sha256", secret)
-    .update(normalizeEmail(email))
-    .digest("hex")
-    .slice(0, 32);
+  return hmac(secrets()[0]!, email);
 }
 
 export function verifyUnsubscribeToken(
   email: string,
   token: string
 ): boolean {
-  if (!email || !token) return false;
+  if (!email || !token || token.length !== 32) return false;
   try {
-    const expected = signUnsubscribeToken(email);
-    // Constant-time comparison.
-    if (expected.length !== token.length) return false;
-    return crypto.timingSafeEqual(
-      Buffer.from(expected, "utf8"),
-      Buffer.from(token, "utf8")
+    return secrets().some((secret) =>
+      // Constant-time comparison.
+      crypto.timingSafeEqual(Buffer.from(hmac(secret, email), "utf8"), Buffer.from(token, "utf8"))
     );
   } catch {
     return false;

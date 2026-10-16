@@ -14,7 +14,7 @@ import {
  * deployed via git push, not edited from the dashboard.
  *
  * If you ever want the live-edit layer back, swap loadNicheConfig() to
- * read from `niche_templates` again (the table and types remain intact).
+ * read from a DB table again (the old tables were dropped in the D1 move).
  */
 
 export async function loadNicheConfig(slug: NicheSlug): Promise<NicheConfig> {

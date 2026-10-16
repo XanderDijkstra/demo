@@ -1,7 +1,7 @@
 import { ArrowRight, MapPin, Phone, Mail } from "lucide-react";
 
 import type { NicheConfig } from "@/lib/templates";
-import type { GeneratedSiteContent } from "@/lib/supabase/types";
+import type { GeneratedSiteContent } from "@/lib/db/types";
 import { formatCompanyName } from "@/lib/utils";
 
 interface SiteTemplateProps {

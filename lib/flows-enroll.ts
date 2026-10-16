@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Flow } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Flow } from "@/lib/db/types";
 
 /**
  * Reply = hard stop. The moment a lead replies (or otherwise enters a
@@ -15,8 +15,8 @@ export async function cancelPendingEnrollments(
 ): Promise<void> {
   if (!orgNr) return;
   try {
-    const supabase = getSupabaseAdmin();
-    const { data } = await supabase
+    const db = getDb();
+    const { data } = await db
       .from("flow_enrollments")
       .update({
         status: "cancelled",
@@ -27,7 +27,7 @@ export async function cancelPendingEnrollments(
       .eq("status", "pending")
       .select("id");
     if (data && data.length > 0) {
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "system",
         action: "flow.enrollments_cancelled",
         entity_type: "company",
@@ -58,9 +58,9 @@ export async function enrollLeadInStageFlows(
 ): Promise<void> {
   if (!orgNr || !stage) return;
   try {
-    const supabase = getSupabaseAdmin();
+    const db = getDb();
 
-    const { data: flowsData } = await supabase
+    const { data: flowsData } = await db
       .from("flows")
       .select("*")
       .eq("enabled", true)
@@ -76,7 +76,7 @@ export async function enrollLeadInStageFlows(
         now + flow.delay_hours * 60 * 60 * 1000
       ).toISOString();
 
-      const { error } = await supabase.from("flow_enrollments").upsert(
+      const { error } = await db.from("flow_enrollments").upsert(
         {
           flow_id: flow.id,
           org_nr: orgNr,
@@ -87,7 +87,7 @@ export async function enrollLeadInStageFlows(
       );
       if (error) continue;
 
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "system",
         action: "flow.enrolled",
         entity_type: "flow",

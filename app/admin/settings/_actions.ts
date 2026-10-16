@@ -1,17 +1,19 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { notifyInboundReply } from "@/lib/notifications/telegram";
 import { scoreCompanyInsert } from "@/lib/scoring";
 import { getFreepikConfig, searchStock } from "@/lib/stock/freepik";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
-import type { Company, ScoringWeights } from "@/lib/supabase/types";
+} from "@/lib/db/queries";
+import type { Company, ScoringWeights } from "@/lib/db/types";
 
 type ActionResult =
   | { ok: true; message?: string }
@@ -33,6 +35,7 @@ const WeightsSchema = z.object({
 export async function saveScoringWeights(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = WeightsSchema.safeParse({
     has_phone: formData.get("has_phone"),
     has_email: formData.get("has_email"),
@@ -48,15 +51,15 @@ export async function saveScoringWeights(
     return { ok: false, error: "Invalid values (0–100 per signal)" };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     { key: "scoring_weights", value: parsed.data, updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.scoring_weights.updated",
     entity_type: "settings",
@@ -81,6 +84,7 @@ function parseLines(raw: string): string[] {
 export async function saveTargetNaceCodes(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const raw = String(formData.get("codes") ?? "");
   const codes = parseLines(raw);
 
@@ -93,15 +97,15 @@ export async function saveTargetNaceCodes(
     };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     { key: "target_nace_codes", value: codes, updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.target_nace_codes.updated",
     entity_type: "settings",
@@ -118,6 +122,7 @@ export async function saveTargetNaceCodes(
 export async function saveExcludedOrgForms(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const raw = String(formData.get("forms") ?? "");
   const forms = parseLines(raw).map((f) => f.toUpperCase());
 
@@ -129,15 +134,15 @@ export async function saveExcludedOrgForms(
     };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     { key: "excluded_org_forms", value: forms, updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.excluded_org_forms.updated",
     entity_type: "settings",
@@ -165,6 +170,7 @@ const FromAddressSchema = z
 export async function saveOutreachFromAddress(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = FromAddressSchema.safeParse(formData.get("from"));
   if (!parsed.success) {
     return {
@@ -173,15 +179,15 @@ export async function saveOutreachFromAddress(
     };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     { key: "outreach_email_from", value: parsed.data, updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.outreach_email_from.updated",
     entity_type: "settings",
@@ -204,6 +210,7 @@ const ReplyToSchema = z
 export async function saveOutreachReplyTo(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = ReplyToSchema.safeParse(formData.get("reply_to"));
   if (!parsed.success) {
     return {
@@ -212,8 +219,8 @@ export async function saveOutreachReplyTo(
     };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     {
       key: "outreach_email_reply_to",
       value: parsed.data,
@@ -224,7 +231,7 @@ export async function saveOutreachReplyTo(
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.outreach_email_reply_to.updated",
     entity_type: "settings",
@@ -246,6 +253,7 @@ const ManualSuppressionSchema = z.object({
 export async function addManualSuppression(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = ManualSuppressionSchema.safeParse({
     email: formData.get("email"),
     notes: formData.get("notes") || null,
@@ -254,8 +262,8 @@ export async function addManualSuppression(
     return { ok: false, error: "Invalid email address" };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("outreach_suppressions").upsert(
+  const db = getDb();
+  const { error } = await db.from("outreach_suppressions").upsert(
     {
       email: parsed.data.email,
       reason: "manual",
@@ -266,7 +274,7 @@ export async function addManualSuppression(
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.suppression.added",
     entity_type: "outreach_suppression",
@@ -281,18 +289,19 @@ export async function addManualSuppression(
 export async function removeSuppression(
   email: string
 ): Promise<ActionResult> {
+  await requireOperator();
   const normalized = email.trim().toLowerCase();
   if (!normalized) return { ok: false, error: "Tom adresse" };
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("outreach_suppressions")
     .delete()
     .eq("email", normalized);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.suppression.removed",
     entity_type: "outreach_suppression",
@@ -317,19 +326,20 @@ const ALLOWED_CLAUDE_MODELS = [
 export async function saveClaudeModel(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const model = String(formData.get("model") ?? "").trim();
   if (!ALLOWED_CLAUDE_MODELS.includes(model)) {
     return { ok: false, error: "Ukjent modell" };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("settings").upsert(
+  const db = getDb();
+  const { error } = await db.from("settings").upsert(
     { key: "claude_model", value: model, updated_at: new Date().toISOString() },
     { onConflict: "key" }
   );
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.claude_model.updated",
     entity_type: "settings",
@@ -356,6 +366,7 @@ export type StockTestResult =
 export async function testFreepikSearch(
   formData: FormData
 ): Promise<StockTestResult> {
+  await requireOperator();
   const query = String(formData.get("query") ?? "").trim();
   if (!query) {
     return { ok: false, configured: !!getFreepikConfig(), error: "Skriv et søkeord" };
@@ -386,7 +397,8 @@ export async function testFreepikSearch(
 export async function rescoreAllLeads(): Promise<
   ActionResult & { count?: number }
 > {
-  const supabase = getSupabaseAdmin();
+  await requireOperator();
+  const db = getDb();
 
   const [weights, targets] = await Promise.all([
     getScoringWeights(),
@@ -397,7 +409,7 @@ export async function rescoreAllLeads(): Promise<
     return { ok: false, error: "Missing settings in database" };
   }
 
-  const { data, error } = await supabase.from("companies").select("*");
+  const { data, error } = await db.from("companies").select("*");
   if (error) return { ok: false, error: error.message };
 
   const all = (data ?? []) as Company[];
@@ -410,7 +422,7 @@ export async function rescoreAllLeads(): Promise<
     const slice = all.slice(i, i + BATCH);
     const updates = slice.map(async (c) => {
       const { score, breakdown } = scoreCompanyInsert(c, weights, targets);
-      const { error: upErr } = await supabase
+      const { error: upErr } = await db
         .from("companies")
         .update({ score, score_breakdown: breakdown })
         .eq("org_nr", c.org_nr);
@@ -420,7 +432,7 @@ export async function rescoreAllLeads(): Promise<
     updated += slice.length;
   }
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.rescore_all",
     entity_type: "settings",
@@ -444,6 +456,7 @@ export async function rescoreAllLeads(): Promise<
  * so we explicitly verify env presence here for the toast.
  */
 export async function sendTelegramTest(): Promise<ActionResult> {
+  await requireOperator();
   const tokenOk = !!process.env.TELEGRAM_BOT_TOKEN?.trim();
   const chatOk = !!process.env.TELEGRAM_CHAT_ID?.trim();
   if (!tokenOk || !chatOk) {

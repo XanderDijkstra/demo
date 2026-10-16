@@ -10,7 +10,7 @@
 
 import { z } from "zod";
 
-import type { CompanyInsert } from "@/lib/supabase/types";
+import type { CompanyInsert } from "@/lib/db/types";
 
 const BRREG_BASE_URL = "https://data.brreg.no/enhetsregisteret/api";
 // Brreg caps page size at 10 000 but rejects huge pages in practice;

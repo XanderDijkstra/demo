@@ -1,5 +1,7 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -9,6 +11,7 @@ import {
   isValidDealStage,
   setDealStage,
   updateDealFields,
+  advanceActiveDealStage,
 } from "@/lib/deals";
 import {
   runGenerateLeadSite,
@@ -32,8 +35,8 @@ import {
   getOutreachReplyTo,
   isSuppressed,
 } from "@/lib/resend";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { CompanyStatus, DealStage } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { CompanyStatus, DealStage } from "@/lib/db/types";
 import { fylkeFromKommuneNr } from "@/lib/regions";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 import { formatCompanyName } from "@/lib/utils";
@@ -55,6 +58,7 @@ export async function updateLeadStatus(
   orgNr: string,
   status: CompanyStatus
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) {
     return { ok: false, error: "Invalid org.nr" };
   }
@@ -62,15 +66,15 @@ export async function updateLeadStatus(
     return { ok: false, error: "Invalid status" };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("companies")
     .update({ status })
     .eq("org_nr", orgNr);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: `lead.status.${status}`,
     entity_type: "company",
@@ -93,6 +97,7 @@ export async function updateLeadContactName(
   orgNr: string,
   name: string | null
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) {
     return { ok: false, error: "Invalid org.nr" };
   }
@@ -106,15 +111,15 @@ export async function updateLeadContactName(
     normalized = parsed.data;
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("companies")
     .update({ contact_name: normalized })
     .eq("org_nr", orgNr);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "lead.contact_name.updated",
     entity_type: "company",
@@ -141,12 +146,13 @@ export type ScrapeEmailActionResult =
 export async function scrapeLeadEmail(
   orgNr: string
 ): Promise<ScrapeEmailActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) {
     return { ok: false, error: "Invalid org.nr", fetchedUrls: [] };
   }
 
-  const supabase = getSupabaseAdmin();
-  const { data: lead, error: leadError } = await supabase
+  const db = getDb();
+  const { data: lead, error: leadError } = await db
     .from("companies")
     .select("org_nr, website, email")
     .eq("org_nr", orgNr)
@@ -168,7 +174,7 @@ export async function scrapeLeadEmail(
 
   const result = await scrapeWebsiteEmail(lead.website);
   if (!result.ok) {
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "manual",
       action: "lead.email.scrape.failed",
       entity_type: "company",
@@ -194,7 +200,7 @@ export async function scrapeLeadEmail(
       top.score - second.score >= 30 ||
       top.score >= 100;
     if (isClearWinner) {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from("companies")
         .update({ email: top.email })
         .eq("org_nr", orgNr);
@@ -204,7 +210,7 @@ export async function scrapeLeadEmail(
     }
   }
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: saved
       ? "lead.email.scrape.auto_saved"
@@ -239,6 +245,7 @@ export async function updateLeadEmail(
   orgNr: string,
   email: string | null
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) {
     return { ok: false, error: "Invalid org.nr" };
   }
@@ -252,15 +259,15 @@ export async function updateLeadEmail(
     normalized = parsed.data;
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("companies")
     .update({ email: normalized })
     .eq("org_nr", orgNr);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "lead.email.updated",
     entity_type: "company",
@@ -283,6 +290,7 @@ export async function sendLeadEmail(
   orgNr: string,
   formData: FormData
 ): Promise<ActionResult & { id?: string }> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) {
     return { ok: false, error: "Invalid org.nr" };
   }
@@ -298,10 +306,10 @@ export async function sendLeadEmail(
     };
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // Load the lead so we can validate email + apply placeholders.
-  const { data: lead, error: leadError } = await supabase
+  const { data: lead, error: leadError } = await db
     .from("companies")
     .select("org_nr, name, email, kommune, kommune_nr, contact_name")
     .eq("org_nr", orgNr)
@@ -325,7 +333,7 @@ export async function sendLeadEmail(
   const [fromAddress, replyTo, siteRow, inboundDomain] = await Promise.all([
     getOutreachFromAddress(),
     getOutreachReplyTo(),
-    supabase
+    db
       .from("generated_sites")
       .select("org_nr")
       .eq("org_nr", orgNr)
@@ -358,7 +366,7 @@ export async function sendLeadEmail(
 
   // Build References from any prior outbound messages in this thread so
   // mail clients thread the conversation natively.
-  const { data: priorMessages } = await supabase
+  const { data: priorMessages } = await db
     .from("outreach_emails")
     .select("message_id, in_reply_to, references_chain")
     .eq("thread_id", thread.id)
@@ -370,7 +378,7 @@ export async function sendLeadEmail(
   const references = priorIds;
 
   // Open a row up front so we have an audit trail even if Resend errors.
-  const { data: row, error: insertError } = await supabase
+  const { data: row, error: insertError } = await db
     .from("outreach_emails")
     .insert({
       org_nr: orgNr,
@@ -407,7 +415,7 @@ export async function sendLeadEmail(
   });
 
   if (result.ok) {
-    await supabase
+    await db
       .from("outreach_emails")
       .update({
         status: "sent",
@@ -418,7 +426,7 @@ export async function sendLeadEmail(
 
     await touchThread({ threadId: thread.id });
 
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "manual",
       action: "outreach.email.sent",
       entity_type: "company",
@@ -436,7 +444,7 @@ export async function sendLeadEmail(
     return { ok: true, id: row.id };
   }
 
-  await supabase
+  await db
     .from("outreach_emails")
     .update({
       status: "failed",
@@ -444,7 +452,7 @@ export async function sendLeadEmail(
     })
     .eq("id", row.id);
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "outreach.email.failed",
     entity_type: "company",
@@ -462,6 +470,7 @@ export async function generateLeadSiteAction(
   orgNr: string,
   nicheOverride: NicheSlug | null
 ): Promise<ActionResult & { siteUrl?: string; niche?: NicheSlug }> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   if (nicheOverride && !isNicheSlug(nicheOverride)) {
     return { ok: false, error: "Invalid niche" };
@@ -484,6 +493,7 @@ export async function generateLeadSiteAction(
 export async function unpublishLeadSiteAction(
   orgNr: string
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
 
   const result = await unpublishLeadSite(orgNr);
@@ -502,11 +512,12 @@ export async function toggleEmailReplied(
   emailId: string,
   markReplied: boolean
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   if (!emailId) return { ok: false, error: "Missing email id" };
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("outreach_emails")
     .update({ replied_at: markReplied ? new Date().toISOString() : null })
     .eq("id", emailId)
@@ -514,7 +525,7 @@ export async function toggleEmailReplied(
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: markReplied ? "outreach.email.replied" : "outreach.email.unreplied",
     entity_type: "outreach_email",
@@ -536,6 +547,7 @@ export async function toggleEmailReplied(
 // ─── Deal mutations from the lead detail page ───────────────────────────────
 
 export async function createDealAction(orgNr: string): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   const deal = await createManualDeal(orgNr);
   if (!deal) return { ok: false, error: "Could not create deal" };
@@ -550,6 +562,7 @@ export async function updateDealStageAction(
   stage: DealStage,
   lostReason?: string
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   if (!isValidDealStage(stage)) return { ok: false, error: "Invalid stage" };
   const deal = await setDealStage(dealId, stage, { lostReason });
@@ -564,10 +577,20 @@ export async function updateDealFieldsAction(
   dealId: string,
   patch: { value_nok?: number | null; notes?: string | null }
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
   const deal = await updateDealFields(dealId, patch);
   if (!deal) return { ok: false, error: "Update failed" };
   revalidatePath(`/admin/leads/${orgNr}`);
   revalidatePath("/admin/crm");
   return { ok: true };
+}
+
+/** Called after the proposal PDF was generated (in the browser) for this lead. */
+export async function markProposalSentAction(orgNr: string): Promise<void> {
+  await requireOperator();
+  if (!/^\d{9}$/.test(orgNr)) return;
+  await advanceActiveDealStage(orgNr, "proposal_sent");
+  revalidatePath(`/admin/leads/${orgNr}`);
+  revalidatePath("/admin/crm");
 }

@@ -1,10 +1,12 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 
 import { createManualDeal } from "@/lib/deals";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { CompanyStatus } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { CompanyStatus } from "@/lib/db/types";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -19,15 +21,15 @@ async function setStatus(
 ): Promise<ActionResult> {
   if (!isValidOrgNr(orgNr)) return { ok: false, error: "Invalid org.nr" };
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("companies")
     .update({ status })
     .eq("org_nr", orgNr);
 
   if (error) return { ok: false, error: error.message };
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action,
     entity_type: "company",
@@ -39,6 +41,7 @@ async function setStatus(
 }
 
 export async function swipeReject(orgNr: string): Promise<ActionResult> {
+  await requireOperator();
   const result = await setStatus(orgNr, "rejected", "swipe.reject");
   revalidatePath("/admin/swipe");
   revalidatePath("/admin/leads");
@@ -46,6 +49,7 @@ export async function swipeReject(orgNr: string): Promise<ActionResult> {
 }
 
 export async function swipeQualify(orgNr: string): Promise<ActionResult> {
+  await requireOperator();
   const result = await setStatus(orgNr, "qualified", "swipe.qualify");
   revalidatePath("/admin/swipe");
   revalidatePath("/admin/leads");
@@ -53,6 +57,7 @@ export async function swipeQualify(orgNr: string): Promise<ActionResult> {
 }
 
 export async function swipeToCrm(orgNr: string): Promise<ActionResult> {
+  await requireOperator();
   const statusResult = await setStatus(orgNr, "qualified", "swipe.to_crm");
   if (!statusResult.ok) return statusResult;
 
@@ -73,6 +78,7 @@ export async function swipeToCrm(orgNr: string): Promise<ActionResult> {
 
 /** Mark as reviewed without rejecting — comes back later, just not in this queue. */
 export async function swipeReview(orgNr: string): Promise<ActionResult> {
+  await requireOperator();
   const result = await setStatus(orgNr, "reviewed", "swipe.review");
   revalidatePath("/admin/swipe");
   revalidatePath("/admin/leads");

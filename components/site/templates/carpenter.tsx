@@ -12,7 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 
-import type { GeneratedSiteContent } from "@/lib/supabase/types";
+import type { GeneratedSiteContent } from "@/lib/db/types";
 import type { NicheConfig } from "@/lib/templates";
 
 import { CARPENTER_IMAGES } from "./carpenter-images";

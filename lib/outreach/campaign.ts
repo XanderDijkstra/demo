@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getSetting } from "@/lib/supabase/queries";
+import { getSetting } from "@/lib/db/queries";
 
 /**
  * Configuration for the daily-outreach cron. Read fresh on each run

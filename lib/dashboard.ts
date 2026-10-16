@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Company, ScrapeRun } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Company, ScrapeRun } from "@/lib/db/types";
 
 export interface DashboardStats {
   totalLeads: number;
@@ -47,7 +47,7 @@ function bucketFor(score: number): string {
 const SCORE_BUCKETS = ["0–19", "20–39", "40–59", "60–79", "80–100"];
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const since14 = isoDaysAgo(14);
   const since7 = isoDaysAgo(7);
   const since14To8 = { from: isoDaysAgo(14), to: isoDaysAgo(8) };
@@ -62,40 +62,40 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     weekRowsRes,
     topLeadsRes,
   ] = await Promise.all([
-    supabase
+    db
       .from("companies")
       .select("*", { count: "exact", head: true }),
-    supabase
+    db
       .from("companies")
       .select("*", { count: "exact", head: true })
       .gte("registered_at", since7),
-    supabase
+    db
       .from("companies")
       .select("*", { count: "exact", head: true })
       .gte("registered_at", since14To8.from)
       .lte("registered_at", since14To8.to),
-    supabase
+    db
       .from("companies")
       .select("*", { count: "exact", head: true })
       .gte("registered_at", since7)
       .gte("score", 70),
-    supabase
+    db
       .from("scrape_runs")
       .select("*")
       .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
     // Last 14 days of registered_at + score for the chart and avg.
-    supabase
+    db
       .from("companies")
       .select("registered_at, score, nace_code, nace_description")
       .gte("registered_at", since14),
     // Week rows for distribution + NACE breakdown.
-    supabase
+    db
       .from("companies")
       .select("score, nace_code, nace_description")
       .gte("registered_at", since7),
-    supabase
+    db
       .from("companies")
       .select(
         "org_nr, name, score, kommune, nace_description, registered_at, phone, mobile, website, status"

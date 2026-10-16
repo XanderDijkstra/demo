@@ -27,7 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { fetchDashboardStats } from "@/lib/dashboard";
-import { checkSupabaseHealth } from "@/lib/supabase/queries";
+import { checkDbHealth } from "@/lib/db/queries";
 import { cn, formatCompanyName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ function trendOf(current: number, previous: number) {
 
 export default async function DashboardPage() {
   const [health, stats] = await Promise.all([
-    checkSupabaseHealth(),
+    checkDbHealth(),
     fetchDashboardStats(),
   ]);
 

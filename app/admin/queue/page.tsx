@@ -13,9 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getOne1881Config } from "@/lib/enrichment/one1881";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { getSetting } from "@/lib/supabase/queries";
-import type { ScrapeRun, ScrapeRunStatus } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import { getSetting } from "@/lib/db/queries";
+import type { ScrapeRun, ScrapeRunStatus } from "@/lib/db/types";
 
 import { BackfillForm } from "./_backfill-form";
 import { CronSettingsForm } from "./_cron-settings-form";
@@ -51,9 +51,9 @@ function formatDuration(ms: number | null): string {
 }
 
 export default async function QueuePage() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const [{ data, error }, cronEnabled, cronDayOffset] = await Promise.all([
-    supabase
+    db
       .from("scrape_runs")
       .select("*")
       .order("started_at", { ascending: false })

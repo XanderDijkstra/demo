@@ -16,12 +16,12 @@
 import "server-only";
 
 import { scoreCompanyInsert } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
-import type { Company } from "@/lib/supabase/types";
+} from "@/lib/db/queries";
+import type { Company } from "@/lib/db/types";
 
 export interface BackfillResult {
   ok: true;
@@ -57,7 +57,7 @@ function contactFromRaw(raw: Record<string, unknown>): {
 
 export async function backfillFromRaw(): Promise<BackfillResult> {
   const startedAt = Date.now();
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [weights, targets] = await Promise.all([
     getScoringWeights(),
@@ -76,7 +76,7 @@ export async function backfillFromRaw(): Promise<BackfillResult> {
   // Paginate so we don't load the whole table into memory at once.
   // We only need rows where at least one contact field is still empty.
   for (;;) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("companies")
       .select("*")
       .or("email.is.null,phone.is.null,mobile.is.null,website.is.null")
@@ -112,7 +112,7 @@ export async function backfillFromRaw(): Promise<BackfillResult> {
         patch.score_breakdown = rescored.breakdown;
       }
 
-      const { error: upErr } = await supabase
+      const { error: upErr } = await db
         .from("companies")
         .update(patch)
         .eq("org_nr", lead.org_nr);
@@ -123,7 +123,7 @@ export async function backfillFromRaw(): Promise<BackfillResult> {
     from += PAGE;
   }
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "lead.backfill_from_raw",
     entity_type: "settings",

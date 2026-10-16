@@ -21,12 +21,12 @@ import {
   type One1881Config,
 } from "@/lib/enrichment/one1881";
 import { scoreCompanyInsert } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
-import type { Company } from "@/lib/supabase/types";
+} from "@/lib/db/queries";
+import type { Company } from "@/lib/db/types";
 
 export interface Enrich1881BatchParams {
   /** How far back to scan, in days. Default 4. */
@@ -66,7 +66,7 @@ export async function enrich1881Batch(
   }
 
   const startedAt = Date.now();
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const since = new Date(
     Date.now() - daysSince * 24 * 60 * 60 * 1000
@@ -74,7 +74,7 @@ export async function enrich1881Batch(
 
   // Prioritise the highest-scoring leads that are missing an email —
   // those are the ones the cron is skipping.
-  const { data: leads, error } = await supabase
+  const { data: leads, error } = await db
     .from("companies")
     .select("*")
     .gte("registered_at", since)
@@ -103,7 +103,7 @@ export async function enrich1881Batch(
       const result = await lookupByOrgNr(lead.org_nr, cfg);
       if (!result.ok) {
         failed += 1;
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.enrich.1881.failed",
           entity_type: "company",
@@ -126,7 +126,7 @@ export async function enrich1881Batch(
 
       if (Object.keys(patch).length === 0) {
         // 1881 had nothing new for this lead.
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.enrich.1881.empty",
           entity_type: "company",
@@ -148,14 +148,14 @@ export async function enrich1881Batch(
         patch.score_breakdown = rescored.breakdown;
       }
 
-      const { error: upErr } = await supabase
+      const { error: upErr } = await db
         .from("companies")
         .update(patch)
         .eq("org_nr", lead.org_nr);
 
       if (upErr) {
         failed += 1;
-        await supabase.from("audit_log").insert({
+        await db.from("audit_log").insert({
           actor: "manual.batch",
           action: "lead.enrich.1881.update_failed",
           entity_type: "company",
@@ -167,7 +167,7 @@ export async function enrich1881Batch(
       }
 
       updated += 1;
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "manual.batch",
         action: "lead.enrich.1881.updated",
         entity_type: "company",
@@ -182,7 +182,7 @@ export async function enrich1881Batch(
       });
     } catch (err) {
       failed += 1;
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "manual.batch",
         action: "lead.enrich.1881.exception",
         entity_type: "company",
@@ -196,7 +196,7 @@ export async function enrich1881Batch(
 
   const durationMs = Date.now() - startedAt;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual.batch",
     action: "lead.enrich.1881.batch_completed",
     entity_type: "settings",

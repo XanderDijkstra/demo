@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DEAL_STAGES } from "@/lib/deals-shared";
-import type { Flow } from "@/lib/supabase/types";
+import type { Flow } from "@/lib/db/types";
 
 import { createFlow, updateFlow } from "./_actions";
 

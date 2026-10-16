@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,8 +39,8 @@ function validate(searchParams: URLSearchParams): ValidateResult {
 }
 
 async function suppress(email: string): Promise<void> {
-  const supabase = getSupabaseAdmin();
-  await supabase.from("outreach_suppressions").upsert(
+  const db = getDb();
+  await db.from("outreach_suppressions").upsert(
     {
       email,
       reason: "unsubscribed",
@@ -49,7 +49,7 @@ async function suppress(email: string): Promise<void> {
     },
     { onConflict: "email" }
   );
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "system",
     action: "outreach.unsubscribed",
     entity_type: "outreach_suppression",
@@ -59,8 +59,8 @@ async function suppress(email: string): Promise<void> {
 }
 
 async function isAlreadySuppressed(email: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  const { data } = await supabase
+  const db = getDb();
+  const { data } = await db
     .from("outreach_suppressions")
     .select("email")
     .eq("email", email)

@@ -1,8 +1,9 @@
+import { requireOperator } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 import { getInboundDomain } from "@/lib/email/threads";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Company, EmailThread, OutreachEmail } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Company, EmailThread, OutreachEmail } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -16,16 +17,21 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ threadId: string }> }
 ) {
+  try {
+    await requireOperator();
+  } catch {
+    return new Response("Unauthorized", { status: 401 });
+  }
   const { threadId } = await params;
   if (!threadId) {
     return NextResponse.json({ error: "Missing threadId" }, { status: 400 });
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [threadRes, messagesRes, inboundDomain] = await Promise.all([
-    supabase.from("email_threads").select("*").eq("id", threadId).maybeSingle(),
-    supabase
+    db.from("email_threads").select("*").eq("id", threadId).maybeSingle(),
+    db
       .from("outreach_emails")
       .select("*")
       .eq("thread_id", threadId)
@@ -42,7 +48,7 @@ export async function GET(
 
   let lead: Company | null = null;
   if (thread.org_nr) {
-    const { data } = await supabase
+    const { data } = await db
       .from("companies")
       .select("*")
       .eq("org_nr", thread.org_nr)

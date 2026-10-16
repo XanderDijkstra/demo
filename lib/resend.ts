@@ -3,8 +3,8 @@ import "server-only";
 import { Resend } from "resend";
 
 import { buildUnsubscribeUrl } from "@/lib/email/unsubscribe";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { getSetting } from "@/lib/supabase/queries";
+import { getDb } from "@/lib/db";
+import { getSetting } from "@/lib/db/queries";
 
 let cached: Resend | null = null;
 
@@ -193,16 +193,23 @@ export async function getOutreachReplyTo(): Promise<string> {
  * Surrounding horizontal whitespace ([ \t]) is captured so we can rebalance
  * it; newlines are deliberately NOT captured, so line breaks stay intact.
  */
+const NAME_KEYS = new Set(["contact_first_name", "contact_name"]);
+
 export function applyPlaceholders(
   template: string,
   vars: Record<string, string | null>
 ): string {
   return template.replace(
     /([ \t]*)\{\{\s*([a-z_]+)\s*\}\}([ \t]*)/gi,
-    (_, lead: string, key: string, trail: string) => {
+    (_: string, lead: string, key: string, trail: string, offset: number) => {
       if (!(key in vars)) return `${lead}{{${key}}}${trail}`;
       const v = vars[key];
-      if (v && v.trim()) return `${lead}${v}${trail}`;
+      if (v && v.trim()) {
+        // "Hei{{contact_first_name}}!" is written without a space so it
+        // reads "Hei!" when the name is unknown; with a name it needs one.
+        const glued = !lead && NAME_KEYS.has(key) && /\p{L}$/u.test(template.slice(0, offset));
+        return `${glued ? " " : lead}${v}${trail}`;
+      }
       // Empty value: keep a single space only when the token was wedged
       // between two words (whitespace on both sides); otherwise drop it.
       return lead && trail ? " " : "";
@@ -291,8 +298,8 @@ export interface SendOutreachResult {
 export async function isSuppressed(
   email: string
 ): Promise<{ suppressed: true; reason: string } | { suppressed: false }> {
-  const supabase = getSupabaseAdmin();
-  const { data } = await supabase
+  const db = getDb();
+  const { data } = await db
     .from("outreach_suppressions")
     .select("email, reason")
     .eq("email", email.trim().toLowerCase())

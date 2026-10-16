@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import type { GeneratedSiteContent } from "@/lib/supabase/types";
+import type { GeneratedSiteContent } from "@/lib/db/types";
 import type { NicheConfig } from "@/lib/templates";
 
 /**

@@ -3,8 +3,8 @@ import { Layers } from "lucide-react";
 
 import { Topbar } from "@/components/admin/topbar";
 import { Badge } from "@/components/ui/badge";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Company } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Company } from "@/lib/db/types";
 
 import { Swiper } from "./_swiper";
 
@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 const QUEUE_SIZE = 50;
 
 async function fetchSwipeQueue(): Promise<Company[]> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("companies")
     .select("*")
     .eq("status", "new")

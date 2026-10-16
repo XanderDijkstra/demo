@@ -1,8 +1,8 @@
 import "server-only";
 
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { getSetting } from "@/lib/supabase/queries";
-import type { EmailThread } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import { getSetting } from "@/lib/db/queries";
+import type { EmailThread } from "@/lib/db/types";
 
 /**
  * The subdomain whose MX records point to Resend Inbound (e.g.
@@ -68,10 +68,10 @@ export async function ensureOutboundThread(args: {
   orgNr: string;
   subject: string;
 }): Promise<EmailThread> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const normalized = normalizeSubject(args.subject);
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("email_threads")
     .select("*")
     .eq("org_nr", args.orgNr)
@@ -84,7 +84,7 @@ export async function ensureOutboundThread(args: {
   );
   if (match) return match as EmailThread;
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("email_threads")
     .insert({
       org_nr: args.orgNr,
@@ -116,23 +116,23 @@ export async function touchThread(args: {
   threadId: string;
   incrementUnread?: boolean;
 }): Promise<void> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const now = new Date().toISOString();
   if (args.incrementUnread) {
     // Read-modify-write. Postgres triggers / a stored proc would avoid
     // lost-update races, but for a single-operator MVP it's fine.
-    const { data } = await supabase
+    const { data } = await db
       .from("email_threads")
       .select("unread_count")
       .eq("id", args.threadId)
       .maybeSingle();
     const next = (data?.unread_count ?? 0) + 1;
-    await supabase
+    await db
       .from("email_threads")
       .update({ unread_count: next, last_activity_at: now })
       .eq("id", args.threadId);
   } else {
-    await supabase
+    await db
       .from("email_threads")
       .update({ last_activity_at: now })
       .eq("id", args.threadId);
@@ -158,11 +158,11 @@ export async function resolveInboundThread(args: {
     if (tid) return tid;
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // 2. In-Reply-To
   if (args.inReplyTo) {
-    const { data } = await supabase
+    const { data } = await db
       .from("outreach_emails")
       .select("thread_id")
       .eq("message_id", args.inReplyTo)
@@ -174,7 +174,7 @@ export async function resolveInboundThread(args: {
   // 3. References chain (try each)
   for (const ref of args.references) {
     if (!ref) continue;
-    const { data } = await supabase
+    const { data } = await db
       .from("outreach_emails")
       .select("thread_id")
       .eq("message_id", ref)

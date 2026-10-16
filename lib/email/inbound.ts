@@ -8,8 +8,8 @@ import {
   resolveInboundThread,
 } from "@/lib/email/threads";
 import { fetchEmailBody } from "@/lib/resend";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { EmailAttachment } from "@/lib/supabase/types";
+import { d1, getDb } from "@/lib/db";
+import type { EmailAttachment } from "@/lib/db/types";
 import { formatCompanyName } from "@/lib/utils";
 
 /**
@@ -138,9 +138,21 @@ export async function handleInboundEmail(
 
   const messageId = pickHeader(data.headers, "Message-ID");
   const inReplyTo = pickHeader(data.headers, "In-Reply-To");
+
+  // Webhook retries deliver the same message again: store it once, ping once.
+  if (messageId) {
+    const { data: already } = await getDb()
+      .from("outreach_emails")
+      .select("id,thread_id")
+      .eq("message_id", messageId)
+      .eq("direction", "in")
+      .limit(1)
+      .maybeSingle();
+    if (already) return { ok: true, threadId: already.thread_id };
+  }
   const references = splitReferences(pickHeader(data.headers, "References"));
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // Resend's inbound webhook only ships metadata in some setups —
   // the actual body lives on their API. If the webhook didn't include
@@ -160,7 +172,7 @@ export async function handleInboundEmail(
   // Still nothing? Log everything we know about the payload + API
   // response so we can see exactly what Resend gave us.
   if (!text && !html) {
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "system",
       action: "inbound.email.body_missing",
       entity_type: "email",
@@ -187,7 +199,7 @@ export async function handleInboundEmail(
   // resolve a thread, try matching the From address to a known company.
   let orgNr: string | null = null;
   if (threadId) {
-    const { data: t } = await supabase
+    const { data: t } = await db
       .from("email_threads")
       .select("org_nr")
       .eq("id", threadId)
@@ -195,12 +207,21 @@ export async function handleInboundEmail(
     orgNr = t?.org_nr ?? null;
   }
   if (!orgNr && from.email) {
-    const { data: company } = await supabase
-      .from("companies")
-      .select("org_nr")
-      .eq("email", from.email.toLowerCase())
-      .maybeSingle();
-    orgNr = company?.org_nr ?? null;
+    // Brreg emails are stored as registered (mixed case), and one address
+    // (often an accountant's) can belong to several companies: prefer the
+    // one we actually emailed most recently.
+    const { results } = await d1()
+      .prepare(
+        `select c.org_nr from companies c
+         left join outreach_emails o on o.org_nr = c.org_nr and o.direction = 'out'
+         where lower(trim(c.email)) = lower(trim(?))
+         group by c.org_nr
+         order by max(o.created_at) desc nulls last
+         limit 1`
+      )
+      .bind(from.email)
+      .all<{ org_nr: string }>();
+    orgNr = results?.[0]?.org_nr ?? null;
   }
 
   // If we have no matching thread, open one now — even when no lead
@@ -210,7 +231,7 @@ export async function handleInboundEmail(
   // "Unknown sender" so the operator can read it and link manually.
   let finalThreadId = threadId;
   if (!finalThreadId) {
-    const { data: newThread } = await supabase
+    const { data: newThread } = await db
       .from("email_threads")
       .insert({
         org_nr: orgNr,
@@ -232,7 +253,7 @@ export async function handleInboundEmail(
 
   const now = new Date().toISOString();
 
-  const { error: insertError } = await supabase.from("outreach_emails").insert({
+  const { error: insertError } = await db.from("outreach_emails").insert({
     // null when the inbound can't be tied to a company (orphaned
     // thread, manual test, or company row was deleted after the
     // outbound). Used to be "" which fired the FK constraint.
@@ -256,7 +277,7 @@ export async function handleInboundEmail(
   });
 
   if (insertError) {
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "system",
       action: "inbound.email.insert_failed",
       entity_type: "email",
@@ -273,13 +294,13 @@ export async function handleInboundEmail(
 
   // Bump thread unread + activity. Snoozed → re-open.
   if (finalThreadId) {
-    const { data: t } = await supabase
+    const { data: t } = await db
       .from("email_threads")
       .select("unread_count, status")
       .eq("id", finalThreadId)
       .maybeSingle();
     const nextUnread = (t?.unread_count ?? 0) + 1;
-    await supabase
+    await db
       .from("email_threads")
       .update({
         unread_count: nextUnread,
@@ -293,7 +314,7 @@ export async function handleInboundEmail(
 
   // Mark the matching outbound message as replied (UI signal).
   if (inReplyTo) {
-    await supabase
+    await db
       .from("outreach_emails")
       .update({ replied_at: now })
       .eq("message_id", inReplyTo)
@@ -310,18 +331,18 @@ export async function handleInboundEmail(
     // follow-ups so a flow nudge can't land in a live conversation.
     await cancelPendingEnrollments(orgNr, "lead replied");
     await ensureDealForReply(orgNr);
-    const { data: company } = await supabase
+    const { data: company } = await db
       .from("companies")
       .select("name, status")
       .eq("org_nr", orgNr)
       .maybeSingle();
     companyName = company?.name ? formatCompanyName(company.name) : null;
     if (company?.status === "new" || company?.status === "reviewed") {
-      await supabase
+      await db
         .from("companies")
         .update({ status: "qualified" })
         .eq("org_nr", orgNr);
-      await supabase.from("audit_log").insert({
+      await db.from("audit_log").insert({
         actor: "system",
         action: "lead.status.qualified",
         entity_type: "company",
@@ -345,7 +366,7 @@ export async function handleInboundEmail(
     preview: (text ?? "").split(/\n\s*\n/)[0]?.trim() ?? null,
   });
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "system",
     action: "inbound.email.received",
     entity_type: "company",

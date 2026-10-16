@@ -2,7 +2,7 @@ import "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import { getSetting } from "@/lib/supabase/queries";
+import { getSetting } from "@/lib/db/queries";
 import type { NicheConfig } from "@/lib/templates";
 
 const DEFAULT_MODEL = "claude-haiku-4-5";

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { CompanyStatus } from "@/lib/supabase/types";
+import type { CompanyStatus } from "@/lib/db/types";
 
 import { updateLeadStatus } from "./_actions";
 

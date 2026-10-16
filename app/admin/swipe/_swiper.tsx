@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { ScoreBadge } from "@/components/admin/score-badge";
 import { Button } from "@/components/ui/button";
 import { SCORE_LABELS_NB } from "@/lib/scoring";
-import type { Company, ScoringWeights } from "@/lib/supabase/types";
+import type { Company, ScoringWeights } from "@/lib/db/types";
 import { cn, formatCompanyName } from "@/lib/utils";
 
 import {

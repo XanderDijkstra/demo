@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { buildProposalData, formatNorwegianDate } from "@/lib/proposals/build";
+
+import { markProposalSentAction } from "./_actions";
 
 interface Props {
   orgNr: string;
@@ -48,14 +51,8 @@ function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function parseContentDispositionFilename(header: string | null): string | null {
-  if (!header) return null;
-  // Match either filename="…" or filename*=UTF-8''…
-  const quoted = header.match(/filename="([^"]+)"/i);
-  if (quoted?.[1]) return decodeURIComponent(quoted[1]);
-  const star = header.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
-  if (star?.[1]) return decodeURIComponent(star[1].trim());
-  return null;
+function sanitizeFilename(s: string): string {
+  return s.replace(/[^a-zA-Z0-9æøåÆØÅ\-_. ]/g, "").trim() || "Tilbud.pdf";
 }
 
 export function ProposalButton({
@@ -81,36 +78,33 @@ export function ProposalButton({
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const body = {
-      service_type: serviceType,
-      client_name: clientName.trim(),
-      client_contact: contact.trim(),
-      proposal_date: date,
-      monthly_price_nok: Number(monthly) || 0,
-      free_setup: freeSetup,
-      binding: binding.trim() || "Ingen",
-      ad_budget: isAdsService && adBudget.trim() ? adBudget.trim() : undefined,
-      org_nr: orgNr,
-    };
+    if (!clientName.trim()) {
+      toast.error("Kundenavn mangler");
+      return;
+    }
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/proposals/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+        const data = buildProposalData({
+          service_type: serviceType,
+          client_name: clientName.trim(),
+          client_contact: contact.trim(),
+          proposal_date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? formatNorwegianDate(date) : date,
+          monthly_price_nok: Math.max(0, Math.round(Number(monthly) || 0)),
+          free_setup: freeSetup,
+          binding: binding.trim() || "Ingen",
+          ad_budget: isAdsService && adBudget.trim() ? adBudget.trim() : undefined,
         });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `${res.status}`);
-        }
-        const blob = await res.blob();
-        const filename =
-          parseContentDispositionFilename(
-            res.headers.get("Content-Disposition")
-          ) ?? `FX Media - Tobud - ${clientName}.pdf`;
-        downloadBlob(blob, filename);
-        toast.success("Proposal generated — downloaded");
+        // react-pdf renders in the browser (it can't run on Workers);
+        // loaded on demand so it stays out of the admin bundle.
+        const [{ pdf }, { ProposalDocument }] = await Promise.all([
+          import("@react-pdf/renderer"),
+          import("@/lib/proposals/pdf"),
+        ]);
+        const blob = await pdf(<ProposalDocument data={data} />).toBlob();
+        downloadBlob(blob, sanitizeFilename(`FX Media - ${data.proposal_title} - ${data.client_name}.pdf`));
+        await markProposalSentAction(orgNr);
+        toast.success("Tilbud laget og lastet ned");
         setOpen(false);
       } catch (err) {
         toast.error(

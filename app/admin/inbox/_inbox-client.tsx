@@ -19,11 +19,12 @@ import type {
   Company,
   EmailThread,
   OutreachEmail,
-} from "@/lib/supabase/types";
+} from "@/lib/db/types";
 import { cn, formatCompanyName } from "@/lib/utils";
 
 import { markThreadRead } from "./_actions";
 import { ReplyComposer } from "./_reply-composer";
+import { EmailHtml } from "@/components/admin/email-html";
 
 export type ViewId = "inbox" | "sent" | "all";
 
@@ -468,10 +469,7 @@ function MessageCard({ message }: { message: OutreachEmail }) {
             {message.body_text || message.body}
           </pre>
         ) : message.body_html ? (
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: message.body_html }}
-          />
+          <EmailHtml html={message.body_html} />
         ) : message.direction === "in" && message.resend_id ? (
           <div className="space-y-2.5 rounded-md border border-dashed bg-muted/40 p-3 text-xs">
             <p className="text-muted-foreground leading-relaxed">

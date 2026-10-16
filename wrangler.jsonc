@@ -1,0 +1,40 @@
+{
+  // Vekst-Systemet (internal FX Media outreach tool) on Cloudflare Workers via OpenNext.
+  // Build + deploy: `pnpm run deploy`. Local Workers preview: `pnpm run preview`.
+  // Secrets (never committed) are set with `npx wrangler secret put <NAME>`; list in .env.example.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vekst-demo",
+  // custom-worker.js wraps .open-next/worker.js and adds the scheduled handler for the crons below.
+  "main": "custom-worker.js",
+  // UTC, same as the old Vercel crons: Brreg scrape, daily outreach, follow-up flows.
+  "triggers": { "crons": ["0 6 * * *", "0 8 * * *", "0 9 * * *"] },
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "upload_source_maps": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "vekst-demo" }],
+  // Schema in migrations/; apply with `npx wrangler d1 migrations apply vekst-demo --remote`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vekst-demo",
+      "database_id": "01360517-9b46-4cee-855c-c1399dc214da",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://demo.vekst-systemet.no",
+    // Cloudflare Access (Zero Trust team fx-media) guards /admin, /preview, /api/inbox, /api/proposals.
+    // ACCESS_AUD is the audience tag of the Access application; the app re-verifies the JWT (lib/auth.ts).
+    "ACCESS_TEAM_DOMAIN": "fx-media.cloudflareaccess.com",
+    "ACCESS_AUD": "",
+    "ADMIN_EMAILS": "info@fx-media.no"
+  },
+  "observability": { "enabled": true },
+  // Until the domain is cut over from Vercel, the Worker runs on workers.dev.
+  "workers_dev": true,
+  "preview_urls": false
+}

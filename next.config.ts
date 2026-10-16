@@ -3,12 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
-  experimental: {
-    serverActions: {
-      // Default is 1 MB; design references can be a few MB screenshots.
-      bodySizeLimit: "12mb",
-    },
-  },
 };
 
 export default nextConfig;
+
+// Lets `next dev` read the D1 binding from wrangler.jsonc (local D1 in .wrangler/).
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
 import { handleInboundEmail, type ResendInboundPayload } from "@/lib/email/inbound";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Database, OutreachEmailStatus } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Database, OutreachEmailStatus } from "@/lib/db/types";
 
 type OutreachEmailUpdate =
   Database["public"]["Tables"]["outreach_emails"]["Update"];
@@ -99,6 +99,16 @@ function looksLikeInboundPayload(
   return !!(data.text || data.html);
 }
 
+const STATUS_RANK: Record<OutreachEmailStatus, number> = {
+  queued: 0,
+  sent: 1,
+  delivered: 2,
+  failed: 3,
+  bounced: 3,
+  complained: 4,
+  received: 0,
+};
+
 export async function POST(request: Request) {
   const secret = process.env.RESEND_WEBHOOK_SECRET;
   if (!secret) {
@@ -120,22 +130,24 @@ export async function POST(request: Request) {
     const wh = new Webhook(secret);
     event = wh.verify(body, headers) as ResendEventPayload;
   } catch (err) {
-    return NextResponse.json(
-      {
-        error: "invalid signature",
-        detail: err instanceof Error ? err.message : String(err),
-      },
-      { status: 401 }
-    );
+    console.error("resend webhook signature", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
+
+  // Svix retries deliver the same event id again; handle each one once
+  // (otherwise opens/clicks are double-counted).
+  const { count: firstDelivery } = await getDb()
+    .from("webhook_events")
+    .upsert({ id: headers["svix-id"] }, { onConflict: "id", ignoreDuplicates: true, count: "exact" });
+  if (!firstDelivery) return NextResponse.json({ ok: true, duplicate: true });
 
   // ── Inbound ────────────────────────────────────────────────────────
   const isInbound =
     isInboundEventType(event.type) || looksLikeInboundPayload(event.data);
   if (isInbound) {
     // Always audit-log so we can spot Resend event-name changes.
-    const supabase = getSupabaseAdmin();
-    await supabase.from("audit_log").insert({
+    const db = getDb();
+    await db.from("audit_log").insert({
       actor: "resend.webhook",
       action: "inbound.email.received_raw",
       entity_type: "resend_event",
@@ -157,24 +169,24 @@ export async function POST(request: Request) {
   }
 
   // ── Outbound events ────────────────────────────────────────────────
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const emailId = event.data.email_id;
   const eventTime = event.created_at ?? new Date().toISOString();
 
   // Find the matching outreach row by Resend's id. Test events or
   // domain/contact events have no email_id → just no-op gracefully.
-  let row: { id: string; org_nr: string | null; to_email: string } | null = null;
+  let row: { id: string; org_nr: string | null; to_email: string; status: OutreachEmailStatus } | null = null;
   if (emailId) {
-    const { data } = await supabase
+    const { data } = await db
       .from("outreach_emails")
-      .select("id, org_nr, to_email")
+      .select("id, org_nr, to_email, status")
       .eq("resend_id", emailId)
       .maybeSingle();
     row = data;
   }
 
   // Always audit-log the raw event for forensics.
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "resend.webhook",
     action: `outreach.event.${event.type.replace("email.", "")}`,
     entity_type: row ? "outreach_email" : "resend_event",
@@ -223,7 +235,7 @@ export async function POST(request: Request) {
       break;
     case "email.opened":
       if (row) {
-        const { data } = await supabase
+        const { data } = await db
           .from("outreach_emails")
           .select("opened_at, open_count")
           .eq("id", row.id)
@@ -234,7 +246,7 @@ export async function POST(request: Request) {
       break;
     case "email.clicked":
       if (row) {
-        const { data } = await supabase
+        const { data } = await db
           .from("outreach_emails")
           .select("clicked_at, click_count")
           .eq("id", row.id)
@@ -258,15 +270,19 @@ export async function POST(request: Request) {
   }
 
   if (row) {
-    if (nextStatus) baseUpdate.status = nextStatus;
-    await supabase
+    // Events can arrive out of order (a late "sent" after "delivered");
+    // only ever move the status forward.
+    if (nextStatus && STATUS_RANK[nextStatus] > STATUS_RANK[row.status]) {
+      baseUpdate.status = nextStatus;
+    }
+    await db
       .from("outreach_emails")
       .update(baseUpdate)
       .eq("id", row.id);
   }
 
   if (suppressEmail) {
-    await supabase.from("outreach_suppressions").upsert(
+    await db.from("outreach_suppressions").upsert(
       {
         email: suppressEmail.email.toLowerCase(),
         reason: suppressEmail.reason,

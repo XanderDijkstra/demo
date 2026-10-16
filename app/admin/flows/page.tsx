@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Flow, FlowEnrollment, FlowRun } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Flow, FlowEnrollment, FlowRun } from "@/lib/db/types";
 import { formatCompanyName } from "@/lib/utils";
 
 import { FlowCanvas } from "./_flow-canvas";
@@ -57,20 +57,20 @@ const STATUS_VARIANT: Record<
 };
 
 export default async function FlowsPage() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [{ data: flowsData }, { data: runsData }, { data: enrData }] =
     await Promise.all([
-      supabase
+      db
         .from("flows")
         .select("*")
         .order("created_at", { ascending: true }),
-      supabase
+      db
         .from("flow_runs")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50),
-      supabase
+      db
         .from("flow_enrollments")
         .select("*")
         .order("created_at", { ascending: false })
@@ -119,7 +119,7 @@ export default async function FlowsPage() {
   const flowNameById = new Map(flows.map((f) => [f.id, f.name]));
   const nameByOrg = new Map<string, string>();
   if (orgNrs.length > 0) {
-    const { data: companies } = await supabase
+    const { data: companies } = await db
       .from("companies")
       .select("org_nr, name")
       .in("org_nr", orgNrs);

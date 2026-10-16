@@ -1,10 +1,12 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { processFlows } from "@/lib/jobs/flows-processor";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -44,12 +46,13 @@ function parseForm(formData: FormData) {
 }
 
 export async function createFlow(formData: FormData): Promise<ActionResult> {
+  await requireOperator();
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ugyldig" };
   }
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("flows").insert({
+  const db = getDb();
+  const { error } = await db.from("flows").insert({
     name: parsed.data.name,
     delay_hours: parsed.data.delay_hours,
     follow_up_subject: parsed.data.follow_up_subject,
@@ -71,13 +74,14 @@ export async function updateFlow(
   id: string,
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!id) return { ok: false, error: "Mangler id" };
   const parsed = parseForm(formData);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ugyldig" };
   }
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("flows")
     .update({
       name: parsed.data.name,
@@ -103,9 +107,10 @@ export async function toggleFlow(
   id: string,
   enabled: boolean
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!id) return { ok: false, error: "Mangler id" };
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
+  const db = getDb();
+  const { error } = await db
     .from("flows")
     .update({ enabled, updated_at: new Date().toISOString() })
     .eq("id", id);
@@ -116,9 +121,10 @@ export async function toggleFlow(
 }
 
 export async function deleteFlow(id: string): Promise<ActionResult> {
+  await requireOperator();
   if (!id) return { ok: false, error: "Mangler id" };
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("flows").delete().eq("id", id);
+  const db = getDb();
+  const { error } = await db.from("flows").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/flows");
@@ -128,6 +134,7 @@ export async function deleteFlow(id: string): Promise<ActionResult> {
 export async function runFlowsNow(): Promise<
   ActionResult & { sent?: number; skippedReplied?: number; failed?: number }
 > {
+  await requireOperator();
   try {
     const r = await processFlows({ triggeredBy: "manual" });
     revalidatePath("/admin/flows");

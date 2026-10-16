@@ -1,10 +1,12 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { runDailyOutreach } from "@/lib/jobs/outreach-daily";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 type ActionResult<T = unknown> =
   | { ok: true; message?: string; data?: T }
@@ -30,6 +32,7 @@ function parseLines(raw: string): string[] {
 export async function saveCampaignConfig(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = CampaignSchema.safeParse({
     enabled: formData.get("enabled") === "on",
     subject: formData.get("subject"),
@@ -49,7 +52,7 @@ export async function saveCampaignConfig(
     };
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const now = new Date().toISOString();
   const rows = [
     { key: "daily_outreach_enabled", value: parsed.data.enabled },
@@ -67,7 +70,7 @@ export async function saveCampaignConfig(
     },
   ];
   for (const row of rows) {
-    const { error } = await supabase
+    const { error } = await db
       .from("settings")
       .upsert(
         { ...row, value: row.value as never, updated_at: now },
@@ -76,7 +79,7 @@ export async function saveCampaignConfig(
     if (error) return { ok: false, error: error.message };
   }
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.daily_outreach.updated",
     entity_type: "settings",
@@ -100,6 +103,7 @@ export async function runCampaignNow(): Promise<
     failed: number;
   }>
 > {
+  await requireOperator();
   const result = await runDailyOutreach({ triggeredBy: "manual" });
   revalidatePath("/admin/outreach");
   return {
@@ -117,6 +121,7 @@ export async function runCampaignNow(): Promise<
 export async function previewCandidateCount(): Promise<
   ActionResult<{ count: number }>
 > {
+  await requireOperator();
   const result = await runDailyOutreach({
     triggeredBy: "manual",
     dryRun: true,

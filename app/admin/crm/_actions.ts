@@ -1,5 +1,7 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -11,12 +13,12 @@ import {
   setDealStage,
 } from "@/lib/deals";
 import { scoreCompanyInsert } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
-import type { DealStage } from "@/lib/supabase/types";
+} from "@/lib/db/queries";
+import type { DealStage } from "@/lib/db/types";
 
 type ActionResult = { ok: true; orgNr?: string } | { ok: false; error: string };
 
@@ -24,6 +26,7 @@ export async function moveDealStage(
   dealId: string,
   stage: DealStage
 ): Promise<ActionResult> {
+  await requireOperator();
   if (!dealId) return { ok: false, error: "Missing deal id" };
   if (!isValidDealStage(stage)) return { ok: false, error: "Invalid stage" };
 
@@ -71,6 +74,7 @@ const AddLeadSchema = z.object({
 export async function addLeadToCrm(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireOperator();
   const parsed = AddLeadSchema.safeParse({
     orgNr: String(formData.get("orgNr") ?? "").trim(),
     email: String(formData.get("email") ?? ""),
@@ -84,11 +88,11 @@ export async function addLeadToCrm(
   }
   const { orgNr, email, contactName } = parsed.data;
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // Bail early if an active deal already exists — surfaces the right
   // message instead of silently re-using.
-  const { data: existingActive } = await supabase
+  const { data: existingActive } = await db
     .from("deals")
     .select("id")
     .eq("org_nr", orgNr)
@@ -99,7 +103,7 @@ export async function addLeadToCrm(
   }
 
   // Find or fetch the company.
-  const { data: existingCompany } = await supabase
+  const { data: existingCompany } = await db
     .from("companies")
     .select("org_nr, email, contact_name")
     .eq("org_nr", orgNr)
@@ -133,7 +137,7 @@ export async function addLeadToCrm(
       insert.score_breakdown = breakdown;
     }
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await db
       .from("companies")
       .upsert(insert, { onConflict: "org_nr", ignoreDuplicates: true });
     if (insertError) {
@@ -146,7 +150,7 @@ export async function addLeadToCrm(
     if (contactName && !existingCompany.contact_name)
       patch.contact_name = contactName;
     if (Object.keys(patch).length > 0) {
-      await supabase.from("companies").update(patch).eq("org_nr", orgNr);
+      await db.from("companies").update(patch).eq("org_nr", orgNr);
     }
   }
 

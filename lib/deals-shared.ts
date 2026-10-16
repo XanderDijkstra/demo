@@ -4,7 +4,7 @@
  * from client React components.
  */
 
-import type { Deal, DealStage } from "@/lib/supabase/types";
+import type { Deal, DealStage } from "@/lib/db/types";
 
 export const DEAL_STAGES: ReadonlyArray<{
   value: DealStage;

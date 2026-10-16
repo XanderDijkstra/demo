@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { DEAL_STAGES, type KanbanCard } from "@/lib/deals-shared";
-import type { DealStage } from "@/lib/supabase/types";
+import type { DealStage } from "@/lib/db/types";
 import { cn, formatCompanyName } from "@/lib/utils";
 
 import { moveDealStage } from "./_actions";

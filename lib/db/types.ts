@@ -112,6 +112,7 @@ export type Database = {
           email: string | null;
           website: string | null;
           contact_name: string | null;
+          email_scrape_attempted_at: string | null;
           employee_count: number | null;
           vat_registered: boolean;
           bankrupt: boolean;
@@ -145,6 +146,7 @@ export type Database = {
           email?: string | null;
           website?: string | null;
           contact_name?: string | null;
+          email_scrape_attempted_at?: string | null;
           employee_count?: number | null;
           vat_registered?: boolean;
           bankrupt?: boolean;
@@ -178,6 +180,7 @@ export type Database = {
           email?: string | null;
           website?: string | null;
           contact_name?: string | null;
+          email_scrape_attempted_at?: string | null;
           employee_count?: number | null;
           vat_registered?: boolean;
           bankrupt?: boolean;
@@ -307,6 +310,12 @@ export type Database = {
           metadata?: Record<string, unknown> | null;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      webhook_events: {
+        Row: { id: string; received_at: string };
+        Insert: { id: string; received_at?: string };
+        Update: { id?: string; received_at?: string };
         Relationships: [];
       };
       settings: {
@@ -639,93 +648,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      niche_templates: {
-        Row: {
-          slug: string;
-          display_name: string;
-          primary_color: string;
-          accent_color: string;
-          hero_image_keyword: string;
-          hero_layout: HeroLayout;
-          cta_text: string;
-          services: Array<{ title: string; description: string }>;
-          benefit_tags: string[];
-          design_brief: string | null;
-          combined_dna_summary: VisionSummary | null;
-          combined_dna_extracted_at: string | null;
-          combined_dna_model: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          slug: string;
-          display_name: string;
-          primary_color: string;
-          accent_color: string;
-          hero_image_keyword: string;
-          hero_layout?: HeroLayout;
-          cta_text: string;
-          services?: Array<{ title: string; description: string }>;
-          benefit_tags?: string[];
-          design_brief?: string | null;
-          combined_dna_summary?: VisionSummary | null;
-          combined_dna_extracted_at?: string | null;
-          combined_dna_model?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          slug?: string;
-          display_name?: string;
-          primary_color?: string;
-          accent_color?: string;
-          hero_image_keyword?: string;
-          hero_layout?: HeroLayout;
-          cta_text?: string;
-          services?: Array<{ title: string; description: string }>;
-          benefit_tags?: string[];
-          design_brief?: string | null;
-          combined_dna_summary?: VisionSummary | null;
-          combined_dna_extracted_at?: string | null;
-          combined_dna_model?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      template_references: {
-        Row: {
-          id: string;
-          niche_slug: string;
-          storage_path: string;
-          public_url: string;
-          label: string | null;
-          vision_summary: VisionSummary | null;
-          vision_model: string | null;
-          vision_extracted_at: string | null;
-          uploaded_at: string;
-        };
-        Insert: {
-          id?: string;
-          niche_slug: string;
-          storage_path: string;
-          public_url: string;
-          label?: string | null;
-          vision_summary?: VisionSummary | null;
-          vision_model?: string | null;
-          vision_extracted_at?: string | null;
-          uploaded_at?: string;
-        };
-        Update: {
-          id?: string;
-          niche_slug?: string;
-          storage_path?: string;
-          public_url?: string;
-          label?: string | null;
-          vision_summary?: VisionSummary | null;
-          vision_model?: string | null;
-          vision_extracted_at?: string | null;
-          uploaded_at?: string;
-        };
-        Relationships: [];
-      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
@@ -771,11 +693,3 @@ export type GeneratedSiteInsert =
 export type Deal = Database["public"]["Tables"]["deals"]["Row"];
 export type DealInsert = Database["public"]["Tables"]["deals"]["Insert"];
 export type DealUpdate = Database["public"]["Tables"]["deals"]["Update"];
-export type NicheTemplateRow =
-  Database["public"]["Tables"]["niche_templates"]["Row"];
-export type NicheTemplateUpdate =
-  Database["public"]["Tables"]["niche_templates"]["Update"];
-export type TemplateReference =
-  Database["public"]["Tables"]["template_references"]["Row"];
-export type TemplateReferenceInsert =
-  Database["public"]["Tables"]["template_references"]["Insert"];

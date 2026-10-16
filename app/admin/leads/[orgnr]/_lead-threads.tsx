@@ -11,12 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import type {
   EmailThread,
   OutreachEmail,
-} from "@/lib/supabase/types";
+} from "@/lib/db/types";
 import { cn } from "@/lib/utils";
+import { EmailHtml } from "@/components/admin/email-html";
 
 interface Props {
   orgNr: string;
@@ -37,9 +38,9 @@ interface Props {
  * render).
  */
 export async function LeadThreads({ orgNr, email, hasDemoSite }: Props) {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
-  const { data: threadsData } = await supabase
+  const { data: threadsData } = await db
     .from("email_threads")
     .select("*")
     .eq("org_nr", orgNr)
@@ -51,7 +52,7 @@ export async function LeadThreads({ orgNr, email, hasDemoSite }: Props) {
   }
 
   const threadIds = threads.map((t) => t.id);
-  const { data: messagesData } = await supabase
+  const { data: messagesData } = await db
     .from("outreach_emails")
     .select("*")
     .in("thread_id", threadIds)
@@ -225,10 +226,7 @@ function MessageCard({ message }: { message: OutreachEmail }) {
             {message.body_text || message.body}
           </pre>
         ) : message.body_html ? (
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: message.body_html }}
-          />
+          <EmailHtml html={message.body_html} />
         ) : (
           <p className="text-xs italic text-muted-foreground">
             (Ingen innhold på denne meldingen.)

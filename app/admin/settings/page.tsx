@@ -13,17 +13,17 @@ import {
 import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 import { getFreepikConfig } from "@/lib/stock/freepik";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getExcludedOrgForms,
   getScoringWeights,
   getSetting,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
+} from "@/lib/db/queries";
 import type {
   AuditLogEntry,
   OutreachSuppression,
-} from "@/lib/supabase/types";
+} from "@/lib/db/types";
 
 import {
   saveExcludedOrgForms,
@@ -43,7 +43,7 @@ export const dynamic = "force-dynamic";
 const SETTINGS_AUDIT_PREFIX = "settings.";
 
 export default async function SettingsPage() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const [
     weights,
     naceCodes,
@@ -63,20 +63,20 @@ export default async function SettingsPage() {
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     getSetting<string>("claude_model"),
-    supabase.from("companies").select("*", { count: "exact", head: true }),
-    supabase
+    db.from("companies").select("*", { count: "exact", head: true }),
+    db
       .from("generated_sites")
       .select("*", { count: "exact", head: true }),
-    supabase
+    db
       .from("generated_sites")
       .select("generation_input_tokens, generation_output_tokens"),
-    supabase
+    db
       .from("audit_log")
       .select("*")
       .like("action", `${SETTINGS_AUDIT_PREFIX}%`)
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase
+    db
       .from("outreach_suppressions")
       .select("*")
       .order("created_at", { ascending: false })

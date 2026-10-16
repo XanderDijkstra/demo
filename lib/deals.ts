@@ -1,8 +1,8 @@
 import "server-only";
 
 import { enrollLeadInStageFlows } from "@/lib/flows-enroll";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Deal, DealStage, DealUpdate } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Deal, DealStage, DealUpdate } from "@/lib/db/types";
 
 import {
   ACTIVE_STAGES,
@@ -26,8 +26,8 @@ export {
 export async function getActiveDealByOrgNr(
   orgNr: string
 ): Promise<Deal | null> {
-  const supabase = getSupabaseAdmin();
-  const { data } = await supabase
+  const db = getDb();
+  const { data } = await db
     .from("deals")
     .select("*")
     .eq("org_nr", orgNr)
@@ -46,8 +46,8 @@ export async function ensureDealForReply(orgNr: string): Promise<Deal | null> {
   const existing = await getActiveDealByOrgNr(orgNr);
   if (existing) return existing;
 
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("deals")
     .insert({
       org_nr: orgNr,
@@ -59,7 +59,7 @@ export async function ensureDealForReply(orgNr: string): Promise<Deal | null> {
 
   if (error || !data) return null;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "system",
     action: "deal.created",
     entity_type: "deal",
@@ -81,7 +81,7 @@ export async function advanceActiveDealStage(
   toStage: DealStage,
   options: { allowDowngrade?: boolean } = {}
 ): Promise<Deal | null> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const active = await getActiveDealByOrgNr(orgNr);
   if (!active) return null;
 
@@ -98,7 +98,7 @@ export async function advanceActiveDealStage(
   }
   if (active.stage === toStage) return active;
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("deals")
     .update({
       stage: toStage,
@@ -110,7 +110,7 @@ export async function advanceActiveDealStage(
 
   if (error || !data) return null;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "system",
     action: `deal.stage.${toStage}`,
     entity_type: "deal",
@@ -129,7 +129,7 @@ export async function setDealStage(
   toStage: DealStage,
   options: { lostReason?: string } = {}
 ): Promise<Deal | null> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const now = new Date().toISOString();
   const update: DealUpdate = {
     stage: toStage,
@@ -141,7 +141,7 @@ export async function setDealStage(
     if (options.lostReason) update.lost_reason = options.lostReason;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("deals")
     .update(update)
     .eq("id", dealId)
@@ -150,7 +150,7 @@ export async function setDealStage(
 
   if (error || !data) return null;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: `deal.stage.${toStage}`,
     entity_type: "deal",
@@ -167,8 +167,8 @@ export async function updateDealFields(
   dealId: string,
   patch: { value_nok?: number | null; notes?: string | null }
 ): Promise<Deal | null> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("deals")
     .update({
       ...(patch.value_nok !== undefined ? { value_nok: patch.value_nok } : {}),
@@ -187,8 +187,8 @@ export async function createManualDeal(orgNr: string): Promise<Deal | null> {
   const existing = await getActiveDealByOrgNr(orgNr);
   if (existing) return existing;
 
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("deals")
     .insert({
       org_nr: orgNr,
@@ -200,7 +200,7 @@ export async function createManualDeal(orgNr: string): Promise<Deal | null> {
 
   if (error || !data) return null;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "deal.created",
     entity_type: "deal",
@@ -225,34 +225,33 @@ function daysSince(iso: string): number {
  * Won/lost deals are filtered to the last 30 days to keep the board tidy.
  */
 export async function fetchKanban(): Promise<Record<DealStage, KanbanCard[]>> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const [activeRes, closedRes] = await Promise.all([
-    supabase
+    db
       .from("deals")
-      .select("*, companies(name, kommune)")
+      .select("*")
       .in("stage", ACTIVE_STAGES)
       .order("stage_changed_at", { ascending: false }),
-    supabase
+    db
       .from("deals")
-      .select("*, companies(name, kommune)")
+      .select("*")
       .in("stage", ["won", "lost"])
       .gte("stage_changed_at", cutoff)
       .order("stage_changed_at", { ascending: false }),
   ]);
 
-  type Joined = Deal & {
-    companies: { name: string; kommune: string | null } | null;
-  };
+  const deals: Deal[] = [...(activeRes.data ?? []), ...(closedRes.data ?? [])];
 
-  // Cast through unknown — the FK between deals.org_nr and companies.org_nr
-  // exists in SQL but isn't reflected in the hand-written Database
-  // `Relationships: []` (which we keep empty to avoid bloating types).
-  const rows: Joined[] = [
-    ...((activeRes.data ?? []) as unknown as Joined[]),
-    ...((closedRes.data ?? []) as unknown as Joined[]),
-  ];
+  // Company name + kommune for each card, in one query.
+  const { data: companyRows } = await db
+    .from("companies")
+    .select("org_nr,name,kommune")
+    .in("org_nr", [...new Set(deals.map((d) => d.org_nr))]);
+  const companies = new Map((companyRows ?? []).map((c) => [c.org_nr, c]));
+
+  const rows = deals.map((d) => ({ ...d, companies: companies.get(d.org_nr) ?? null }));
 
   const grouped: Record<DealStage, KanbanCard[]> = {
     replied: [],

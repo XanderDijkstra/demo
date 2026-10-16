@@ -3,7 +3,7 @@
 import { ChevronRight, Mail, MousePointerClick, Zap } from "lucide-react";
 
 import { DEAL_STAGES } from "@/lib/deals-shared";
-import type { Flow } from "@/lib/supabase/types";
+import type { Flow } from "@/lib/db/types";
 
 import { FlowDialog } from "./_flow-dialog";
 

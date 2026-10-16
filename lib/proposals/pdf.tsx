@@ -9,12 +9,11 @@
  *   - Radial glow: SVG <radialGradient> with power-curve stops
  *   - Star: 10-point polygon path
  *
- * Custom fonts (Manrope, 5 weights) registered from /public/fonts at module
- * load time. On Vercel server runtime, react-pdf reads them via the local
- * filesystem.
+ * Rendered in the browser (the admin's proposal dialog): react-pdf's layout
+ * engine compiles WebAssembly at runtime, which Cloudflare Workers forbids.
+ * Fonts (Manrope, 5 weights) are fetched from /fonts, served from public/.
  */
 
-import path from "node:path";
 import {
   Document,
   Font,
@@ -36,16 +35,16 @@ import type { Deliverable, ProposalData } from "./types";
 
 // ─── FONTS ──────────────────────────────────────────────────────────────────
 
-const FONT_DIR = path.join(process.cwd(), "public", "fonts");
+const FONT_DIR = "/fonts";
 
 Font.register({
   family: "Manrope",
   fonts: [
-    { src: path.join(FONT_DIR, "Manrope-Regular.ttf"), fontWeight: 400 },
-    { src: path.join(FONT_DIR, "Manrope-Medium.ttf"), fontWeight: 500 },
-    { src: path.join(FONT_DIR, "Manrope-SemiBold.ttf"), fontWeight: 600 },
-    { src: path.join(FONT_DIR, "Manrope-Bold.ttf"), fontWeight: 700 },
-    { src: path.join(FONT_DIR, "Manrope-ExtraBold.ttf"), fontWeight: 800 },
+    { src: `${FONT_DIR}/Manrope-Regular.ttf`, fontWeight: 400 },
+    { src: `${FONT_DIR}/Manrope-Medium.ttf`, fontWeight: 500 },
+    { src: `${FONT_DIR}/Manrope-SemiBold.ttf`, fontWeight: 600 },
+    { src: `${FONT_DIR}/Manrope-Bold.ttf`, fontWeight: 700 },
+    { src: `${FONT_DIR}/Manrope-ExtraBold.ttf`, fontWeight: 800 },
   ],
 });
 

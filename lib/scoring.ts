@@ -9,7 +9,7 @@
  * naeringskode1.kode "43.220" matches.
  */
 
-import type { CompanyInsert, ScoreBreakdown, ScoringWeights } from "@/lib/supabase/types";
+import type { CompanyInsert, ScoreBreakdown, ScoringWeights } from "@/lib/db/types";
 
 export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
   has_phone: 30,

@@ -1,5 +1,7 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -12,9 +14,10 @@ import { backfillFromRaw } from "@/lib/jobs/backfill-from-raw";
 import { runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
 import { enrich1881Batch } from "@/lib/jobs/enrich-1881-batch";
 import { scrapeEmailsBatch } from "@/lib/jobs/scrape-emails-batch";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 export async function triggerScrapeNow(formData: FormData) {
+  await requireOperator();
   const dateRaw = formData.get("date");
   const date =
     typeof dateRaw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)
@@ -34,6 +37,7 @@ export async function triggerScrapeNow(formData: FormData) {
 }
 
 export async function triggerEmailBatchScrape(formData: FormData) {
+  await requireOperator();
   const daysRaw = formData.get("days");
   const limitRaw = formData.get("limit");
 
@@ -74,6 +78,7 @@ export type CronSettingsResult =
 export async function saveBrregCronSettings(
   formData: FormData
 ): Promise<CronSettingsResult> {
+  await requireOperator();
   const parsed = CronSettingsSchema.safeParse({
     // Unchecked checkboxes don't submit a value — treat absence as false.
     enabled: formData.get("enabled") === "on",
@@ -86,14 +91,14 @@ export async function saveBrregCronSettings(
     };
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const now = new Date().toISOString();
   const [r1, r2] = await Promise.all([
-    supabase.from("settings").upsert(
+    db.from("settings").upsert(
       { key: "brreg_cron_enabled", value: parsed.data.enabled, updated_at: now },
       { onConflict: "key" }
     ),
-    supabase.from("settings").upsert(
+    db.from("settings").upsert(
       {
         key: "brreg_cron_day_offset",
         value: parsed.data.day_offset,
@@ -109,7 +114,7 @@ export async function saveBrregCronSettings(
     };
   }
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: "manual",
     action: "settings.brreg_cron.updated",
     entity_type: "settings",
@@ -145,6 +150,7 @@ export type Test1881Result =
 export async function testEnrich1881Lookup(
   formData: FormData
 ): Promise<Test1881Result> {
+  await requireOperator();
   const orgNr = String(formData.get("orgnr") ?? "").trim();
   if (!/^\d{9}$/.test(orgNr)) {
     return { ok: false, configured: !!getOne1881Config(), error: "Org.nr må være 9 siffer" };
@@ -172,6 +178,7 @@ export async function testEnrich1881Lookup(
 }
 
 export async function triggerBackfillFromRaw() {
+  await requireOperator();
   try {
     const result = await backfillFromRaw();
     revalidatePath("/admin/queue");
@@ -187,6 +194,7 @@ export async function triggerBackfillFromRaw() {
 }
 
 export async function triggerEnrich1881Batch(formData: FormData) {
+  await requireOperator();
   const daysRaw = formData.get("days");
   const limitRaw = formData.get("limit");
 

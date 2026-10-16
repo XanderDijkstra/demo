@@ -34,14 +34,14 @@ import {
   getOutreachReplyTo,
   isSuppressed,
 } from "@/lib/resend";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Flow } from "@/lib/supabase/types";
+import { d1, getDb } from "@/lib/db";
+import type { Flow } from "@/lib/db/types";
 import { formatCompanyName } from "@/lib/utils";
 
 const MAX_PER_RUN = 25;
 const SCAN_LIMIT = 200;
 
-type Supa = ReturnType<typeof getSupabaseAdmin>;
+type Supa = ReturnType<typeof getDb>;
 
 export interface FlowsProcessResult {
   ok: true;
@@ -74,7 +74,7 @@ export async function processFlows(opts: {
 } = {}): Promise<FlowsProcessResult> {
   const triggeredBy = opts.triggeredBy ?? "cron";
   const startedAt = Date.now();
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const result: FlowsProcessResult = {
     ok: true,
@@ -87,7 +87,7 @@ export async function processFlows(opts: {
     durationMs: 0,
   };
 
-  const { data: flowsData } = await supabase
+  const { data: flowsData } = await db
     .from("flows")
     .select("*")
     .eq("enabled", true)
@@ -108,17 +108,17 @@ export async function processFlows(opts: {
     if (budget <= 0) break;
     if (flow.trigger_type !== "no_reply") continue;
     result.flowsProcessed += 1;
-    budget = await processNoReplyFlow(supabase, flow, ctx, budget, result);
+    budget = await processNoReplyFlow(db, flow, ctx, budget, result);
   }
 
   // ── 2. stage_entered enrollments that are due ──────────────────────
   if (budget > 0) {
-    budget = await processDueEnrollments(supabase, flows, ctx, budget, result);
+    budget = await processDueEnrollments(db, flows, ctx, budget, result);
   }
 
   result.durationMs = Date.now() - startedAt;
 
-  await supabase.from("audit_log").insert({
+  await db.from("audit_log").insert({
     actor: triggeredBy === "cron" ? "cron" : "manual",
     action: "flows.process",
     entity_type: "flow",
@@ -140,7 +140,7 @@ export async function processFlows(opts: {
 // ─── no_reply ─────────────────────────────────────────────────────────
 
 async function processNoReplyFlow(
-  supabase: Supa,
+  db: Supa,
   flow: Flow,
   ctx: SendContext,
   budgetIn: number,
@@ -151,17 +151,28 @@ async function processNoReplyFlow(
     Date.now() - flow.delay_hours * 60 * 60 * 1000
   ).toISOString();
 
-  const { data: candidates } = await supabase
-    .from("outreach_emails")
-    .select("id, org_nr, thread_id, subject, message_id, sent_at")
-    .eq("direction", "out")
-    .is("in_reply_to", null)
-    .in("status", ["sent", "delivered"])
-    .not("thread_id", "is", null)
-    .not("sent_at", "is", null)
-    .lte("sent_at", cutoff)
-    .order("sent_at", { ascending: true })
-    .limit(SCAN_LIMIT);
+  // First-touch emails past the delay whose thread has had no flow run yet.
+  // The NOT EXISTS keeps processed threads out of the window, so the scan
+  // can't fill up with already-handled rows and stall.
+  const { results: candidates } = await d1()
+    .prepare(
+      `select o.id, o.org_nr, o.thread_id, o.subject, o.message_id, o.sent_at
+       from outreach_emails o
+       where o.direction = 'out' and o.in_reply_to is null
+         and o.status in ('sent', 'delivered')
+         and o.thread_id is not null and o.sent_at is not null and o.sent_at <= ?
+         and not exists (select 1 from flow_runs fr where fr.thread_id = o.thread_id)
+       order by o.sent_at asc limit ?`
+    )
+    .bind(cutoff, SCAN_LIMIT)
+    .all<{
+      id: string;
+      org_nr: string | null;
+      thread_id: string | null;
+      subject: string;
+      message_id: string | null;
+      sent_at: string;
+    }>();
 
   const seenThreads = new Set<string>();
 
@@ -171,53 +182,51 @@ async function processNoReplyFlow(
     if (!threadId || seenThreads.has(threadId)) continue;
     seenThreads.add(threadId);
 
-    const { data: existingRun } = await supabase
-      .from("flow_runs")
-      .select("id")
-      .eq("thread_id", threadId)
-      .maybeSingle();
-    if (existingRun) continue;
+    // Orphaned outbound with no company link — nothing to follow up on.
+    if (!original.org_nr) continue;
 
-    const { count: inboundCount } = await supabase
+    // Claim the thread first (flow_runs.thread_id is unique), so two
+    // overlapping runs can never both send a follow-up on it.
+    if (!(await claimRun(db, flow.id, original))) continue;
+
+    // Any reply from this company counts, on this thread or another one
+    // (clients that drop In-Reply-To make inbound.ts open a new thread).
+    const { count: inboundCount } = await db
       .from("outreach_emails")
       .select("id", { count: "exact", head: true })
-      .eq("thread_id", threadId)
+      .eq("org_nr", original.org_nr)
       .eq("direction", "in");
     if ((inboundCount ?? 0) > 0) {
-      await logRun(supabase, flow.id, original, "skipped_replied");
+      await logRun(db, flow.id, original, "skipped_replied");
       result.skippedReplied += 1;
       continue;
     }
-
-    // Orphaned outbound with no company link — nothing to follow up on,
-    // skip silently (logRun also no-ops on null org_nr).
-    if (!original.org_nr) continue;
-    const lead = await loadLead(supabase, original.org_nr);
+    const lead = await loadLead(db, original.org_nr);
     if (!lead?.email) {
-      await logRun(supabase, flow.id, original, "skipped_no_email");
+      await logRun(db, flow.id, original, "skipped_no_email");
       result.skippedNoEmail += 1;
       continue;
     }
 
     const sup = await isSuppressed(lead.email);
     if (sup.suppressed) {
-      await logRun(supabase, flow.id, original, "skipped_suppressed");
+      await logRun(db, flow.id, original, "skipped_suppressed");
       result.skippedSuppressed += 1;
       continue;
     }
 
-    const sendRes = await sendFollowUpOnThread(supabase, ctx, {
+    const sendRes = await sendFollowUpOnThread(db, ctx, {
       lead,
       threadId,
       flow,
     });
 
     if (sendRes.ok) {
-      await logRun(supabase, flow.id, original, "sent", sendRes.emailId);
+      await logRun(db, flow.id, original, "sent", sendRes.emailId);
       result.sent += 1;
       budget -= 1;
     } else {
-      await logRun(supabase, flow.id, original, "failed", null, sendRes.error);
+      await logRun(db, flow.id, original, "failed", null, sendRes.error);
       result.failed += 1;
     }
   }
@@ -226,7 +235,7 @@ async function processNoReplyFlow(
 }
 
 async function logRun(
-  supabase: Supa,
+  db: Supa,
   flowId: string,
   original: { org_nr: string | null; thread_id: string | null; id: string },
   status: string,
@@ -240,24 +249,41 @@ async function logRun(
   // candidates can't be anyway (they're filtered to outbound rows tied
   // to a company).
   if (!original.org_nr) return;
-  await supabase.from("flow_runs").upsert(
+  await db
+    .from("flow_runs")
+    .update({
+      flow_id: flowId,
+      status,
+      follow_up_email_id: followUpEmailId,
+      error_message: errorMessage,
+    })
+    .eq("thread_id", original.thread_id);
+}
+
+/** Insert the thread's flow_runs row as 'processing'. False if another run got there first. */
+async function claimRun(
+  db: Supa,
+  flowId: string,
+  original: { org_nr: string | null; thread_id: string | null; id: string }
+): Promise<boolean> {
+  if (!original.thread_id || !original.org_nr) return false;
+  const { count } = await db.from("flow_runs").upsert(
     {
       flow_id: flowId,
       org_nr: original.org_nr,
       thread_id: original.thread_id,
       source_email_id: original.id,
-      status,
-      follow_up_email_id: followUpEmailId,
-      error_message: errorMessage,
+      status: "processing",
     },
-    { onConflict: "thread_id", ignoreDuplicates: true }
+    { onConflict: "thread_id", ignoreDuplicates: true, count: "exact" }
   );
+  return (count ?? 0) > 0;
 }
 
 // ─── stage_entered ────────────────────────────────────────────────────
 
 async function processDueEnrollments(
-  supabase: Supa,
+  db: Supa,
   flows: Flow[],
   ctx: SendContext,
   budgetIn: number,
@@ -270,10 +296,14 @@ async function processDueEnrollments(
     flows.filter((f) => f.trigger_type === "stage_entered").map((f) => [f.id, f])
   );
 
-  const { data: dueEnr } = await supabase
+  // Only enabled stage flows: a disabled flow's enrollments stay pending
+  // and resume when it's switched back on (deleted flows cascade away).
+  if (stageFlowById.size === 0) return budget;
+  const { data: dueEnr } = await db
     .from("flow_enrollments")
     .select("*")
     .eq("status", "pending")
+    .in("flow_id", [...stageFlowById.keys()])
     .lte("due_at", nowIso)
     .order("due_at", { ascending: true })
     .limit(SCAN_LIMIT);
@@ -284,22 +314,15 @@ async function processDueEnrollments(
     if (budget <= 0) break;
 
     const flow = stageFlowById.get(enr.flow_id);
-    // Flow disabled / deleted / no longer a stage flow → drop enrollment.
-    if (!flow) {
-      await supabase
-        .from("flow_enrollments")
-        .update({ status: "cancelled", processed_at: nowIso })
-        .eq("id", enr.id);
-      continue;
-    }
+    if (!flow) continue;
     if (!countedFlows.has(flow.id)) {
       countedFlows.add(flow.id);
       result.flowsProcessed += 1;
     }
 
-    const lead = await loadLead(supabase, enr.org_nr);
+    const lead = await loadLead(db, enr.org_nr);
     if (!lead?.email) {
-      await finishEnrollment(supabase, enr.id, "skipped_no_email");
+      await finishEnrollment(db, enr.id, "skipped_no_email");
       result.skippedNoEmail += 1;
       continue;
     }
@@ -307,20 +330,23 @@ async function processDueEnrollments(
     // Reply = hard stop. Even though inbound cancels pending enrollments,
     // re-check here so a reply that landed between cancel and processing
     // can never get an automated nudge into a live conversation.
-    const { count: repliedCount } = await supabase
+    // Only replies after enrolling count: most deals exist *because* the
+    // lead replied, so counting older replies would block every stage flow.
+    const { count: repliedCount } = await db
       .from("outreach_emails")
       .select("id", { count: "exact", head: true })
       .eq("org_nr", enr.org_nr)
-      .eq("direction", "in");
+      .eq("direction", "in")
+      .gt("created_at", enr.created_at);
     if ((repliedCount ?? 0) > 0) {
-      await finishEnrollment(supabase, enr.id, "skipped_replied");
+      await finishEnrollment(db, enr.id, "skipped_replied");
       result.skippedReplied += 1;
       continue;
     }
 
     const sup = await isSuppressed(lead.email);
     if (sup.suppressed) {
-      await finishEnrollment(supabase, enr.id, "skipped_suppressed");
+      await finishEnrollment(db, enr.id, "skipped_suppressed");
       result.skippedSuppressed += 1;
       continue;
     }
@@ -331,7 +357,7 @@ async function processDueEnrollments(
       company_name: formatCompanyName(lead.name),
     });
     let threadId: string;
-    const { data: existingThread } = await supabase
+    const { data: existingThread } = await db
       .from("email_threads")
       .select("id")
       .eq("org_nr", lead.org_nr)
@@ -349,7 +375,7 @@ async function processDueEnrollments(
         threadId = thread.id;
       } catch (err) {
         await finishEnrollment(
-          supabase,
+          db,
           enr.id,
           "failed",
           null,
@@ -360,18 +386,18 @@ async function processDueEnrollments(
       }
     }
 
-    const sendRes = await sendFollowUpOnThread(supabase, ctx, {
+    const sendRes = await sendFollowUpOnThread(db, ctx, {
       lead,
       threadId,
       flow,
     });
 
     if (sendRes.ok) {
-      await finishEnrollment(supabase, enr.id, "sent", sendRes.emailId, null, threadId);
+      await finishEnrollment(db, enr.id, "sent", sendRes.emailId, null, threadId);
       result.sent += 1;
       budget -= 1;
     } else {
-      await finishEnrollment(supabase, enr.id, "failed", null, sendRes.error, threadId);
+      await finishEnrollment(db, enr.id, "failed", null, sendRes.error, threadId);
       result.failed += 1;
     }
   }
@@ -380,14 +406,14 @@ async function processDueEnrollments(
 }
 
 async function finishEnrollment(
-  supabase: Supa,
+  db: Supa,
   id: string,
   status: string,
   sentEmailId: string | null = null,
   errorMessage: string | null = null,
   threadId: string | null = null
 ): Promise<void> {
-  await supabase
+  await db
     .from("flow_enrollments")
     .update({
       status,
@@ -402,10 +428,10 @@ async function finishEnrollment(
 // ─── shared send ──────────────────────────────────────────────────────
 
 async function loadLead(
-  supabase: Supa,
+  db: Supa,
   orgNr: string
 ): Promise<LeadRow | null> {
-  const { data } = await supabase
+  const { data } = await db
     .from("companies")
     .select("org_nr, name, email, kommune, kommune_nr, contact_name")
     .eq("org_nr", orgNr)
@@ -418,13 +444,13 @@ async function loadLead(
  * In-Reply-To + References onto whatever's already on the thread.
  */
 async function sendFollowUpOnThread(
-  supabase: Supa,
+  db: Supa,
   ctx: SendContext,
   args: { lead: LeadRow; threadId: string; flow: Flow }
 ): Promise<{ ok: true; emailId: string } | { ok: false; error: string }> {
   const { lead, threadId, flow } = args;
 
-  const { data: siteRow } = await supabase
+  const { data: siteRow } = await db
     .from("generated_sites")
     .select("org_nr")
     .eq("org_nr", lead.org_nr)
@@ -443,7 +469,7 @@ async function sendFollowUpOnThread(
   const subject = applyPlaceholders(flow.follow_up_subject, placeholders);
   const body = applyPlaceholders(flow.follow_up_body, placeholders);
 
-  const { data: prior } = await supabase
+  const { data: prior } = await db
     .from("outreach_emails")
     .select("message_id, created_at")
     .eq("thread_id", threadId)
@@ -455,7 +481,7 @@ async function sendFollowUpOnThread(
 
   const messageId = makeMessageId(ctx.inboundDomain);
 
-  const { data: row, error: insertError } = await supabase
+  const { data: row, error: insertError } = await db
     .from("outreach_emails")
     .insert({
       org_nr: lead.org_nr,
@@ -489,7 +515,7 @@ async function sendFollowUpOnThread(
   });
 
   if (sendResult.ok) {
-    await supabase
+    await db
       .from("outreach_emails")
       .update({
         status: "sent",
@@ -501,7 +527,7 @@ async function sendFollowUpOnThread(
     return { ok: true, emailId: row.id };
   }
 
-  await supabase
+  await db
     .from("outreach_emails")
     .update({ status: "failed", error_message: sendResult.error ?? null })
     .eq("id", row.id);

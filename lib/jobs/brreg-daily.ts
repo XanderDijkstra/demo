@@ -5,17 +5,17 @@ import {
   mapEnhetToCompanyInsert,
 } from "@/lib/brreg";
 import { scoreCompanyInsert, DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import {
   getExcludedOrgForms,
   getScoringWeights,
   getTargetNaceCodes,
-} from "@/lib/supabase/queries";
+} from "@/lib/db/queries";
 import type {
   CompanyInsert,
   ScrapeRun,
   ScrapeTriggeredBy,
-} from "@/lib/supabase/types";
+} from "@/lib/db/types";
 
 export interface ScrapeJobResult {
   runId: string;
@@ -78,11 +78,11 @@ export async function runBrregDailyScrape(
 ): Promise<ScrapeJobResult> {
   const targetDate = options.targetDate ?? defaultTargetDate();
   const triggeredBy: ScrapeTriggeredBy = options.triggeredBy ?? "cron";
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const startedAt = Date.now();
 
   // 1. Open the run row up front so it's visible in /admin/queue while running.
-  const { data: runRow, error: insertRunError } = await supabase
+  const { data: runRow, error: insertRunError } = await db
     .from("scrape_runs")
     .insert({
       target_date: targetDate,
@@ -136,7 +136,7 @@ export async function runBrregDailyScrape(
     const CHUNK = 500;
     for (let i = 0; i < inserts.length; i += CHUNK) {
       const slice = inserts.slice(i, i + CHUNK);
-      const { count, error } = await supabase
+      const { count, error } = await db
         .from("companies")
         .upsert(slice, { onConflict: "org_nr", ignoreDuplicates: true, count: "exact" });
       if (error) throw new Error(`Insert failed: ${error.message}`);
@@ -154,7 +154,7 @@ export async function runBrregDailyScrape(
       durationMs,
     };
 
-    await supabase
+    await db
       .from("scrape_runs")
       .update({
         status: "success",
@@ -166,7 +166,7 @@ export async function runBrregDailyScrape(
       })
       .eq("id", runId);
 
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: triggeredBy === "cron" ? "system" : "manual",
       action: "brreg.scrape.success",
       entity_type: "scrape_run",
@@ -185,7 +185,7 @@ export async function runBrregDailyScrape(
     const message = err instanceof Error ? err.message : String(err);
     const durationMs = Date.now() - startedAt;
 
-    await supabase
+    await db
       .from("scrape_runs")
       .update({
         status: "failed",
@@ -195,7 +195,7 @@ export async function runBrregDailyScrape(
       })
       .eq("id", runId);
 
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: triggeredBy === "cron" ? "system" : "manual",
       action: "brreg.scrape.failed",
       entity_type: "scrape_run",

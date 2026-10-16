@@ -33,13 +33,13 @@ import { publicSiteUrl } from "@/lib/jobs/generate-site";
 import { checkOutreachReadiness, fetchLeadByOrgNr } from "@/lib/leads";
 import { getOutreachFromAddress, getOutreachReplyTo } from "@/lib/resend";
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import type {
   GeneratedSite,
   OutreachEmail,
   ScoreBreakdown,
   ScoringWeights,
-} from "@/lib/supabase/types";
+} from "@/lib/db/types";
 import { isNicheSlug, pickNicheFromNace, type NicheSlug } from "@/lib/templates";
 import { formatCompanyName } from "@/lib/utils";
 
@@ -125,10 +125,10 @@ export default async function LeadDetailPage({
   const lead = await fetchLeadByOrgNr(orgnr);
   if (!lead) notFound();
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const [historyRes, fromAddress, replyTo, readiness, siteRes, activeDeal] =
     await Promise.all([
-      supabase
+      db
         .from("outreach_emails")
         .select("*")
         .eq("org_nr", lead.org_nr)
@@ -137,7 +137,7 @@ export default async function LeadDetailPage({
       getOutreachFromAddress(),
       getOutreachReplyTo(),
       checkOutreachReadiness(lead.org_nr, lead.email),
-      supabase
+      db
         .from("generated_sites")
         .select("*")
         .eq("org_nr", lead.org_nr)

@@ -4,8 +4,8 @@ import { Mail } from "lucide-react";
 import { Topbar } from "@/components/admin/topbar";
 import { Badge } from "@/components/ui/badge";
 import { getInboundDomain } from "@/lib/email/threads";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { EmailThread } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { EmailThread } from "@/lib/db/types";
 import { cn, formatCompanyName } from "@/lib/utils";
 
 import { InboxClient, type ThreadRow, type ViewId } from "./_inbox-client";
@@ -28,9 +28,9 @@ interface RouteProps {
 }
 
 async function fetchThreadList(view: ViewId): Promise<ThreadRow[]> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
-  const { data: threads, error } = await supabase
+  const { data: threads, error } = await db
     .from("email_threads")
     .select("*")
     .eq("status", "open")
@@ -46,9 +46,9 @@ async function fetchThreadList(view: ViewId): Promise<ThreadRow[]> {
 
   const [companiesRes, messagesRes] = await Promise.all([
     orgNrs.length > 0
-      ? supabase.from("companies").select("org_nr, name").in("org_nr", orgNrs)
+      ? db.from("companies").select("org_nr, name").in("org_nr", orgNrs)
       : Promise.resolve({ data: [] as Array<{ org_nr: string; name: string }> }),
-    supabase
+    db
       .from("outreach_emails")
       .select("thread_id, direction, from_email, body_text, body, created_at")
       .in("thread_id", threadIds)

@@ -1,8 +1,8 @@
 import "server-only";
 
 import { loadCampaignConfig, type OutreachCampaignConfig } from "@/lib/outreach/campaign";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { Company } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { Company } from "@/lib/db/types";
 
 /**
  * What the daily outreach cron actually sees when it runs. Same filter
@@ -30,17 +30,17 @@ export interface DailyFunnelResult {
 }
 
 export async function getDailyFunnel(): Promise<DailyFunnelResult> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
   const config = await loadCampaignConfig();
 
   // Stage 0: total companies in the DB (sanity baseline).
-  const totalRes = await supabase
+  const totalRes = await db
     .from("companies")
     .select("*", { count: "exact", head: true });
   const totalLeads = totalRes.count ?? 0;
 
   // Stage 1: status = "new".
-  const newRes = await supabase
+  const newRes = await db
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new");
@@ -49,7 +49,7 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
   // Stage 2: + score ≥ minScore. Score before email so the operator
   // sees "there are X high-score leads → BUT only Y have an email"
   // instead of the misleading reverse.
-  const scoredRes = await supabase
+  const scoredRes = await db
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
@@ -57,7 +57,7 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
   const scoredCount = scoredRes.count ?? 0;
 
   // Stage 3: + has email.
-  const withEmailRes = await supabase
+  const withEmailRes = await db
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
@@ -66,7 +66,7 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
   const withEmailCount = withEmailRes.count ?? 0;
 
   // Stage 4: + allowed org form.
-  let formReq = supabase
+  let formReq = db
     .from("companies")
     .select("*", { count: "exact", head: true })
     .eq("status", "new")
@@ -80,7 +80,7 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
 
   // Now pull the matching rows so we can apply the in-memory filters
   // (NACE prefix exclusion + already-emailed dedup).
-  let rowsReq = supabase
+  let rowsReq = db
     .from("companies")
     .select("*")
     .eq("status", "new")
@@ -104,7 +104,7 @@ export async function getDailyFunnel(): Promise<DailyFunnelResult> {
   });
 
   // Stage 6: not already emailed.
-  const { data: prior } = await supabase
+  const { data: prior } = await db
     .from("outreach_emails")
     .select("org_nr")
     .eq("direction", "out");

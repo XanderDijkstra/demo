@@ -2,7 +2,7 @@ import "server-only";
 
 import { DEFAULT_SCORING_WEIGHTS } from "@/lib/scoring";
 
-import { getSupabaseAdmin } from "./admin";
+import { getDb } from "./index";
 import type {
   AgencyInfo,
   ScoringWeights,
@@ -14,8 +14,8 @@ import type {
  * Returns null if the row does not exist.
  */
 export async function getSetting<V>(key: string): Promise<V | null> {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  const db = getDb();
+  const { data, error } = await db
     .from("settings")
     .select("value")
     .eq("key", key)
@@ -52,12 +52,12 @@ export async function getAgencyInfo(): Promise<AgencyInfo | null> {
  * Health probe — verifies the service-role client can reach Supabase
  * and that the `settings` table exists. Returns ok/error for the UI to render.
  */
-export async function checkSupabaseHealth(): Promise<
+export async function checkDbHealth(): Promise<
   { ok: true; settingsCount: number } | { ok: false; error: string }
 > {
   try {
-    const supabase = getSupabaseAdmin();
-    const { count, error } = await supabase
+    const db = getDb();
+    const { count, error } = await db
       .from("settings")
       .select("*", { count: "exact", head: true });
 

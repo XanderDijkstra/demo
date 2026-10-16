@@ -5,10 +5,10 @@ import { SiteTemplate } from "@/components/site/template";
 import { CarpenterTemplate } from "@/components/site/templates/carpenter";
 import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import { loadNicheConfig } from "@/lib/template-store";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
-import type { Company, GeneratedSite } from "@/lib/supabase/types";
+import type { Company, GeneratedSite } from "@/lib/db/types";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +21,11 @@ async function loadSite(orgNr: string): Promise<{
   site: GeneratedSite;
 } | null> {
   if (!/^\d{9}$/.test(orgNr)) return null;
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [companyRes, siteRes] = await Promise.all([
-    supabase.from("companies").select("*").eq("org_nr", orgNr).maybeSingle(),
-    supabase
+    db.from("companies").select("*").eq("org_nr", orgNr).maybeSingle(),
+    db
       .from("generated_sites")
       .select("*")
       .eq("org_nr", orgNr)
@@ -35,10 +35,18 @@ async function loadSite(orgNr: string): Promise<{
   if (companyRes.error || siteRes.error) return null;
   if (!companyRes.data || !siteRes.data) return null;
 
-  return {
-    company: companyRes.data as Company,
-    site: siteRes.data as GeneratedSite,
+  // The row is passed to client components, so it's serialized into the
+  // page: strip everything internal before the prospect can view-source it.
+  const company: Company = {
+    ...(companyRes.data as Company),
+    notes: null,
+    raw_data: null,
+    score: 0,
+    score_breakdown: {},
+    status: "new",
+    email_scrape_attempted_at: null,
   };
+  return { company, site: siteRes.data as GeneratedSite };
 }
 
 export async function generateMetadata({

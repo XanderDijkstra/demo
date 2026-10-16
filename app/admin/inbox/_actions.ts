@@ -1,5 +1,7 @@
 "use server";
 
+import { requireOperator } from "@/lib/auth";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -17,7 +19,7 @@ import {
   isSuppressed,
 } from "@/lib/resend";
 import { fylkeFromKommuneNr } from "@/lib/regions";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 import { formatCompanyName } from "@/lib/utils";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
@@ -32,14 +34,15 @@ type ActionResult = { ok: true } | { ok: false; error: string };
  * fine for a single-operator MVP.
  */
 export async function markThreadRead(threadId: string): Promise<void> {
+  await requireOperator();
   if (!threadId) return;
   try {
-    const supabase = getSupabaseAdmin();
-    await supabase
+    const db = getDb();
+    await db
       .from("email_threads")
       .update({ unread_count: 0 })
       .eq("id", threadId);
-    await supabase
+    await db
       .from("outreach_emails")
       .update({ read_at: new Date().toISOString() })
       .eq("thread_id", threadId)
@@ -65,6 +68,7 @@ export async function replyToThread(
   threadId: string,
   formData: FormData
 ): Promise<ActionResult & { id?: string }> {
+  await requireOperator();
   if (!threadId) return { ok: false, error: "Missing thread id" };
 
   const parsed = ReplySchema.safeParse({
@@ -78,10 +82,10 @@ export async function replyToThread(
     };
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // Load thread.
-  const { data: thread, error: threadError } = await supabase
+  const { data: thread, error: threadError } = await db
     .from("email_threads")
     .select("id, org_nr")
     .eq("id", threadId)
@@ -94,7 +98,7 @@ export async function replyToThread(
     getOutreachFromAddress(),
     getOutreachReplyTo(),
     getInboundDomain(),
-    supabase
+    db
       .from("outreach_emails")
       .select("message_id, from_email, direction, created_at")
       .eq("thread_id", threadId)
@@ -132,7 +136,7 @@ export async function replyToThread(
     const subject = applyPlaceholders(parsed.data.subject, {});
     const body = applyPlaceholders(parsed.data.body, {});
 
-    const { data: row, error: insertError } = await supabase
+    const { data: row, error: insertError } = await db
       .from("outreach_emails")
       .insert({
         org_nr: null,
@@ -165,7 +169,7 @@ export async function replyToThread(
     });
 
     if (result.ok) {
-      await supabase
+      await db
         .from("outreach_emails")
         .update({
           status: "sent",
@@ -177,7 +181,7 @@ export async function replyToThread(
       revalidatePath("/admin/inbox");
       return { ok: true, id: row.id };
     }
-    await supabase
+    await db
       .from("outreach_emails")
       .update({ status: "failed", error_message: result.error ?? null })
       .eq("id", row.id);
@@ -185,7 +189,7 @@ export async function replyToThread(
   }
 
   // ── Linked thread: full lead-aware path. ────────────────────────────
-  const { data: lead, error: leadError } = await supabase
+  const { data: lead, error: leadError } = await db
     .from("companies")
     .select("org_nr, name, email, kommune, kommune_nr, contact_name")
     .eq("org_nr", thread.org_nr)
@@ -209,7 +213,7 @@ export async function replyToThread(
   // Before this fix the URL was hardcoded as "", which silently dropped
   // the placeholder (and any trailing punctuation looked broken in the
   // delivered email).
-  const { data: siteRow } = await supabase
+  const { data: siteRow } = await db
     .from("generated_sites")
     .select("org_nr")
     .eq("org_nr", lead.org_nr)
@@ -229,7 +233,7 @@ export async function replyToThread(
   const subject = applyPlaceholders(parsed.data.subject, placeholders);
   const body = applyPlaceholders(parsed.data.body, placeholders);
 
-  const { data: row, error: insertError } = await supabase
+  const { data: row, error: insertError } = await db
     .from("outreach_emails")
     .insert({
       org_nr: lead.org_nr,
@@ -262,7 +266,7 @@ export async function replyToThread(
   });
 
   if (result.ok) {
-    await supabase
+    await db
       .from("outreach_emails")
       .update({
         status: "sent",
@@ -271,7 +275,7 @@ export async function replyToThread(
       })
       .eq("id", row.id);
     await touchThread({ threadId });
-    await supabase.from("audit_log").insert({
+    await db.from("audit_log").insert({
       actor: "manual",
       action: "inbox.reply.sent",
       entity_type: "company",
@@ -284,7 +288,7 @@ export async function replyToThread(
     return { ok: true, id: row.id };
   }
 
-  await supabase
+  await db
     .from("outreach_emails")
     .update({ status: "failed", error_message: result.error ?? null })
     .eq("id", row.id);

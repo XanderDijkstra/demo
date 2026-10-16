@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { dateWithOffset, runBrregDailyScrape } from "@/lib/jobs/brreg-daily";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { getSetting } from "@/lib/supabase/queries";
+import { getDb } from "@/lib/db";
+import { getSetting } from "@/lib/db/queries";
 
 // This route runs the Brreg scrape. It must not be cached or pre-rendered.
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   if (triggeredBy === "cron") {
     const enabled = await getSetting<boolean>("brreg_cron_enabled");
     if (enabled === false) {
-      await getSupabaseAdmin().from("audit_log").insert({
+      await getDb().from("audit_log").insert({
         actor: "cron",
         action: "brreg.cron.skipped",
         entity_type: "settings",

@@ -19,8 +19,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { OutreachEmail } from "@/lib/supabase/types";
+import { getDb } from "@/lib/db";
+import type { OutreachEmail } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,21 +29,21 @@ import { cn } from "@/lib/utils";
  * leads were reached. Each row links to the lead detail.
  */
 export async function LogTab() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   const [recentRes, todayRes, cronRunsRes] = await Promise.all([
-    supabase
+    db
       .from("outreach_emails")
       .select("id, org_nr, to_email, subject, status, sent_at, delivered_at, opened_at, replied_at, error_message, created_at")
       .eq("direction", "out")
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase
+    db
       .from("outreach_emails")
       .select("id", { count: "exact", head: true })
       .eq("direction", "out")
       .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
-    supabase
+    db
       .from("audit_log")
       .select("created_at, metadata, actor")
       .eq("action", "outreach.daily.run")
@@ -57,7 +57,7 @@ export async function LogTab() {
   // Join company names for context.
   const orgNrs = [...new Set(rows.map((r) => r.org_nr).filter(Boolean))] as string[];
   const namesRes = orgNrs.length > 0
-    ? await supabase.from("companies").select("org_nr, name").in("org_nr", orgNrs)
+    ? await db.from("companies").select("org_nr, name").in("org_nr", orgNrs)
     : { data: [] as Array<{ org_nr: string; name: string }> };
   const nameByOrg = new Map((namesRes.data ?? []).map((c) => [c.org_nr, c.name]));
 

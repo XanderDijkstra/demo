@@ -1,10 +1,10 @@
 import { MobileNav, Sidebar } from "@/components/admin/sidebar";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 async function fetchInboxUnread(): Promise<number> {
   try {
-    const supabase = getSupabaseAdmin();
-    const { data } = await supabase
+    const db = getDb();
+    const { data } = await db
       .from("email_threads")
       .select("unread_count")
       .eq("status", "open")

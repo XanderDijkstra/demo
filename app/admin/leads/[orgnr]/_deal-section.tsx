@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DEAL_STAGES, dealStageMeta } from "@/lib/deals-shared";
-import type { Deal, DealStage } from "@/lib/supabase/types";
+import type { Deal, DealStage } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
 import {

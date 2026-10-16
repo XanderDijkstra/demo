@@ -5,7 +5,7 @@ import { Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { DEAL_STAGES, type KanbanCard } from "@/lib/deals-shared";
-import type { DealStage } from "@/lib/supabase/types";
+import type { DealStage } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
 import { moveDealStage } from "./_actions";
