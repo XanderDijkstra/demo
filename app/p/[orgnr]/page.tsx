@@ -10,6 +10,7 @@ import { getDb } from "@/lib/db";
 import { loadNicheConfig } from "@/lib/template-store";
 import { isNicheSlug, type NicheSlug } from "@/lib/templates";
 import type { Company, GeneratedSite } from "@/lib/db/types";
+import { formatCompanyName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export async function generateMetadata({
     : ("generic" as NicheSlug);
   const config = await loadNicheConfig(niche);
   return {
-    title: `${data.company.name} – ${config.displayName}`,
+    title: `${formatCompanyName(data.company.name)} – ${config.displayName}`,
     description:
       data.site.content_json.hero_subheadline ??
       `${config.displayName} ${data.company.kommune ? `i ${data.company.kommune}` : ""}`.trim(),
