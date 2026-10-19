@@ -36,3 +36,16 @@ own work (project galleries) label them "Eksempelbilde".
 `carpenter/*.webp` were added earlier from Freepik by the operator (file names
 are the Freepik resource IDs); see `carpenter/README.md`. Their licence terms
 were not re-checked here.
+
+| File | Shows | Source | Photographer |
+|---|---|---|---|
+| cleaner/hero.webp | Bright, tidy Scandinavian living room (no people) | https://images.unsplash.com/photo-1583847268964-b28dc8f51f92 | @minhphamdesign |
+| cleaner/kitchen-sink.webp | Hands wiping a kitchen sink with spray bottle | https://images.unsplash.com/photo-1642505172378-a6f5e5b15580 | @everdrop |
+| cleaner/wipe.webp | Gloved hands wiping a surface with spray | https://images.unsplash.com/photo-1585421514284-efb74c2b69ba | @uniqueton |
+| cleaner/duster.webp | Gloved hand with feather duster in a kitchen | https://images.unsplash.com/photo-1713110824336-f78c320dcf8e | @glistenacademy |
+| cleaner/stairs.webp | Cleaner carrying a caddy and broom up stairs (seen from behind/side) | https://images.unsplash.com/photo-1646980241033-cd7abda2ee88 | @josuemichelphotography |
+| cleaner/desk.webp | Gloved hands cleaning an office desk | https://images.unsplash.com/photo-1627905646269-7f034dcc5738 | @towfiqu999999 |
+| cleaner/kitchen.webp | Clean white kitchen with island (no people) | https://images.unsplash.com/photo-1484154218962-a197022b5858 | @naomish |
+| cleaner/bathroom.webp | Bright white bathroom with plants (no people) | https://images.unsplash.com/photo-1552321554-5fefe8c9ef14 | @philhearing |
+
+`cleaner/*.webp` downloaded 2026-10-19 the same way; hero re-encoded to 1200 px wide.

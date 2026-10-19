@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
 import { CarpenterTemplate } from "@/components/site/templates/carpenter";
+import { CleanerTemplate } from "@/components/site/templates/cleaner";
 import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { getDb } from "@/lib/db";
@@ -91,6 +92,16 @@ export default async function PublicSitePage({ params }: RouteProps) {
   if (slug === "contractor") {
     return (
       <ContractorTemplate
+        company={data.company}
+        niche={niche}
+        content={data.site.content_json}
+      />
+    );
+  }
+
+  if (slug === "cleaner") {
+    return (
+      <CleanerTemplate
         company={data.company}
         niche={niche}
         content={data.site.content_json}

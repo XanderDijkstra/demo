@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { SiteTemplate } from "@/components/site/template";
 import { CarpenterTemplate } from "@/components/site/templates/carpenter";
+import { CleanerTemplate } from "@/components/site/templates/cleaner";
 import { ContractorTemplate } from "@/components/site/templates/contractor";
 import { LandscaperTemplate } from "@/components/site/templates/landscaper";
 import { loadNicheConfig } from "@/lib/template-store";
@@ -56,6 +57,13 @@ const SAMPLE_CONTENT_BY_SLUG: Record<string, typeof SAMPLE_CONTENT> = {
     about_paragraph:
       "Eksempelbedrift AS er totalentreprenør for hjem som skal vare. Med over 20 års erfaring leverer vi prosjekter med åpne priser, dokumentert kvalitet og en stødig prosess. Visjonen din er rammen vi bygger innenfor.",
   },
+  cleaner: {
+    hero_headline: "Et rent hjem, uten at du må løfte en finger",
+    hero_subheadline:
+      "Eksempelbedrift AS tar oppdrag med hjemmevask, storrengjøring, flyttevask og kontorrenhold i Bergen og omegn.",
+    about_paragraph:
+      "Eksempelbedrift AS er et rengjøringsfirma i Bergen. Vi tar oppdrag for private hjem og bedrifter, og avtaler alltid innholdet i vasken med deg på forhånd.",
+  },
   carpenter: {
     hero_headline: "Bygger din visjon, skaper varige rom",
     hero_subheadline:
@@ -85,6 +93,16 @@ export default async function TemplatePreviewPage({ params }: RouteProps) {
   if (slug === "contractor") {
     return (
       <ContractorTemplate
+        company={SAMPLE_COMPANY}
+        niche={niche}
+        content={content}
+      />
+    );
+  }
+
+  if (slug === "cleaner") {
+    return (
+      <CleanerTemplate
         company={SAMPLE_COMPANY}
         niche={niche}
         content={content}

@@ -26,6 +26,7 @@ export type NicheSlug =
   | "landscaper"
   | "contractor"
   | "carpenter"
+  | "cleaner"
   | "generic";
 
 export interface NicheService {
@@ -317,6 +318,43 @@ const CARPENTER: NicheConfig = {
   benefitTags: ["Snekkerarbeid", "Privat og bedrift", "Ta kontakt for pris"],
 };
 
+const CLEANER: NicheConfig = {
+  slug: "cleaner",
+  displayName: "Renhold",
+  // Fresh teal/mint on white. The bespoke template in
+  // components/site/templates/cleaner.tsx hardcodes most of its palette;
+  // these feed the shared niche-colour UI bits.
+  primaryColor: "oklch(0.32 0.05 200)",
+  accentColor: "oklch(0.93 0.04 170)",
+  heroImageKeyword: "cleaning,home",
+  heroImage: "/templates/cleaner/hero.webp",
+  heroLayout: "split",
+  services: [
+    {
+      title: "Fast hjemmevask",
+      description:
+        "Vi tar oppdrag med jevnlig rengjøring av hjemmet, ukentlig, annenhver uke eller etter avtale.",
+    },
+    {
+      title: "Storrengjøring",
+      description:
+        "Grundig vask av hele boligen, også steder som ikke tas hver gang.",
+    },
+    {
+      title: "Flyttevask",
+      description:
+        "Vask av boligen før overtakelse eller innflytting.",
+    },
+    {
+      title: "Kontor og næring",
+      description:
+        "Rengjøring av kontorer og andre lokaler etter avtale.",
+    },
+  ],
+  ctaText: "Få pris",
+  benefitTags: ["Hjemmevask", "Privat og bedrift", "Ta kontakt for pris"],
+};
+
 const GENERIC: NicheConfig = {
   slug: "generic",
   displayName: "Generell",
@@ -352,6 +390,7 @@ const NICHE_REGISTRY: Record<NicheSlug, NicheConfig> = {
   landscaper: LANDSCAPER,
   contractor: CONTRACTOR,
   carpenter: CARPENTER,
+  cleaner: CLEANER,
   generic: GENERIC,
 };
 
@@ -379,6 +418,8 @@ const NACE_TO_NICHE: Array<[prefix: string, slug: NicheSlug]> = [
   // Snekker-spesifikke koder. Mer spesifikke enn 41.xx contractor-kodene.
   ["43.32", "carpenter"], // Snekkerarbeid (innebygging av kjøkken, dører, vinduer)
   ["16.23", "carpenter"], // Produksjon av andre bygningsartikler av tre
+  ["81.21", "cleaner"], // Rengjøring av bygninger
+  ["81.22", "cleaner"], // Annen rengjøring av bygninger og industriell rengjøring
   // Malere (43.34) og taktekkere (43.91) faller bevisst til generic:
   // contractor-teksten handler om renovering/tilbygg og passer ikke dem.
 ];
@@ -410,6 +451,7 @@ export const ALL_NICHES: NicheConfig[] = (
     "landscaper",
     "contractor",
     "carpenter",
+    "cleaner",
     "generic",
   ] as const
 ).map((slug) => NICHE_REGISTRY[slug]);
