@@ -34,7 +34,8 @@
     "ADMIN_EMAILS": "info@fx-media.no"
   },
   "observability": { "enabled": true },
-  // Until the domain is cut over from Vercel, the Worker runs on workers.dev.
+  "routes": [{ "pattern": "demo.vekst-systemet.no", "custom_domain": true }],
+  // Kept on: demo links already sent to leads use vekst-demo.tiny-fire-1523.workers.dev/p/<orgnr>.
   "workers_dev": true,
   "preview_urls": false
 }
